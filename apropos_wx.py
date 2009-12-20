@@ -1,3 +1,8 @@
+import sys
+if  'D:\\lib\\site-packages' not in sys.path:
+    sys.path.append('D:\\lib\\site-packages')
+if  'D:\\lib\\site-packages\\wx-2.8-msw-ansi' not in sys.path:
+    sys.path.append('D:\\lib\\site-packages\\wx-2.8-msw-ansi')
 import wx
 from apomixin import Apomixin
 
@@ -22,20 +27,13 @@ class MainFrame(wx.Frame,Apomixin):
     def __init__(self,parent,id):
         wx.Frame.__init__(self,parent,id,"Apropos...") # ,size=(800,500))
         self.Bind(wx.EVT_CLOSE, self.afsl)
+        self.SetIcon(wx.Icon("apropos.ico",wx.BITMAP_TYPE_ICO))
         pnl = wx.Panel(self,-1)
         self.nb = wx.Notebook(pnl,-1)
         self.nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.page_changed)
         self.nb.Bind(wx.EVT_LEFT_DCLICK, self.onLeftDblClick)
         self.nb.Bind(wx.EVT_MIDDLE_DOWN, self.onLeftDblClick)
-        self.load_notes()
-        if self.apodata:
-            for i,x in self.apodata.items():
-                self.newtab(titel=x[0],note=x[1])
-            self.nb.ChangeSelection(0)
-        else:
-            self.newtab()
-            self.current = 0
-        ## self.nb.GetPage(0).txt.SetFocus()
+        self.initapp()
         sizer0 = wx.BoxSizer(wx.VERTICAL)
         sizer1 = wx.BoxSizer(wx.HORIZONTAL)
         sizer1.Add(self.nb,1,wx.EXPAND)
@@ -65,16 +63,25 @@ class MainFrame(wx.Frame,Apomixin):
                 self.nb.AdvancePage(False)
             elif keycode == wx.WXK_RIGHT or keycode == wx.WXK_NUMPAD_RIGHT: #  keycode == 316
                 self.nb.AdvancePage()
-            elif keycode == 78: # Ctrl-N
+            ## elif keycode == 76: # Ctrl-L reload tabs
+                ## self.nb.DeleteAllPages()
+                ## self.initapp()
+            elif keycode == 78: # Ctrl-N nieuwe tab
                 self.newtab()
-            elif keycode == 87: # Ctrl-W
+            elif keycode == 87: # Ctrl-W tab sluiten
                 self.closetab()
                 skip = False
-            elif keycode == 83: # Ctrl-Q
+            ## elif keycode == 72: # Ctrl-H Hide/minimize
+                ## pass # nog uitzoeken hoe
+            elif keycode == 83: # Ctrl-S saven zonder afsluiten
                 self.afsl()
-            elif keycode == 81: # Ctrl-Q
+            elif keycode == 81: # Ctrl-Q afsluiten na saven
                 self.afsl()
                 self.Destroy()
+        ## elif keykode == wx.WXK_F1:
+            ## self.helppage()
+        ## elif keykode == wx.WXK_F2:
+            ## self.asktitle()
         if event and skip:
             event.Skip()
 
@@ -84,6 +91,16 @@ class MainFrame(wx.Frame,Apomixin):
         item, flags = self.nb.HitTest((self.x, self.y))
         self.nb.DeletePage(item)
         event.Skip()
+
+    def initapp(self):
+        self.load_notes()
+        if self.apodata:
+            for i,x in self.apodata.items():
+                self.newtab(titel=x[0],note=x[1])
+            self.nb.ChangeSelection(0)
+        else:
+            self.newtab()
+            self.current = 0
 
     def newtab(self,titel=None,note=None):
         ## print("create new tab")
@@ -121,6 +138,11 @@ class MainFrame(wx.Frame,Apomixin):
         if event:
             event.Skip()
 
+    def helppage(self):
+        pass # message schermpje met o.a. sneltoetsen
+
+    def asktitle(self):
+        pass # mogelijkheid om de titel van de current tab aan te passen
 
 class Main():
     def __init__(self):
