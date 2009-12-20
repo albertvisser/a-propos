@@ -25,7 +25,7 @@ class Page(wx.Panel):
 
 class MainFrame(wx.Frame,Apomixin):
     def __init__(self,parent,id):
-        wx.Frame.__init__(self,parent,id,"Apropos...") # ,size=(800,500))
+        wx.Frame.__init__(self,parent,id,"Apropos") # ,size=(800,500))
         self.Bind(wx.EVT_CLOSE, self.afsl)
         self.SetIcon(wx.Icon("apropos.ico",wx.BITMAP_TYPE_ICO))
         pnl = wx.Panel(self,-1)
@@ -60,12 +60,12 @@ class MainFrame(wx.Frame,Apomixin):
         keycode = event.GetKeyCode()
         if event.GetModifiers() == wx.MOD_CONTROL: # evt.ControlDown()
             if keycode == wx.WXK_LEFT or keycode == wx.WXK_NUMPAD_LEFT: #  keycode == 314
-                self.nb.AdvancePage(False)
+                self.nb.AdvanceSelection(False)
             elif keycode == wx.WXK_RIGHT or keycode == wx.WXK_NUMPAD_RIGHT: #  keycode == 316
-                self.nb.AdvancePage()
-            ## elif keycode == 76: # Ctrl-L reload tabs
-                ## self.nb.DeleteAllPages()
-                ## self.initapp()
+                self.nb.AdvanceSelection()
+            elif keycode == 76: # Ctrl-L reload tabs
+                self.nb.DeleteAllPages()
+                self.initapp()
             elif keycode == 78: # Ctrl-N nieuwe tab
                 self.newtab()
             elif keycode == 87: # Ctrl-W tab sluiten
@@ -78,10 +78,13 @@ class MainFrame(wx.Frame,Apomixin):
             elif keycode == 81: # Ctrl-Q afsluiten na saven
                 self.afsl()
                 self.Destroy()
-        ## elif keykode == wx.WXK_F1:
-            ## self.helppage()
-        ## elif keykode == wx.WXK_F2:
-            ## self.asktitle()
+        elif keycode == wx.WXK_F1:
+            self.helppage()
+        elif keycode == wx.WXK_F2:
+            self.asktitle()
+        elif keycode == wx.WXK_ESCAPE:
+            self.afsl()
+            self.Destroy()
         if event and skip:
             event.Skip()
 
@@ -139,10 +142,33 @@ class MainFrame(wx.Frame,Apomixin):
             event.Skip()
 
     def helppage(self):
-        pass # message schermpje met o.a. sneltoetsen
+        info = [
+            "Apropos door Albert Visser",
+            "Om je apropos terug te kunnen vinden",
+            "als je de draad even kwijt bent",
+            "",
+            "Ctrl-N      - nieuwe tab",
+            "Ctrl-rechts - volgende tab",
+            "Ctrl-links  - vorige tab",
+            "Ctrl-W      - sluit tab",
+            "Ctrl-S      - alles opslaan",
+            "Ctrl-L      - alles opnieuw laden",
+            "Ctrl-Q, Esc - opslaan en sluiten",
+            "",
+            "F1          - deze (help)informatie",
+            "F2          - wijzig tab titel",
+            ]
+        dlg = wx.MessageDialog(self, "\n".join(info),'Apropos',
+            wx.OK | wx.ICON_INFORMATION)
+        dlg.ShowModal()
+        dlg.Destroy()
 
     def asktitle(self):
-        pass # mogelijkheid om de titel van de current tab aan te passen
+        dlg = wx.TextEntryDialog(self, 'Nieuwe titel voor de huidige tab:',
+                'Apropos', self.nb.GetPageText(self.current))
+        if dlg.ShowModal() == wx.ID_OK:
+            self.nb.SetPageText(self.current,dlg.GetValue())
+        dlg.Destroy()
 
 class Main():
     def __init__(self):
