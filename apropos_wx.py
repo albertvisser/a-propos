@@ -25,9 +25,10 @@ class Page(wx.Panel):
 
 class MainFrame(wx.Frame,Apomixin):
     def __init__(self,parent,id):
-        wx.Frame.__init__(self,parent,id,"Apropos") # ,size=(800,500))
+        wx.Frame.__init__(self,parent,id,"Apropos",pos=(10,10),size=(650,400))
         self.Bind(wx.EVT_CLOSE, self.afsl)
-        self.SetIcon(wx.Icon("apropos.ico",wx.BITMAP_TYPE_ICO))
+        self.apoicon = wx.Icon("apropos.ico",wx.BITMAP_TYPE_ICO)
+        self.SetIcon(self.apoicon)
         pnl = wx.Panel(self,-1)
         self.nb = wx.Notebook(pnl,-1)
         self.nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.page_changed)
@@ -63,19 +64,32 @@ class MainFrame(wx.Frame,Apomixin):
                 self.nb.AdvanceSelection(False)
             elif keycode == wx.WXK_RIGHT or keycode == wx.WXK_NUMPAD_RIGHT: #  keycode == 316
                 self.nb.AdvanceSelection()
-            elif keycode == 76: # Ctrl-L reload tabs
+            elif keycode == ord("L"): # 76: Ctrl-L reload tabs
                 self.nb.DeleteAllPages()
                 self.initapp()
-            elif keycode == 78: # Ctrl-N nieuwe tab
+            elif keycode == ord("N"): # 78: Ctrl-N nieuwe tab
                 self.newtab()
-            elif keycode == 87: # Ctrl-W tab sluiten
+            elif keycode == ord("W"): # 87: Ctrl-W tab sluiten
                 self.closetab()
                 skip = False
-            ## elif keycode == 72: # Ctrl-H Hide/minimize
+            elif keycode == ord("H"): # 72: Ctrl-H Hide/minimize
+                info = [
+                "Apropos gaat nu slapen in de System tray",
+                "Er komt een icoontje waarop je kunt klikken om hem weer wakker te maken"
+                    ]
+                dlg = wx.MessageDialog(self, "\n".join(info),'Apropos',
+                    wx.OK | wx.ICON_INFORMATION)
+                dlg.ShowModal()
+                dlg.Destroy()
+                self.tbi = wx.TaskBarIcon()
+                self.tbi.SetIcon(self.apoicon,"Click to revive Apropos")
+                wx.EVT_TASKBAR_LEFT_UP(self.tbi, self.revive)
+                wx.EVT_TASKBAR_RIGHT_UP(self.tbi, self.revive)
+                self.Hide()
                 ## pass # nog uitzoeken hoe
-            elif keycode == 83: # Ctrl-S saven zonder afsluiten
+            elif keycode == ord("S"): # 83: Ctrl-S saven zonder afsluiten
                 self.afsl()
-            elif keycode == 81: # Ctrl-Q afsluiten na saven
+            elif keycode == ord("Q"): # 81: Ctrl-Q afsluiten na saven
                 self.afsl()
                 self.Destroy()
         elif keycode == wx.WXK_F1:
@@ -129,6 +143,10 @@ class MainFrame(wx.Frame,Apomixin):
             ## print "closing page", pagetodelete
             ## self.nb.AdvanceSelection(False)
             self.nb.DeletePage(pagetodelete)
+
+    def revive(self,event=None):
+        self.Show()
+        self.tbi.Destroy()
 
     def afsl(self,event=None):
         self.apodata = {}
