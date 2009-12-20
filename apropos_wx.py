@@ -9,7 +9,6 @@ from apomixin import Apomixin
 class Page(wx.Panel):
     def __init__(self,parent,id,mf=None):
         wx.Panel.__init__(self,parent,id)
-        print "new page",self
         self.txt = wx.TextCtrl(self,-1,style=wx.TE_MULTILINE)
         self.txt.Bind(wx.EVT_KEY_DOWN, mf.on_key)
         ## self.Bind(wx.EVT_TEXT, self.OnEvtText, self.txt)
@@ -23,6 +22,31 @@ class Page(wx.Panel):
         sizer0.SetSizeHints(self)
         self.Layout()
 
+class CheckDialog(wx.Dialog):
+    def __init__(self,parent,id,title, size=(-1,120), pos=wx.DefaultPosition,
+            style=wx.DEFAULT_DIALOG_STYLE):
+        wx.Dialog.__init__(self,parent,id,title,pos,size,style)
+        pnl = wx.Panel(self,-1)
+        sizer0 = wx.BoxSizer(wx.VERTICAL)
+        sizer0.Add(wx.StaticText(pnl,-1,"\n".join((
+                "Apropos gaat nu slapen in de System tray",
+                "Er komt een icoontje waarop je kunt klikken om hem weer wakker te maken"
+                ))),1,wx.ALL,5)
+        sizer1 = wx.BoxSizer(wx.HORIZONTAL)
+        self.Check = wx.CheckBox(pnl, -1, "Deze melding niet meer laten zien")
+        sizer1.Add(self.Check,0,wx.EXPAND)
+        sizer0.Add(sizer1,0,wx.ALIGN_CENTER_HORIZONTAL)
+        sizer1 = wx.BoxSizer(wx.HORIZONTAL)
+        self.bOk = wx.Button(pnl,id=wx.ID_OK)
+        ## self.bOk.Bind(wx.EVT_BUTTON,self.on_ok)
+        sizer1.Add(self.bOk,0,wx.EXPAND | wx.ALL, 2)
+        sizer0.Add(sizer1,0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL,5)
+        pnl.SetSizer(sizer0)
+        pnl.SetAutoLayout(True)
+        sizer0.Fit(pnl)
+        sizer0.SetSizeHints(pnl)
+        pnl.Layout()
+
 class MainFrame(wx.Frame,Apomixin):
     def __init__(self,parent,id):
         wx.Frame.__init__(self,parent,id,"Apropos",pos=(10,10),size=(650,400))
@@ -34,6 +58,7 @@ class MainFrame(wx.Frame,Apomixin):
         self.nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.page_changed)
         self.nb.Bind(wx.EVT_LEFT_DCLICK, self.onLeftDblClick)
         self.nb.Bind(wx.EVT_MIDDLE_DOWN, self.onLeftDblClick)
+        self.nb.Bind(wx.EVT_KEY_DOWN, self.on_key)
         self.initapp()
         sizer0 = wx.BoxSizer(wx.VERTICAL)
         sizer1 = wx.BoxSizer(wx.HORIZONTAL)
@@ -73,14 +98,13 @@ class MainFrame(wx.Frame,Apomixin):
                 self.closetab()
                 skip = False
             elif keycode == ord("H"): # 72: Ctrl-H Hide/minimize
-                info = [
-                "Apropos gaat nu slapen in de System tray",
-                "Er komt een icoontje waarop je kunt klikken om hem weer wakker te maken"
-                    ]
-                dlg = wx.MessageDialog(self, "\n".join(info),'Apropos',
-                    wx.OK | wx.ICON_INFORMATION)
-                dlg.ShowModal()
-                dlg.Destroy()
+                if self.opts["AskBeforeHide"]:
+                    dlg = CheckDialog(self,-1,'Apropos')
+                    ## ,                    style = wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.ICON_INFORMATION)
+                    dlg.ShowModal()
+                    if dlg.Check.GetValue():
+                        self.opts["AskBeforeHide"] = False
+                    dlg.Destroy()
                 self.tbi = wx.TaskBarIcon()
                 self.tbi.SetIcon(self.apoicon,"Click to revive Apropos")
                 wx.EVT_TASKBAR_LEFT_UP(self.tbi, self.revive)
@@ -110,11 +134,16 @@ class MainFrame(wx.Frame,Apomixin):
         event.Skip()
 
     def initapp(self):
+        self.opts = {"AskBeforeHide":True,"ActiveTab":0}
         self.load_notes()
         if self.apodata:
             for i,x in self.apodata.items():
-                self.newtab(titel=x[0],note=x[1])
-            self.nb.ChangeSelection(0)
+                if i == 0 and "AskBeforeHide" in x:
+                    for key,val in x.items():
+                        self.opts[key] = val
+                else:
+                    self.newtab(titel=x[0],note=x[1])
+            self.nb.ChangeSelection(self.opts["ActiveTab"])
         else:
             self.newtab()
             self.current = 0
@@ -149,12 +178,13 @@ class MainFrame(wx.Frame,Apomixin):
         self.tbi.Destroy()
 
     def afsl(self,event=None):
-        self.apodata = {}
+        self.opts["ActiveTab"] = self.nb.GetSelection()
+        self.apodata = {0: self.opts}
         for i in range(self.nb.GetPageCount()):
             page = self.nb.GetPage(i)
             title = self.nb.GetPageText(i)
             text = page.txt.GetValue()
-            self.apodata[i] = (title,text)
+            self.apodata[i+1] = (title,text)
         self.save_notes()
         if event:
             event.Skip()
@@ -165,16 +195,17 @@ class MainFrame(wx.Frame,Apomixin):
             "Om je apropos terug te kunnen vinden",
             "als je de draad even kwijt bent",
             "",
-            "Ctrl-N      - nieuwe tab",
-            "Ctrl-rechts - volgende tab",
-            "Ctrl-links  - vorige tab",
-            "Ctrl-W      - sluit tab",
-            "Ctrl-S      - alles opslaan",
-            "Ctrl-L      - alles opnieuw laden",
+            "Ctrl-N         - nieuwe tab",
+            "Ctrl-rechts  - volgende tab",
+            "Ctrl-links     - vorige tab",
+            "Ctrl-W         - sluit tab",
+            "Ctrl-S          - alles opslaan",
+            "Ctrl-L          - alles opnieuw laden",
             "Ctrl-Q, Esc - opslaan en sluiten",
+            "Ctrl-H         - verbergen in system tray",
             "",
-            "F1          - deze (help)informatie",
-            "F2          - wijzig tab titel",
+            "F1            - deze (help)informatie",
+            "F2            - wijzig tab titel",
             ]
         dlg = wx.MessageDialog(self, "\n".join(info),'Apropos',
             wx.OK | wx.ICON_INFORMATION)
