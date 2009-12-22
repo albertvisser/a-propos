@@ -1,10 +1,8 @@
+import os
 import sys
-if  'D:\\lib\\site-packages' not in sys.path:
-    sys.path.append('D:\\lib\\site-packages')
-if  'D:\\lib\\site-packages\\wx-2.8-msw-ansi' not in sys.path:
-    sys.path.append('D:\\lib\\site-packages\\wx-2.8-msw-ansi')
 import wx
 from apomixin import Apomixin
+HERE = os.path.split(__file__)[0]
 
 class Page(wx.Panel):
     def __init__(self,parent,id,mf=None):
@@ -51,7 +49,7 @@ class MainFrame(wx.Frame,Apomixin):
     def __init__(self,parent,id):
         wx.Frame.__init__(self,parent,id,"Apropos",pos=(10,10),size=(650,400))
         self.Bind(wx.EVT_CLOSE, self.afsl)
-        self.apoicon = wx.Icon("apropos.ico",wx.BITMAP_TYPE_ICO)
+        self.apoicon = wx.Icon(os.path.join(HERE,"apropos.ico"),wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.apoicon)
         pnl = wx.Panel(self,-1)
         self.nb = wx.Notebook(pnl,-1)

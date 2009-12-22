@@ -1,0 +1,4 @@
+apo_start in opstart directory zetten,
+rest als package (direcory naam: apropos) in site_packages of elders in het zoekpad
+
+
