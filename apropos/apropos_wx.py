@@ -90,6 +90,7 @@ class MainFrame(wx.Frame,Apomixin):
             elif keycode == ord("L"): # 76: Ctrl-L reload tabs
                 self.nb.DeleteAllPages()
                 self.initapp()
+                wx.MessageBox("(Re)loaded")
             elif keycode == ord("N"): # 78: Ctrl-N nieuwe tab
                 self.newtab()
             elif keycode == ord("W"): # 87: Ctrl-W tab sluiten
@@ -111,6 +112,7 @@ class MainFrame(wx.Frame,Apomixin):
                 ## pass # nog uitzoeken hoe
             elif keycode == ord("S"): # 83: Ctrl-S saven zonder afsluiten
                 self.afsl()
+                wx.MessageBox("Saved")
             elif keycode == ord("Q"): # 81: Ctrl-Q afsluiten na saven
                 self.afsl()
                 self.Destroy()
