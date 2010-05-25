@@ -83,11 +83,7 @@ class MainFrame(wx.Frame,Apomixin):
         skip = True
         keycode = event.GetKeyCode()
         if event.GetModifiers() == wx.MOD_CONTROL: # evt.ControlDown()
-            if keycode == wx.WXK_LEFT or keycode == wx.WXK_NUMPAD_LEFT: #  keycode == 314
-                self.nb.AdvanceSelection(False)
-            elif keycode == wx.WXK_RIGHT or keycode == wx.WXK_NUMPAD_RIGHT: #  keycode == 316
-                self.nb.AdvanceSelection()
-            elif keycode == ord("L"): # 76: Ctrl-L reload tabs
+            if keycode == ord("L"): # 76: Ctrl-L reload tabs
                 self.nb.DeleteAllPages()
                 self.initapp()
                 wx.MessageBox("(Re)loaded")
@@ -96,6 +92,10 @@ class MainFrame(wx.Frame,Apomixin):
             elif keycode == ord("W"): # 87: Ctrl-W tab sluiten
                 self.closetab()
                 skip = False
+            ## elif keycode == wx.WXK_LEFT or keycode == wx.WXK_NUMPAD_LEFT: #  keycode == 314
+                ## self.nb.AdvanceSelection(False)
+            ## elif keycode == wx.WXK_RIGHT or keycode == wx.WXK_NUMPAD_RIGHT: #  keycode == 316
+                ## self.nb.AdvanceSelection()
             elif keycode == ord("H"): # 72: Ctrl-H Hide/minimize
                 if self.opts["AskBeforeHide"]:
                     dlg = CheckDialog(self,-1,'Apropos')
