@@ -67,7 +67,7 @@ class MainFrame(wx.Frame,Apomixin):
         sizer0.Fit(pnl)
         sizer0.SetSizeHints(pnl)
         pnl.Layout()
-        self.Bind(wx.EVT_CLOSE,self.afsl)
+        self.Bind(wx.EVT_CLOSE, self.afsl)
         self.Show()
 
     def page_changed(self,event=None):
@@ -221,7 +221,7 @@ class MainFrame(wx.Frame,Apomixin):
 
 class Main():
     def __init__(self):
-        app = wx.App(redirect=False) # True) # ,filename="apropos.log")
+        app = wx.App(redirect = True, filename="apropos.log")
         frm = MainFrame(None, -1)
         app.MainLoop()
 
