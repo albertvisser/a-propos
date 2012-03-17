@@ -1,29 +1,52 @@
 import os, pickle
 apofile = "apropos.ini"
+info = """\
+Apropos by Albert Visser
+To regain your a propos when you've lost it
 
-class Apomixin_test(object):
-    def load_notes(self):
-        print "gebruik de mixin methode"
-        self.apodata = {}
+Ctrl-N          - new tab
+Ctrl-right      - next tab
+Ctrl-left       - previous tab
+Ctrl-W          - close tab
+Ctrl-S          - save all
+Ctrl-L          - reload all
+Ctrl-Q, Esc     - close and exit
+Ctrl-H          - hide in system tray
 
-    def save_notes(self):
-        print "gebruik de mixin methode"
-        for x,y,z in [(x,y[0],y[1]) for x,y in self.apodata.items()]:
-            print "%s :-> %s %s" % (x,y,z)
-        pass
+F1              - this (help)information
+F2              - edit tab title
+"""
+info_dutch = """\
+Apropos door Albert Visser
+Om je a propos terug te kunnen vinden
+als je de draad even kwijt bent
+
+Ctrl-N          - nieuwe tab
+Ctrl-rechts     - volgende tab
+Ctrl-links      - vorige tab
+Ctrl-W          - sluit tab
+Ctrl-S          - alles opslaan
+Ctrl-L          - alles opnieuw laden
+Ctrl-Q, Esc     - opslaan en sluiten
+Ctrl-H          - verbergen in system tray
+
+F1              - deze (help)informatie
+F2              - wijzig tab titel
+"""
 
 class Apomixin(object):
     def load_notes(self):
-        ## print "gebruik de eigen methode"
         if os.path.exists(apofile):
-            f = open(apofile)
-            self.apodata = pickle.load(f)
-            f.close()
+            try:
+                with open(apofile, 'rb') as f:
+                    self.apodata = pickle.load(f)
+            except ValueError:
+                with open(apofile, 'r') as f:
+                    self.apodata = pickle.load(f)
         else:
             self.apodata = {}
 
     def save_notes(self):
-        ## print "gebruik de eigen methode"
-        f = open(apofile,"w")
-        pickle.dump(self.apodata,f)
+        f = open(apofile, 'wb')
+        pickle.dump(self.apodata, f)
         f.close()
