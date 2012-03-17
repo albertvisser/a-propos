@@ -4,3 +4,4 @@ if len(sys.argv) > 1:
     Apropos(sys.argv[1])
 else:
     Apropos()
+

@@ -189,8 +189,7 @@ class MainFrame(wx.Frame,Apomixin):
             event.Skip()
 
     def helppage(self):
-        dlg = wx.MessageDialog(self, "\n".join(info), 'Apropos',
-            wx.OK | wx.ICON_INFORMATION)
+        dlg = wx.MessageDialog(self, info, 'Apropos', wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
 
