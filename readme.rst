@@ -1,19 +1,22 @@
+A propos
+========
+
 Apropos is a simple interface for keeping notes.
 I've intentionally tried to keep it pretty simple.
 
 The interface looks something like this::
 
- ---------
- | 1 | 2 |
-|-------------------------------------------|
-|                                           |
-|                                           |
-|                                           |
-|                                           |
-|                                           |
-|                                           |
-|                                           |
-|-------------------------------------------|
+     ---------
+     | 1 | 2 |
+    |-------------------------------------------|
+    |                                           |
+    |                                           |
+    |                                           |
+    |                                           |
+    |                                           |
+    |                                           |
+    |                                           |
+    |-------------------------------------------|
 
 
 The notes are automatically loaded on startup, and saved on exit.
