@@ -1,4 +1,0 @@
-kopieer apo_start naar de opstart directory
-kopieer de apropos map naar lib/site_packages of elders in het zoekpad
-
-

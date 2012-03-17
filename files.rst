@@ -1,23 +1,25 @@
 Files in this directory
 -----------------------
 
-__init__.py:
-    (lege) package indicator
 apo_start.pyw
-    starter voor in de opstart directory
-    importeert uit apropos
-apomixin.py
-    GUI onafhankelijke code
-    gebruikt pickle
-apropos.pyw
-    GUI-onafhankelijke startmodule
-    importeert uit apropos_wx
-apropos_wx
-    GUI code, wxPython versie
-    gebruikt wx
-    importeert uit apomixin
+    starter for the application
+    imports from apropos.py
+readme.rst
+    description and usage notes
+files.rst
+    this file
 
-apropos.ico
-    applicatie-icon
-install.txt
-    installatie instructies
+apropos/__init__.py:
+    (empty) package indicator
+apropos/apomixin.py
+    GUI-independent code
+    uses pickle to save/load data
+apropos/apropos.py
+    GUI-independent starter module
+    imports from apropos_wx
+apropos/apropos_wx.py
+    GUI code, wxPython version
+    uses wx
+    imports from apomixin
+apropos/apropos.ico
+    application icon
