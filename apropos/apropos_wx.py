@@ -1,7 +1,7 @@
 import os
 import sys
 import wx
-from apomixin import Apomixin, info
+from apomixin import Apomixin, info, hide_text
 HERE = os.path.split(__file__)[0]
 
 class Page(wx.Panel):
@@ -26,12 +26,9 @@ class CheckDialog(wx.Dialog):
         wx.Dialog.__init__(self, parent, id, title, pos, size, style)
         pnl = wx.Panel(self, -1)
         sizer0 = wx.BoxSizer(wx.VERTICAL)
-        sizer0.Add(wx.StaticText(pnl, -1, "\n".join((
-                "Apropos gaat nu slapen in de System tray",
-                "Er komt een icoontje waarop je kunt klikken om hem weer wakker te maken"
-                ))), 1, wx.ALL, 5)
+        sizer0.Add(wx.StaticText(pnl, -1, hide_text[0]), 1, wx.ALL, 5)
         sizer1 = wx.BoxSizer(wx.HORIZONTAL)
-        self.Check = wx.CheckBox(pnl, -1, "Deze melding niet meer laten zien")
+        self.Check = wx.CheckBox(pnl, -1, hide_text[1])
         sizer1.Add(self.Check, 0, wx.EXPAND)
         sizer0.Add(sizer1, 0, wx.ALIGN_CENTER_HORIZONTAL)
         sizer1 = wx.BoxSizer(wx.HORIZONTAL)

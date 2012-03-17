@@ -34,6 +34,20 @@ F1              - deze (help)informatie
 F2              - wijzig tab titel
 """
 
+hide_text = [
+    """\
+Apropos wil now go to sleep in the System tray
+An icon will appear that you can click on to revive it""",
+    "Don't show this message again"
+    ]
+
+hide_text_dutch = [
+    """\
+Apropos gaat nu slapen in de System tray
+Er komt een icoontje waarop je kunt klikken om hem weer wakker te maken""",
+    "Deze melding niet meer laten zien"
+    ]
+
 class Apomixin(object):
     def load_notes(self):
         if os.path.exists(apofile):
