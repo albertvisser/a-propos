@@ -48,6 +48,9 @@ Er komt een icoontje waarop je kunt klikken om hem weer wakker te maken""",
     "Deze melding niet meer laten zien"
     ]
 
+ask_title = 'New title for current tab:'
+ask_title_dutch = 'Nieuwe titel voor de huidige tab:'
+
 class Apomixin(object):
     def load_notes(self):
         if os.path.exists(apofile):

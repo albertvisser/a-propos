@@ -1,7 +1,7 @@
 import os
 import sys
 import wx
-from apomixin import Apomixin, info, hide_text
+from apomixin import Apomixin, info, hide_text, ask_title
 HERE = os.path.split(__file__)[0]
 
 class Page(wx.Panel):
@@ -194,7 +194,7 @@ class MainFrame(wx.Frame,Apomixin):
         dlg.Destroy()
 
     def asktitle(self):
-        dlg = wx.TextEntryDialog(self, 'Nieuwe titel voor de huidige tab:',
+        dlg = wx.TextEntryDialog(self, ask_title,
                 'Apropos', self.nb.GetPageText(self.current))
         if dlg.ShowModal() == wx.ID_OK:
             self.nb.SetPageText(self.current,dlg.GetValue())
