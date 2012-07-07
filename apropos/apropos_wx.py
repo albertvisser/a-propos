@@ -54,6 +54,7 @@ class MainFrame(wx.Frame,Apomixin):
         self.nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.page_changed)
         self.nb.Bind(wx.EVT_LEFT_DCLICK, self.onLeftDblClick)
         self.nb.Bind(wx.EVT_MIDDLE_DOWN, self.onLeftDblClick)
+        self.nb.Bind(wx.EVT_LEFT_UP, self.on_left_release)
         self.nb.Bind(wx.EVT_KEY_DOWN, self.on_key)
         self.initapp()
         sizer0 = wx.BoxSizer(wx.VERTICAL)
@@ -74,8 +75,17 @@ class MainFrame(wx.Frame,Apomixin):
         self.current = event.GetSelection()
         currentpage = self.nb.GetPage(self.current)
         ## currentpage.SetFocus()
+        print '************** changed page **************'
+        print currentpage.txt.GetValue()
         currentpage.txt.SetFocus()
-        event.Skip()
+        ## event.Skip()
+
+    def on_left_release(self, evt=None):
+        currentpage = self.nb.GetPage(self.current)
+        print '************** released mouse **************'
+        print currentpage.txt.GetValue()
+        currentpage.txt.SetFocus()
+        evt.Skip()
 
     def on_key(self, event=None):
         skip = True
@@ -201,7 +211,7 @@ class MainFrame(wx.Frame,Apomixin):
         dlg.Destroy()
 
 class Main():
-    def __init__(self, logging=False):
+    def __init__(self, logging=True):
         if logging:
             app = wx.App(redirect=True ,filename="apropos.log")
         else:
