@@ -1,6 +1,8 @@
 from apropos_wx import Main
 
 class Apropos(Main):
+    """main class die overerft van de main class in de gui afhankelijke code
+    """
     def __init__(self, arg=None):
         if arg is not None:
             Main.__init__(self, logging=True)

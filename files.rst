@@ -3,7 +3,8 @@ Files in this directory
 
 apo_start.pyw
     starter for the application
-    imports from apropos.py
+    imports sys for sys.argv
+    imports from apropos/apropos.py
 readme.rst
     description and usage notes
 files.rst
@@ -22,4 +23,6 @@ apropos/apropos_wx.py
     uses wx
     imports from apomixin
 apropos/apropos.ico
+    application icon
+apropos/apropos.xpm
     application icon

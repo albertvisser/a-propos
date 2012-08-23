@@ -5,6 +5,7 @@ from apomixin import Apomixin, info, hide_text, ask_title
 HERE = os.path.split(__file__)[0]
 
 class Page(wx.Panel):
+    "Panel subclass voor de notebook pagina's"
     def __init__(self, parent, id, mf=None):
         wx.Panel.__init__(self, parent, id)
         self.txt = wx.TextCtrl(self, -1, style=wx.TE_MULTILINE)
@@ -21,6 +22,10 @@ class Page(wx.Panel):
         self.Layout()
 
 class CheckDialog(wx.Dialog):
+    """Dialog die opkomt wanneer je de applicatie wilt verbergen
+
+    kan worden ingesteld om niet nogmaals te tonen
+    """
     def __init__(self, parent, id, title, size=(-1,120), pos=wx.DefaultPosition,
             style=wx.DEFAULT_DIALOG_STYLE):
         wx.Dialog.__init__(self, parent, id, title, pos, size, style)
@@ -43,7 +48,11 @@ class CheckDialog(wx.Dialog):
         sizer0.SetSizeHints(pnl)
         pnl.Layout()
 
-class MainFrame(wx.Frame,Apomixin):
+class MainFrame(wx.Frame, Apomixin):
+    """main class voor de applicatie
+
+    subclass van Apomixin voor het gui-onafhankelijke gedeelte
+    """
     def __init__(self, parent, id):
         wx.Frame.__init__(self, parent, id, "Apropos", pos=(10, 10), size=(650, 400))
         self.Bind(wx.EVT_CLOSE, self.afsl)
@@ -70,6 +79,8 @@ class MainFrame(wx.Frame,Apomixin):
         self.Show()
 
     def page_changed(self, event=None):
+        """pagina aanpassen nadat een andere gekozen is
+        """
         n = self.nb.GetPageCount()
         s = self.nb.GetSelection()
         self.current = event.GetSelection()
@@ -78,9 +89,13 @@ class MainFrame(wx.Frame,Apomixin):
         print '************** changed page **************'
         print currentpage.txt.GetValue()
         currentpage.txt.SetFocus()
-        ## event.Skip()
+        if True: # os.name == 'nt':
+        ## if sys.platform == 'win32':
+            event.Skip()
 
     def on_left_release(self, evt=None):
+        """reageert op muis loslaten na selecteren andere tab
+        """
         currentpage = self.nb.GetPage(self.current)
         print '************** released mouse **************'
         print currentpage.txt.GetValue()
@@ -88,6 +103,8 @@ class MainFrame(wx.Frame,Apomixin):
         evt.Skip()
 
     def on_key(self, event=None):
+        """afhandeling toetsaanslagen / toetsencombinaties
+        """
         skip = True
         keycode = event.GetKeyCode()
         if event.GetModifiers() == wx.MOD_CONTROL: # evt.ControlDown()
@@ -135,6 +152,8 @@ class MainFrame(wx.Frame,Apomixin):
             event.Skip()
 
     def onLeftDblClick(self, event=None):
+        """reageert op dubbelklikken op tab t.b.v. verwijderen pagina
+        """
         self.x = event.GetX()
         self.y = event.GetY()
         item, flags = self.nb.HitTest((self.x, self.y))
@@ -142,6 +161,8 @@ class MainFrame(wx.Frame,Apomixin):
         event.Skip()
 
     def initapp(self):
+        """initialiseer de applicatie
+        """
         self.opts = {"AskBeforeHide":True, "ActiveTab":0}
         self.load_notes()
         if self.apodata:
@@ -157,6 +178,8 @@ class MainFrame(wx.Frame,Apomixin):
             self.current = 0
 
     def newtab(self, titel=None, note=None):
+        """initialiseer een nieuwe tab
+        """
         ## print("create new tab")
         nieuw = self.nb.GetPageCount()
         if titel is None:
@@ -171,6 +194,8 @@ class MainFrame(wx.Frame,Apomixin):
         self.nb.SetSelection(nieuw)
 
     def closetab(self):
+        """sluit de huidige tab
+        """
         pagetodelete = self.current
         aant = self.nb.GetPageCount()
         ## print aant
@@ -183,10 +208,14 @@ class MainFrame(wx.Frame,Apomixin):
             self.nb.DeletePage(pagetodelete)
 
     def revive(self, event=None):
+        """herleef het scherm vanuit de systray
+        """
         self.Show()
         self.tbi.Destroy()
 
     def afsl(self, event=None):
+        """applicatiedata opslaan voorafgaand aan afsluiten
+        """
         self.opts["ActiveTab"] = self.nb.GetSelection()
         self.apodata = {0: self.opts}
         for i in range(self.nb.GetPageCount()):
@@ -199,11 +228,15 @@ class MainFrame(wx.Frame,Apomixin):
             event.Skip()
 
     def helppage(self):
+        """vertoon de hulp pagina met keyboard shortcuts
+        """
         dlg = wx.MessageDialog(self, info, 'Apropos', wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
 
     def asktitle(self):
+        """toon dialoog om tab titel in te vullen/aan te passen
+        """
         dlg = wx.TextEntryDialog(self, ask_title,
                 'Apropos', self.nb.GetPageText(self.current))
         if dlg.ShowModal() == wx.ID_OK:
@@ -211,6 +244,10 @@ class MainFrame(wx.Frame,Apomixin):
         dlg.Destroy()
 
 class Main():
+    """main class van de applicatie
+
+    de main class in apropos.py overerft hiervan
+    """
     def __init__(self, logging=True):
         if logging:
             app = wx.App(redirect=True ,filename="apropos.log")
