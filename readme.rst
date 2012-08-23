@@ -42,3 +42,9 @@ The root of this repo contains a file called `apo_start.pyw` which - as the name
 suggests - starts the application. There are no parameters.
 The notes file is loaded from the directory you started the application from,
 and is created if it isn't present.
+
+Requirements
+------------
+
+Python
+wxPython
