@@ -46,5 +46,5 @@ and is created if it isn't present.
 Requirements
 ------------
 
-Python
-wxPython
+- Python
+- wxPython
