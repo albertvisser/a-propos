@@ -34,6 +34,7 @@ It has the following functions, activated by keyboard shortcuts:
 - hide the application in the system tray
 - exit the application
 - list all keyboard shortcuts
+- change language (for help and such)
 
 Usage
 -----
@@ -42,6 +43,7 @@ The root of this repo contains a file called `apo_start.pyw` which - as the name
 suggests - starts the application. There are no parameters.
 The notes file is loaded from the directory you started the application from,
 and is created if it isn't present.
+It's possible to have what explanatory texts there are displayed in a language of choice, however currently only Dutch and English are available.
 
 Requirements
 ------------

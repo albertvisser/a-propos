@@ -1,7 +1,9 @@
+# -*- coding: utf-8 -*-
+
 import os
 import sys
 import wx
-from apomixin import Apomixin, info, hide_text, ask_title
+from apomixin import Apomixin, languages
 HERE = os.path.split(__file__)[0]
 
 class Page(wx.Panel):
@@ -28,18 +30,21 @@ class CheckDialog(wx.Dialog):
     """
     def __init__(self, parent, id, title, size=(-1,120), pos=wx.DefaultPosition,
             style=wx.DEFAULT_DIALOG_STYLE):
+        self.parent = parent
         wx.Dialog.__init__(self, parent, id, title, pos, size, style)
         pnl = wx.Panel(self, -1)
         sizer0 = wx.BoxSizer(wx.VERTICAL)
-        sizer0.Add(wx.StaticText(pnl, -1, hide_text[0]), 1, wx.ALL, 5)
+        sizer0.Add(wx.StaticText(pnl, -1,
+            languages[self.parent.opts["language"]]["hide_text"][0]), 1, wx.ALL, 5)
         sizer1 = wx.BoxSizer(wx.HORIZONTAL)
-        self.Check = wx.CheckBox(pnl, -1, hide_text[1])
+        self.Check = wx.CheckBox(pnl, -1,
+            languages[self.parent.opts["language"]]["hide_text"][1])
         sizer1.Add(self.Check, 0, wx.EXPAND)
         sizer0.Add(sizer1, 0, wx.ALIGN_CENTER_HORIZONTAL)
         sizer1 = wx.BoxSizer(wx.HORIZONTAL)
         self.bOk = wx.Button(pnl, id=wx.ID_OK)
-        ## self.bOk.Bind(wx.EVT_BUTTON,self.on_ok)
         sizer1.Add(self.bOk, 0, wx.EXPAND | wx.ALL, 2)
+        ## sizer1 = self.CreateStdDialogButtonSizer(wx.OK | wx.CANCEL)
         sizer0.Add(sizer1, 0,
             wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
         pnl.SetSizer(sizer0)
@@ -85,9 +90,6 @@ class MainFrame(wx.Frame, Apomixin):
         s = self.nb.GetSelection()
         self.current = event.GetSelection()
         currentpage = self.nb.GetPage(self.current)
-        ## currentpage.SetFocus()
-        print '************** changed page **************'
-        print currentpage.txt.GetValue()
         currentpage.txt.SetFocus()
         if True: # os.name == 'nt':
         ## if sys.platform == 'win32':
@@ -97,8 +99,6 @@ class MainFrame(wx.Frame, Apomixin):
         """reageert op muis loslaten na selecteren andere tab
         """
         currentpage = self.nb.GetPage(self.current)
-        print '************** released mouse **************'
-        print currentpage.txt.GetValue()
         currentpage.txt.SetFocus()
         evt.Skip()
 
@@ -124,23 +124,24 @@ class MainFrame(wx.Frame, Apomixin):
             elif keycode == ord("H"): # 72: Ctrl-H Hide/minimize
                 if self.opts["AskBeforeHide"]:
                     dlg = CheckDialog(self, -1, 'Apropos')
-                    ## ,                    style = wx.DEFAULT_DIALOG_STYLE | wx.OK | wx.ICON_INFORMATION)
-                    dlg.ShowModal()
+                    test = dlg.ShowModal()
                     if dlg.Check.GetValue():
                         self.opts["AskBeforeHide"] = False
                     dlg.Destroy()
-                self.tbi = wx.TaskBarIcon()
-                self.tbi.SetIcon(self.apoicon, "Click to revive Apropos")
-                wx.EVT_TASKBAR_LEFT_UP(self.tbi, self.revive)
-                wx.EVT_TASKBAR_RIGHT_UP(self.tbi, self.revive)
-                self.Hide()
-                ## pass # nog uitzoeken hoe
+                if test == wx.ID_OK:
+                    self.tbi = wx.TaskBarIcon()
+                    self.tbi.SetIcon(self.apoicon, "Click to revive Apropos")
+                    wx.EVT_TASKBAR_LEFT_UP(self.tbi, self.revive)
+                    wx.EVT_TASKBAR_RIGHT_UP(self.tbi, self.revive)
+                    self.Hide()
             elif keycode == ord("S"): # 83: Ctrl-S saven zonder afsluiten
                 self.afsl()
                 wx.MessageBox("Saved")
             elif keycode == ord("Q"): # 81: Ctrl-Q afsluiten na saven
                 self.afsl()
                 self.Destroy()
+            elif keycode == wx.WXK_F1:
+                self.choose_language()
         elif keycode == wx.WXK_F1:
             self.helppage()
         elif keycode == wx.WXK_F2:
@@ -163,7 +164,7 @@ class MainFrame(wx.Frame, Apomixin):
     def initapp(self):
         """initialiseer de applicatie
         """
-        self.opts = {"AskBeforeHide":True, "ActiveTab":0}
+        self.opts = {"AskBeforeHide":True, "ActiveTab":0, 'language': 'eng'}
         self.load_notes()
         if self.apodata:
             for i, x in self.apodata.items():
@@ -173,6 +174,7 @@ class MainFrame(wx.Frame, Apomixin):
                 else:
                     self.newtab(titel=x[0], note=x[1])
             self.nb.ChangeSelection(self.opts["ActiveTab"])
+            self.current = self.opts["ActiveTab"]
         else:
             self.newtab()
             self.current = 0
@@ -180,17 +182,13 @@ class MainFrame(wx.Frame, Apomixin):
     def newtab(self, titel=None, note=None):
         """initialiseer een nieuwe tab
         """
-        ## print("create new tab")
         nieuw = self.nb.GetPageCount()
         if titel is None:
             titel = str(nieuw)
         newpage = Page(self.nb, -1, mf=self)
-        ## print("new page created")
         if note is not None:
             newpage.txt.SetValue(note)
-        ## print("adding new page")
         self.nb.AddPage(newpage, titel)
-        ## print "new page added"
         self.nb.SetSelection(nieuw)
 
     def closetab(self):
@@ -198,13 +196,10 @@ class MainFrame(wx.Frame, Apomixin):
         """
         pagetodelete = self.current
         aant = self.nb.GetPageCount()
-        ## print aant
         if aant == 1:
             self.afsl()
             self.Destroy()
         else:
-            ## print "closing page", pagetodelete
-            ## self.nb.AdvanceSelection(False)
             self.nb.DeletePage(pagetodelete)
 
     def revive(self, event=None):
@@ -230,17 +225,40 @@ class MainFrame(wx.Frame, Apomixin):
     def helppage(self):
         """vertoon de hulp pagina met keyboard shortcuts
         """
-        dlg = wx.MessageDialog(self, info, 'Apropos', wx.OK | wx.ICON_INFORMATION)
+        dlg = wx.MessageDialog(self, languages[self.opts["language"]]["info"],
+            'Apropos', wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
 
     def asktitle(self):
-        """toon dialoog om tab titel in te vullen/aan te passen
+        """toon dialoog om tab titel in te vullen/aan te passen en verwerk antwoord
         """
-        dlg = wx.TextEntryDialog(self, ask_title,
+        dlg = wx.TextEntryDialog(self, languages[self.opts["language"]]["ask_title"],
                 'Apropos', self.nb.GetPageText(self.current))
         if dlg.ShowModal() == wx.ID_OK:
             self.nb.SetPageText(self.current,dlg.GetValue())
+        dlg.Destroy()
+
+    def choose_language(self):
+        """toon dialoog om taal te kiezen en verwerk antwoord
+        """
+        data = [(x, y["language"]) for x, y in languages.iteritems()]
+        dlg = wx.SingleChoiceDialog(self,
+            languages[self.opts["language"]]["ask_language"], "Apropos",
+            [x[1] for x in data],
+            wx.CHOICEDLG_STYLE
+            )
+        for idx, lang in enumerate([x[0] for x in data]):
+            if lang == self.opts["language"]:
+                dlg.SetSelection(idx)
+                break
+        h = dlg.ShowModal()
+        if h == wx.ID_OK:
+            sel = dlg.GetStringSelection()
+            for idx, lang in enumerate([x[1] for x in data]):
+                if lang == sel:
+                    self.opts["language"] = data[idx][0]
+                    break
         dlg.Destroy()
 
 class Main():
