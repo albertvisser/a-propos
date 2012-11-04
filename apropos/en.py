@@ -16,11 +16,12 @@ Ctrl-H          - hide in system tray
 F1              - this (help)information
 F2              - edit tab title
 """,
-    "hide_text": ["""\
+    "hide_text": """\
 Apropos wil now go to sleep in the System tray
 An icon will appear that you can click on to revive it""",
-        "Don't show this message again"],
+    "show_text": "Don't show this message again",
     "ask_title": 'New title for current tab:',
     "ask_language": 'choose language:',
+    "save_text": "Saved",
     }
 }

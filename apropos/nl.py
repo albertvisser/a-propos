@@ -17,11 +17,12 @@ Ctrl-H          - verbergen in system tray
 F1              - deze (help)informatie
 F2              - wijzig tab titel
 """,
-    "hide_text": ["""\
+    "hide_text": """\
 Apropos gaat nu slapen in de System tray
 Er komt een icoontje waarop je kunt klikken om hem weer wakker te maken""",
-        "Deze melding niet meer laten zien"],
+    "show_text": "Deze melding niet meer laten zien",
     "ask_title": 'Nieuwe titel voor de huidige tab:',
     "ask_language": 'kies taal:',
+    "save_text": "Opgeslagen",
     }
 }

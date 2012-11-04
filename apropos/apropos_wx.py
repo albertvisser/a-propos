@@ -24,21 +24,20 @@ class Page(wx.Panel):
         self.Layout()
 
 class CheckDialog(wx.Dialog):
-    """Dialog die opkomt wanneer je de applicatie wilt verbergen
+    """Dialog die kan worden ingesteld om niet nogmaals te tonen
 
-    kan worden ingesteld om niet nogmaals te tonen
+    wordt aangestuurd met de boodschap die in de dialoog moet worden getoond
     """
     def __init__(self, parent, id, title, size=(-1,120), pos=wx.DefaultPosition,
-            style=wx.DEFAULT_DIALOG_STYLE):
+            style=wx.DEFAULT_DIALOG_STYLE, message=""):
         self.parent = parent
         wx.Dialog.__init__(self, parent, id, title, pos, size, style)
         pnl = wx.Panel(self, -1)
         sizer0 = wx.BoxSizer(wx.VERTICAL)
-        sizer0.Add(wx.StaticText(pnl, -1,
-            languages[self.parent.opts["language"]]["hide_text"][0]), 1, wx.ALL, 5)
+        sizer0.Add(wx.StaticText(pnl, -1, message), 1, wx.ALL, 5)
         sizer1 = wx.BoxSizer(wx.HORIZONTAL)
         self.Check = wx.CheckBox(pnl, -1,
-            languages[self.parent.opts["language"]]["hide_text"][1])
+            languages[self.parent.opts["language"]]["show_text"])
         sizer1.Add(self.Check, 0, wx.EXPAND)
         sizer0.Add(sizer1, 0, wx.ALIGN_CENTER_HORIZONTAL)
         sizer1 = wx.BoxSizer(wx.HORIZONTAL)
@@ -123,7 +122,8 @@ class MainFrame(wx.Frame, Apomixin):
                 ## self.nb.AdvanceSelection()
             elif keycode == ord("H"): # 72: Ctrl-H Hide/minimize
                 if self.opts["AskBeforeHide"]:
-                    dlg = CheckDialog(self, -1, 'Apropos')
+                    dlg = CheckDialog(self, -1, 'Apropos',
+                        message=languages[self.opts["language"]]["hide_text"])
                     test = dlg.ShowModal()
                     if dlg.Check.GetValue():
                         self.opts["AskBeforeHide"] = False
@@ -136,7 +136,14 @@ class MainFrame(wx.Frame, Apomixin):
                     self.Hide()
             elif keycode == ord("S"): # 83: Ctrl-S saven zonder afsluiten
                 self.afsl()
-                wx.MessageBox("Saved")
+                print "ctrl-S", self.opts
+                if self.opts["NotifyOnSave"]:
+                    dlg = CheckDialog(self, -1, 'Apropos',
+                        message=languages[self.opts["language"]]["save_text"])
+                    test = dlg.ShowModal()
+                    if dlg.Check.GetValue():
+                        self.opts["NotifyOnSave"] = False
+                    dlg.Destroy()
             elif keycode == ord("Q"): # 81: Ctrl-Q afsluiten na saven
                 self.afsl()
                 self.Destroy()
@@ -164,7 +171,8 @@ class MainFrame(wx.Frame, Apomixin):
     def initapp(self):
         """initialiseer de applicatie
         """
-        self.opts = {"AskBeforeHide":True, "ActiveTab":0, 'language': 'eng'}
+        self.opts = {"AskBeforeHide":True, "ActiveTab":0, 'language': 'eng',
+            'NotifyOnSave': True}
         self.load_notes()
         if self.apodata:
             for i, x in self.apodata.items():
