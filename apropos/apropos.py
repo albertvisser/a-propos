@@ -5,7 +5,7 @@ class Apropos(Main):
     """
     def __init__(self, arg=None):
         if arg is not None:
-            Main.__init__(self, logging=True)
+            Main.__init__(self, log=True)
         else:
             Main.__init__(self)
 

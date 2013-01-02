@@ -136,7 +136,6 @@ class MainFrame(wx.Frame, Apomixin):
                     self.Hide()
             elif keycode == ord("S"): # 83: Ctrl-S saven zonder afsluiten
                 self.afsl()
-                print "ctrl-S", self.opts
                 if self.opts["NotifyOnSave"]:
                     dlg = CheckDialog(self, -1, 'Apropos',
                         message=languages[self.opts["language"]]["save_text"])
@@ -274,7 +273,7 @@ class Main():
 
     de main class in apropos.py overerft hiervan
     """
-    def __init__(self, logging=True):
+    def __init__(self, logging=False):
         if logging:
             app = wx.App(redirect=True ,filename="apropos.log")
         else:
