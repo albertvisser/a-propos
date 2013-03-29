@@ -1,4 +1,5 @@
 import os
+import sys
 import pickle
 import en, nl
 apofile = "apropos.ini"
@@ -21,5 +22,8 @@ class Apomixin(object):
 
     def save_notes(self):
         f = open(apofile, 'wb')
-        pickle.dump(self.apodata, f)
+        ## if sys.version >= "3":
+        pickle.dump(self.apodata, f, protocol=2)
+        ## else:
+            ## pickle.dump(self.apodata, f)
         f.close()
