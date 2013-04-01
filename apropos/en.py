@@ -12,6 +12,7 @@ Ctrl-S          - save all
 Ctrl-L          - reload all
 Ctrl-Q, Esc     - close and exit
 Ctrl-H          - hide in system tray
+Ctrl-F1         - choose language
 
 F1              - this (help)information
 F2              - edit tab title

@@ -13,6 +13,7 @@ Ctrl-S          - alles opslaan
 Ctrl-L          - alles opnieuw laden
 Ctrl-Q, Esc     - opslaan en sluiten
 Ctrl-H          - verbergen in system tray
+Ctrl-F1         - kies taal
 
 F1              - deze (help)informatie
 F2              - wijzig tab titel

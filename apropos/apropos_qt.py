@@ -87,7 +87,7 @@ class MainFrame(gui.QMainWindow, Apomixin):
         self.setCentralWidget(self.nb)
         self.nb.currentChanged.connect(self.page_changed)
         # pagina sluiten op dubbel - of middelklik
-        self.nb.setTabsClosable(True) # workaround: sluitgadgets
+        ## self.nb.setTabsClosable(True) # workaround: sluitgadgets
         self.nb.tabCloseRequested.connect(self.closetab)
 
         self.initapp()
@@ -139,7 +139,6 @@ class MainFrame(gui.QMainWindow, Apomixin):
                 # self.nb.AdvanceSelection()
                 # skip = True
             elif keycode == core.Qt.Key_H:
-                self.meld('Ctrl-H pressed')
                 if self.opts["AskBeforeHide"]:
                     dlg = CheckDialog(self, 'Apropos',
                         message=languages[self.opts["language"]]["hide_text"],
@@ -160,7 +159,6 @@ class MainFrame(gui.QMainWindow, Apomixin):
                 ## self.Destroy()
                 skip = True
             elif keycode == core.Qt.Key_F1:
-                self.meld('Ctrl-F1 pressed')
                 self.choose_language()
                 skip = True
         elif keycode == core.Qt.Key_F1:

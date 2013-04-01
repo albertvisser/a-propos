@@ -45,6 +45,8 @@ The notes file is loaded from the directory you started the application from,
 and is created if it isn't present.
 It's possible to have what explanatory texts there are displayed in a language of choice, however currently only Dutch and English are available.
 
+To make this application work under Python 3 I had to change GUI toolkits so I made a PyQt version
+
 Requirements
 ------------
 
