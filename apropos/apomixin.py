@@ -1,7 +1,7 @@
 import os
 import sys
 import pickle
-import en, nl
+from apropos import en, nl
 apofile = "apropos.ini"
 
 languages = {}

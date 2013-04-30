@@ -1,5 +1,5 @@
-from apropos_qt import Main
-## from apropos_wx import Main
+from .apropos_qt import Main
+## from .apropos_wx import Main
 
 class Apropos(Main):
     """main class die overerft van de main class in de gui afhankelijke code

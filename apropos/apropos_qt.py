@@ -6,7 +6,7 @@ import sys
 import PyQt4.QtGui as gui
 import PyQt4.QtCore as core
 import logging
-from apomixin import Apomixin, languages
+from .apomixin import Apomixin, languages
 HERE = os.path.split(__file__)[0]
 
 class Page(gui.QWidget):
