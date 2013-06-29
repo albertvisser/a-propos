@@ -9,10 +9,10 @@ import logging
 from .apomixin import Apomixin, languages
 HERE = os.path.split(__file__)[0]
 
-class Page(gui.QWidget):
+class Page(gui.QFrame):
     "Panel subclass voor de notebook pagina's"
     def __init__(self, mf):
-        gui.QWidget.__init__(self)
+        gui.QFrame.__init__(self)
         self.txt = gui.QTextEdit(self)
         ## self.txt.Bind(wx.EVT_KEY_DOWN, mf.on_key)
         ## # self.Bind(wx.EVT_TEXT, self.OnEvtText, self.txt)
