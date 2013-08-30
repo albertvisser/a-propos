@@ -5,14 +5,15 @@ Apropos by Albert Visser
 To regain your a propos when you've lost it
 
 Ctrl-N          - new tab
-Ctrl-right      - next tab
-Ctrl-left       - previous tab
 Ctrl-W          - close tab
 Ctrl-S          - save all
 Ctrl-L          - reload all
 Ctrl-Q, Esc     - close and exit
 Ctrl-H          - hide in system tray
 Ctrl-F1         - choose language
+
+Alt-right       - next tab
+Alt-left        - previous tab
 
 F1              - this (help)information
 F2              - edit tab title

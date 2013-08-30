@@ -22,6 +22,72 @@ class Page(gui.QFrame):
         vbox.addLayout(hbox)
         self.setLayout(vbox)
 
+    def keyPressEvent(self, e):                 # werkt!
+        skip = self.on_key(e)
+        if not skip:
+            gui.QFrame.keyPressEvent(self, e)
+
+    def on_key(self, e):                        # werkt!
+        """afhandeling toetsaanslagen / toetsencombinaties
+        """
+        skip = False
+        keycode = e.key()
+        keymods = e.modifiers()
+        if keymods == core.Qt.AltModifier:
+            ## if keycode == core.Qt.Key_L:
+                ## aant = self.nb.count()
+                ## widgets = [self.nb.widget(x) for x in range(aant)]
+                ## self.nb.clear()
+                ## for wdg in widgets:
+                    ## wdg.destroy()
+                ## self.initapp()
+                ## self.meld('(Re)loaded')
+                ## skip = True
+            ## elif keycode == core.Qt.Key_N:
+                ## self.newtab()
+                ## skip = True
+            ## elif keycode == core.Qt.Key_W:
+                ## self.closetab(self.current)
+                ## skip = True
+            if keycode == core.Qt.Key_Left:
+                self.parent().parent().parent().goto_previous()
+                skip = True
+            elif keycode == core.Qt.Key_Right:
+                self.parent().parent().parent().goto_next()
+                skip = True
+            ## elif keycode == core.Qt.Key_H:
+                ## if self.opts["AskBeforeHide"]:
+                    ## dlg = CheckDialog(self, 'Apropos',
+                        ## message=languages[self.opts["language"]]["hide_text"],
+                        ## option='AskBeforeHide')
+                ## self.tray_icon.show()
+                ## self.hide()
+                ## skip = True
+            ## elif keycode == core.Qt.Key_S:
+                ## self.afsl()
+                ## if self.opts["NotifyOnSave"]:
+                    ## dlg = CheckDialog(self, 'Apropos',
+                        ## message=languages[self.opts["language"]]["save_text"],
+                        ## option='NotifyOnSave')
+                ## skip = True
+            ## elif keycode == core.Qt.Key_Q:
+                ## self.close()
+                ## skip = True
+            ## elif keycode == core.Qt.Key_F1:
+                ## self.choose_language()
+                ## skip = True
+        ## elif keycode == core.Qt.Key_F1:
+            ## self.helppage()
+            ## skip = True
+        ## elif keycode == core.Qt.Key_F2:
+            ## self.asktitle()
+            ## skip = True
+        ## elif keycode == core.Qt.Key_Escape:
+            ## self.close()
+            ## skip = True
+        return skip
+
+
 class CheckDialog(gui.QDialog):
     """Dialog die kan worden ingesteld om niet nogmaals te tonen
 
@@ -212,6 +278,24 @@ class MainFrame(gui.QMainWindow, Apomixin):
         self.nb.addTab(newpage, titel)
         self.nb.setCurrentIndex(nieuw)
         self.nb.setCurrentWidget(newpage)
+
+    def goto_previous(self):
+        previous = self.current - 1
+        if previous < 0:
+            return
+        ## self.goto_page(previous)
+        self.nb.setCurrentIndex(previous)
+
+    def goto_next(self):
+        next = self.current + 1
+        if next > self.nb.count():
+            return
+        ## self.goto_page(next)
+        self.nb.setCurrentIndex(next)
+
+    ## def goto_page(index):
+        ## win =
+        ## self.nb.setCurrentIndex(self.current)
 
     def closetab(self, pagetodelete):           # werkt! (NB)
         """sluit de aangegeven tab
