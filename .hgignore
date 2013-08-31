@@ -9,3 +9,4 @@ syntax: glob
 *ini
 pylint*
 archive.zip
+*apropos.ini*
