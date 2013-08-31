@@ -1,7 +1,12 @@
+# -*- coding: utf-8 -*-
+
 import os
 import sys
 import pickle
-from apropos import en, nl
+if sys.version >= '3':
+    from apropos import en, nl
+else:
+    import en, nl
 apofile = "apropos.ini"
 
 languages = {}
