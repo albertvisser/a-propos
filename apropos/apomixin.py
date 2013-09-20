@@ -7,7 +7,7 @@ if sys.version >= '3':
     from apropos import en, nl
 else:
     import en, nl
-apofile = "apropos.ini"
+apofile = "apropos.pck"
 
 languages = {}
 languages.update(en.lang)
