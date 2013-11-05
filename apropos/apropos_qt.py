@@ -136,7 +136,8 @@ class MainFrame(gui.QMainWindow, Apomixin):
     def __init__(self, parent=None):
         gui.QMainWindow.__init__(self, parent)
         self.setWindowTitle("Apropos")
-        self.move(10, 10)
+        offset = 30 if os.name != 'posix' else 10
+        self.move(offset, offset)
         self.resize(650, 400)
         self.apoicon = gui.QIcon(os.path.join(HERE, "apropos.ico"))
         self.setWindowIcon(self.apoicon)
