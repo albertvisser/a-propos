@@ -40,15 +40,21 @@ Usage
 -----
 
 The root of this repo contains a file called ``apo_start.pyw`` which - as the name
-suggests - starts the application. There are no parameters.
-The notes file is loaded from the directory you started the application from,
-and is created if it isn't present.
-It's possible to have what explanatory texts there are displayed in a language of choice, however currently only Dutch and English are available.
+suggests - starts the application. It can be called without parameters, or with
+a filename.
+If no name is given, the notes file is loaded from the directory you started
+the application from- using a standard name - and is created if it isn't present.
+It's possible to have what explanatory texts there are displayed in a language of
+choice, however currently only Dutch and English are available.
 
-To make this application work under Python 3 I had to change GUI toolkits so I made a PyQt version
+To make this application work under Python 3 I had to change GUI toolkits so I made
+a PyQt version.
+To change back to the wx version simply change the import in a_propos.py and call
+apo_start using Python 2.
 
 Requirements
 ------------
 
 - Python
-- wxPython
+- PyQt4 for the Python 3 version
+- wxPython for the Python 2 version
