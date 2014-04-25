@@ -164,9 +164,7 @@ class MainFrame(gui.QMainWindow, Apomixin):
         """
         n = self.nb.count()
         self.current = self.nb.currentIndex()
-        print("page_changed: current is", self.current)
         currentpage = self.nb.currentWidget() # self.nb.widget(self.current)
-        print("page_changed: widget is", currentpage)
         currentpage.txt.setFocus()
         ## if True: # os.name == 'nt':
         ## if sys.platform == 'win32':
@@ -304,18 +302,14 @@ class MainFrame(gui.QMainWindow, Apomixin):
         bij de laatste tab: alleen leegmaken en titel generiek maken
         """
         aant = self.nb.count()
-        print("closetab: deleting page", pagetodelete)
         if aant == 1:
             self.nb.setTabText(self.current, "1")
             self.nb.widget(self.current).txt.setText("")
             self.close()
         else:
             test = self.nb.widget(pagetodelete)
-            print("closetab: widget is", test)
             self.nb.removeTab(pagetodelete)
-            print("closetab: tab is removed")
             test.destroy()
-            print("closetab: widget is destroyed")
 
     def revive(self, event=None):               # werkt!
         """herleef het scherm vanuit de systray
