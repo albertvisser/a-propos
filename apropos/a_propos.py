@@ -1,4 +1,4 @@
-def apropos(arg=None, toolkit='qt'):
+def apropos(log=None, toolkit='qt'):
     """start de GUI op.
 
     Importeert hiervoor de toolkit-specifieke code
@@ -10,10 +10,10 @@ def apropos(arg=None, toolkit='qt'):
     else:
         raise ValueError('Unknown GUI-toolkit specification: '
             'currently only `qt` or `wx` are supported')
-    if arg is not None:
-        main(self, log=True)
+    if log:
+        main(log=True)
     else:
-        main(self)
+        main()
 
 if __name__ == "__main__":
     apropos()
