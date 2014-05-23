@@ -162,7 +162,7 @@ class MainFrame(gui.QMainWindow, Apomixin):
     def page_changed(self, event=None):         # werkt!
         """pagina aanpassen nadat een andere gekozen is
         """
-        n = self.nb.count()
+        n = self.nb.count()                     # doen't seem to be necessary
         self.current = self.nb.currentIndex()
         currentpage = self.nb.currentWidget() # self.nb.widget(self.current)
         currentpage.txt.setFocus()
@@ -372,22 +372,16 @@ class MainFrame(gui.QMainWindow, Apomixin):
                     self.opts["language"] = data[idx][0]
                     break
 
-class Main():
-    """main class van de applicatie
-
-    de main class in apropos.py overerft hiervan
+def main(log=False):
+    """starts the application by calling the MainFrame class
     """
-    def __init__(self, log=False):
-        if log:
-            logging.basicConfig(filename='apropos_qt.log', level=logging.DEBUG,
-                format='%(asctime)s %(message)s')
-        else:
-            logging.basicConfig(level=logging.DEBUG,
-                format='%(asctime)s %(message)s')
-        app = gui.QApplication(sys.argv)
-        main = MainFrame()
-        main.show()
-        sys.exit(app.exec_())
-
-if __name__ == "__main__":
-    Main(log=True)
+    if log:
+        logging.basicConfig(filename='apropos_qt.log', level=logging.DEBUG,
+            format='%(asctime)s %(message)s')
+    else:
+        logging.basicConfig(level=logging.DEBUG,
+            format='%(asctime)s %(message)s')
+    app = gui.QApplication(sys.argv)
+    frm = MainFrame()
+    frm.show()
+    sys.exit(app.exec_())

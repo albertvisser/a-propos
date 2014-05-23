@@ -57,7 +57,7 @@ class MainFrame(wx.Frame, Apomixin):
 
     subclass van Apomixin voor het gui-onafhankelijke gedeelte
     """
-    def __init__(self, parent, id):
+    def __init__(self, parent, id=-1):
         wx.Frame.__init__(self, parent, id, "Apropos", pos=(10, 10), size=(650, 400))
         self.Bind(wx.EVT_CLOSE, self.afsl)
         self.apoicon = wx.Icon(os.path.join(HERE, "apropos.ico"), wx.BITMAP_TYPE_ICO)
@@ -65,8 +65,8 @@ class MainFrame(wx.Frame, Apomixin):
         pnl = wx.Panel(self, -1)
         self.nb = wx.Notebook(pnl, -1)
         self.nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.page_changed)
-        self.nb.Bind(wx.EVT_LEFT_DCLICK, self.onLeftDblClick)
-        self.nb.Bind(wx.EVT_MIDDLE_DOWN, self.onLeftDblClick)
+        self.nb.Bind(wx.EVT_LEFT_DCLICK, self.on_left_doubleclick)
+        self.nb.Bind(wx.EVT_MIDDLE_DOWN, self.on_left_doubleclick)
         self.nb.Bind(wx.EVT_LEFT_UP, self.on_left_release)
         self.nb.Bind(wx.EVT_KEY_DOWN, self.on_key)
         self.initapp()
@@ -85,8 +85,8 @@ class MainFrame(wx.Frame, Apomixin):
     def page_changed(self, event=None):
         """pagina aanpassen nadat een andere gekozen is
         """
-        n = self.nb.GetPageCount()
-        s = self.nb.GetSelection()
+        n = self.nb.GetPageCount()  # do these two statements have any effect on the rest?
+        s = self.nb.GetSelection()  # if not, they should be left out
         self.current = event.GetSelection()
         currentpage = self.nb.GetPage(self.current)
         currentpage.txt.SetFocus()
@@ -128,7 +128,7 @@ class MainFrame(wx.Frame, Apomixin):
                     if dlg.Check.GetValue():
                         self.opts["AskBeforeHide"] = False
                     dlg.Destroy()
-                if test == wx.ID_OK:
+                if test == wx.ID_OK: # hier moet volgens mij bij: or not self.opts["AskBeforeHide"]
                     self.tbi = wx.TaskBarIcon()
                     self.tbi.SetIcon(self.apoicon, "Click to revive Apropos")
                     wx.EVT_TASKBAR_LEFT_UP(self.tbi, self.revive)
@@ -158,12 +158,12 @@ class MainFrame(wx.Frame, Apomixin):
         if event and skip:
             event.Skip()
 
-    def onLeftDblClick(self, event=None):
+    def on_left_doubleclick(self, event=None):
         """reageert op dubbelklikken op tab t.b.v. verwijderen pagina
         """
-        self.x = event.GetX()
-        self.y = event.GetY()
-        item, flags = self.nb.HitTest((self.x, self.y))
+        x = event.GetX()
+        y = event.GetY()
+        item, flags = self.nb.HitTest((x, y))
         self.nb.DeletePage(item)
         event.Skip()
 
@@ -268,18 +268,12 @@ class MainFrame(wx.Frame, Apomixin):
                     break
         dlg.Destroy()
 
-class Main():
-    """main class van de applicatie
-
-    de main class in apropos.py overerft hiervan
+def main(log=False):
+    """starts the application by calling the MainFrame class
     """
-    def __init__(self, logging=False):
-        if logging:
-            app = wx.App(redirect=True ,filename="apropos.log")
-        else:
-            app = wx.App(redirect=False)
-        frm = MainFrame(None, -1)
-        app.MainLoop()
-
-if __name__ == "__main__":
-    Main()
+    if log:
+        app = wx.App(redirect=True ,filename="apropos.log")
+    else:
+        app = wx.App(redirect=False)
+    frm = MainFrame(None, -1)
+    app.MainLoop()

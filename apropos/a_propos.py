@@ -1,14 +1,19 @@
-from .apropos_qt import Main
-## from apropos_wx import Main
+def apropos(arg=None, toolkit='qt'):
+    """start de GUI op.
 
-class Apropos(Main):
-    """main class die overerft van de main class in de gui afhankelijke code
+    Importeert hiervoor de toolkit-specifieke code
     """
-    def __init__(self, arg=None):
-        if arg is not None:
-            Main.__init__(self, log=True)
-        else:
-            Main.__init__(self)
+    if toolkit == 'qt':
+        from .apropos_qt import main
+    elif toolkit == 'wx':
+        from apropos_wx import main
+    else:
+        raise ValueError('Unknown GUI-toolkit specification: '
+            'currently only `qt` or `wx` are supported')
+    if arg is not None:
+        main(self, log=True)
+    else:
+        main(self)
 
 if __name__ == "__main__":
-    Apropos()
+    apropos()
