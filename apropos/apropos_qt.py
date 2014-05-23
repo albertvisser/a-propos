@@ -6,7 +6,7 @@ import sys
 import PyQt4.QtGui as gui
 import PyQt4.QtCore as core
 import logging
-from .apomixin import Apomixin, languages
+from .apomixin import ApoMixin, languages
 HERE = os.path.split(__file__)[0]
 
 class Page(gui.QFrame):
@@ -128,7 +128,7 @@ class CheckDialog(gui.QDialog):
             self.parent.opts[self.option] = False
         gui.QDialog.done(self, 0)
 
-class MainFrame(gui.QMainWindow, Apomixin):
+class MainFrame(gui.QMainWindow, ApoMixin):
     """main class voor de applicatie
 
     subclass van Apomixin voor het gui-onafhankelijke gedeelte
@@ -249,7 +249,7 @@ class MainFrame(gui.QMainWindow, Apomixin):
     def initapp(self):                          # werkt!
         """initialiseer de applicatie
         """
-        self.opts = {"AskBeforeHide":True, "ActiveTab":0, 'language': 'eng',
+        self.opts = {"AskBeforeHide": True, "ActiveTab": 0, 'language': 'eng',
             'NotifyOnSave': True}
         self.load_notes()
         if self.apodata:
@@ -376,9 +376,11 @@ def main(log=False):
     """starts the application by calling the MainFrame class
     """
     if log:
+        print('with logging to file')
         logging.basicConfig(filename='apropos_qt.log', level=logging.DEBUG,
             format='%(asctime)s %(message)s')
     else:
+        print('"no" logging')
         logging.basicConfig(level=logging.DEBUG,
             format='%(asctime)s %(message)s')
     app = gui.QApplication(sys.argv)

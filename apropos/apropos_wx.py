@@ -3,12 +3,12 @@
 import os
 import sys
 import wx
-from apomixin import Apomixin, languages
+from .apomixin import ApoMixin, languages
 HERE = os.path.split(__file__)[0]
 
 class Page(wx.Panel):
     "Panel subclass voor de notebook pagina's"
-    def __init__(self, parent, id, mf=None):
+    def __init__(self, parent, id, mf):
         wx.Panel.__init__(self, parent, id)
         self.txt = wx.TextCtrl(self, -1, style=wx.TE_MULTILINE)
         self.txt.Bind(wx.EVT_KEY_DOWN, mf.on_key)
@@ -52,7 +52,7 @@ class CheckDialog(wx.Dialog):
         sizer0.SetSizeHints(pnl)
         pnl.Layout()
 
-class MainFrame(wx.Frame, Apomixin):
+class MainFrame(wx.Frame, ApoMixin):
     """main class voor de applicatie
 
     subclass van Apomixin voor het gui-onafhankelijke gedeelte
@@ -272,8 +272,10 @@ def main(log=False):
     """starts the application by calling the MainFrame class
     """
     if log:
+        print('with logging')
         app = wx.App(redirect=True ,filename="apropos.log")
     else:
+        print('no logging')
         app = wx.App(redirect=False)
     frm = MainFrame(None, -1)
     app.MainLoop()
