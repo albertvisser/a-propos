@@ -108,9 +108,7 @@ class MainFrame(wx.Frame, ApoMixin):
         keycode = event.GetKeyCode()
         if event.GetModifiers() == wx.MOD_CONTROL: # evt.ControlDown()
             if keycode == ord("R"): # 76: Ctrl-R reload tabs
-                self.nb.DeleteAllPages()
-                self.initapp()
-                wx.MessageBox("(Re)loaded")
+                self.load_data()
             elif keycode == ord("N"): # 78: Ctrl-N nieuwe tab
                 self.newtab()
             elif keycode == ord("W"): # 87: Ctrl-W tab sluiten
@@ -121,28 +119,9 @@ class MainFrame(wx.Frame, ApoMixin):
             ## elif keycode == wx.WXK_RIGHT or keycode == wx.WXK_NUMPAD_RIGHT: #  keycode == 316
                 ## self.nb.AdvanceSelection()
             elif keycode == ord("H"): # 72: Ctrl-H Hide/minimize
-                if self.opts["AskBeforeHide"]:
-                    dlg = CheckDialog(self, -1, 'Apropos',
-                        message=languages[self.opts["language"]]["hide_text"])
-                    test = dlg.ShowModal()
-                    if dlg.Check.GetValue():
-                        self.opts["AskBeforeHide"] = False
-                    dlg.Destroy()
-                if test == wx.ID_OK: # hier moet volgens mij bij: or not self.opts["AskBeforeHide"]
-                    self.tbi = wx.TaskBarIcon()
-                    self.tbi.SetIcon(self.apoicon, "Click to revive Apropos")
-                    wx.EVT_TASKBAR_LEFT_UP(self.tbi, self.revive)
-                    wx.EVT_TASKBAR_RIGHT_UP(self.tbi, self.revive)
-                    self.Hide()
+                self.hide_app()
             elif keycode == ord("S"): # 83: Ctrl-S saven zonder afsluiten
-                self.afsl()
-                if self.opts["NotifyOnSave"]:
-                    dlg = CheckDialog(self, -1, 'Apropos',
-                        message=languages[self.opts["language"]]["save_text"])
-                    test = dlg.ShowModal()
-                    if dlg.Check.GetValue():
-                        self.opts["NotifyOnSave"] = False
-                    dlg.Destroy()
+                self.save_data()
             elif keycode == ord("Q"): # 81: Ctrl-Q afsluiten na saven
                 self.afsl()
                 self.Destroy()
@@ -167,11 +146,28 @@ class MainFrame(wx.Frame, ApoMixin):
         self.nb.DeletePage(item)
         event.Skip()
 
+    def load_data(self):
+        self.nb.DeleteAllPages()
+        self.initapp()
+        self.confirm(setting="NotifyOnLoad", textitem="load_text")
+
+    def hide_app(self):
+        self.confirm(setting="AskBeforeHide", textitem="hide_text")
+        self.tbi = wx.TaskBarIcon()
+        self.tbi.SetIcon(self.apoicon, "Click to revive Apropos")
+        wx.EVT_TASKBAR_LEFT_UP(self.tbi, self.revive)
+        wx.EVT_TASKBAR_RIGHT_UP(self.tbi, self.revive)
+        self.Hide()
+
+    def save_data(self):
+        self.afsl()
+        self.confirm(setting="NotifyOnSave", textitem="save_text")
+
     def initapp(self):
         """initialiseer de applicatie
         """
         self.opts = {"AskBeforeHide":True, "ActiveTab":0, 'language': 'eng',
-            'NotifyOnSave': True}
+            'NotifyOnSave': True, 'NotifyOnLoad': True}
         self.load_notes()
         if self.apodata:
             for i, x in self.apodata.items():
@@ -236,6 +232,15 @@ class MainFrame(wx.Frame, ApoMixin):
             'Apropos', wx.OK | wx.ICON_INFORMATION)
         dlg.ShowModal()
         dlg.Destroy()
+
+    def confirm(self, setting='', textitem=''):
+        if self.opts[setting]:
+            dlg = CheckDialog(self, -1, 'Apropos',
+                message=languages[self.opts["language"]][textitem])
+            test = dlg.ShowModal()
+            if dlg.Check.GetValue():
+                self.opts[setting] = False
+            dlg.Destroy()
 
     def asktitle(self):
         """toon dialoog om tab titel in te vullen/aan te passen en verwerk antwoord
