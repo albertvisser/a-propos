@@ -7,7 +7,7 @@ import PyQt4.QtGui as gui
 import PyQt4.QtCore as core
 import logging
 from .apomixin import ApoMixin, languages
-HERE = os.path.split(__file__)[0]
+HERE = os.path.dirname(__file__)
 
 class Page(gui.QFrame):
     "Panel subclass voor de notebook pagina's"
@@ -100,7 +100,8 @@ class CheckDialog(gui.QDialog):
         self.setWindowTitle(title)
         self.setWindowIcon(self.parent.apoicon)
         txt = gui.QLabel(message)
-        self.check = gui.QCheckBox("Deze melding niet meer laten zien", self)
+        show_text = languages[self.parent.opts["language"]]["show_text"]
+        self.check = gui.QCheckBox(show_text, self)
         ok_button = gui.QPushButton("&Ok", self)
         self.connect(ok_button, core.SIGNAL('clicked()'), self.klaar)
         vbox = gui.QVBoxLayout()

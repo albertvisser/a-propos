@@ -53,7 +53,7 @@ class TestWxObjects(unittest.TestCase):
         self.assertIsInstance(testobj.bOk, wx.Button)
         self.assertEqual(testobj.bOk.Id, wx.ID_OK)
 
-    def test_init(self):
+    def test_mainframe(self):
         """
         Create an instance of MainFrame and check if a wx.Frame is created
         that has a specific icon and a wxPanel containing a wxNotebook
@@ -61,6 +61,7 @@ class TestWxObjects(unittest.TestCase):
         """
         testobj = MainFrame(self.frm, -1)
         self.assertIsInstance(testobj, wx.Frame)
+        self.assertIsInstance(testObj, apropos.ApoMixin)
         self.assertIsInstance(testobj.apoicon, wx.Icon)
         # need to check which icon?
         self.assertIsInstance(testobj.nb, wx.Notebook)
