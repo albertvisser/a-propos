@@ -24,6 +24,7 @@ An icon will appear that you can click on to revive it""",
     "show_text": "Don't show this message again",
     "ask_title": 'New title for current tab:',
     "ask_language": 'choose language:',
+    "load_text": "(Re)loaded",
     "save_text": "Saved",
     }
 }

@@ -25,6 +25,7 @@ Er komt een icoontje waarop je kunt klikken om hem weer wakker te maken""",
     "show_text": "Deze melding niet meer laten zien",
     "ask_title": 'Nieuwe titel voor de huidige tab:',
     "ask_language": 'kies taal:',
-    "save_text": "Opgeslagen",
+    "load_text": "Notities zijn (opnieuw) geladen",
+    "save_text": "Notities zijn opgeslagen",
     }
 }
