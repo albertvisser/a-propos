@@ -183,7 +183,7 @@ class MainFrame(gui.QMainWindow, ApoMixin):
         keycode = e.key()
         keymods = e.modifiers()
         if keymods == core.Qt.ControlModifier:
-            if keycode == core.Qt.Key_L:
+            if keycode == core.Qt.Key_R:
                 aant = self.nb.count()
                 widgets = [self.nb.widget(x) for x in range(aant)]
                 self.nb.clear()
@@ -224,7 +224,7 @@ class MainFrame(gui.QMainWindow, ApoMixin):
                 ## self.afsl()
                 ## self.Destroy()
                 skip = True
-            elif keycode == core.Qt.Key_F1:
+            elif keycode == core.Qt.Key_L:
                 self.choose_language()
                 skip = True
         elif keycode == core.Qt.Key_F1:

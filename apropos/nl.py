@@ -8,10 +8,10 @@ als je de draad even kwijt bent
 Ctrl-N          - nieuwe tab
 Ctrl-W          - sluit tab
 Ctrl-S          - alles opslaan
-Ctrl-L          - alles opnieuw laden
+Ctrl-R          - alles opnieuw laden
 Ctrl-Q, Esc     - opslaan en sluiten
 Ctrl-H          - verbergen in system tray
-Ctrl-F1         - kies taal
+Ctrl-L          - kies taal
 
 Alt-rechts      - volgende tab
 Alt-links       - vorige tab

@@ -107,7 +107,7 @@ class MainFrame(wx.Frame, ApoMixin):
         skip = True
         keycode = event.GetKeyCode()
         if event.GetModifiers() == wx.MOD_CONTROL: # evt.ControlDown()
-            if keycode == ord("L"): # 76: Ctrl-L reload tabs
+            if keycode == ord("R"): # 76: Ctrl-R reload tabs
                 self.nb.DeleteAllPages()
                 self.initapp()
                 wx.MessageBox("(Re)loaded")
@@ -146,7 +146,7 @@ class MainFrame(wx.Frame, ApoMixin):
             elif keycode == ord("Q"): # 81: Ctrl-Q afsluiten na saven
                 self.afsl()
                 self.Destroy()
-            elif keycode == wx.WXK_F1:
+            elif keycode == ord("L"): # Ctrl-L choose Language
                 self.choose_language()
         elif keycode == wx.WXK_F1:
             self.helppage()
