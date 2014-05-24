@@ -22,71 +22,6 @@ class Page(gui.QFrame):
         vbox.addLayout(hbox)
         self.setLayout(vbox)
 
-    def keyPressEvent(self, e):                 # werkt!
-        skip = self.on_key(e)
-        if not skip:
-            gui.QFrame.keyPressEvent(self, e)
-
-    def on_key(self, e):                        # werkt!
-        """afhandeling toetsaanslagen / toetsencombinaties
-        """
-        skip = False
-        keycode = e.key()
-        keymods = e.modifiers()
-        if keymods == core.Qt.AltModifier:
-            ## if keycode == core.Qt.Key_L:
-                ## aant = self.nb.count()
-                ## widgets = [self.nb.widget(x) for x in range(aant)]
-                ## self.nb.clear()
-                ## for wdg in widgets:
-                    ## wdg.destroy()
-                ## self.initapp()
-                ## self.meld('(Re)loaded')
-                ## skip = True
-            ## elif keycode == core.Qt.Key_N:
-                ## self.newtab()
-                ## skip = True
-            ## elif keycode == core.Qt.Key_W:
-                ## self.closetab(self.current)
-                ## skip = True
-            if keycode == core.Qt.Key_Left:
-                self.parent().parent().parent().goto_previous()
-                skip = True
-            elif keycode == core.Qt.Key_Right:
-                self.parent().parent().parent().goto_next()
-                skip = True
-            ## elif keycode == core.Qt.Key_H:
-                ## if self.opts["AskBeforeHide"]:
-                    ## dlg = CheckDialog(self, 'Apropos',
-                        ## message=languages[self.opts["language"]]["hide_text"],
-                        ## option='AskBeforeHide')
-                ## self.tray_icon.show()
-                ## self.hide()
-                ## skip = True
-            ## elif keycode == core.Qt.Key_S:
-                ## self.afsl()
-                ## if self.opts["NotifyOnSave"]:
-                    ## dlg = CheckDialog(self, 'Apropos',
-                        ## message=languages[self.opts["language"]]["save_text"],
-                        ## option='NotifyOnSave')
-                ## skip = True
-            ## elif keycode == core.Qt.Key_Q:
-                ## self.close()
-                ## skip = True
-            ## elif keycode == core.Qt.Key_F1:
-                ## self.choose_language()
-                ## skip = True
-        ## elif keycode == core.Qt.Key_F1:
-            ## self.helppage()
-            ## skip = True
-        ## elif keycode == core.Qt.Key_F2:
-            ## self.asktitle()
-            ## skip = True
-        ## elif keycode == core.Qt.Key_Escape:
-            ## self.close()
-            ## skip = True
-        return skip
-
 
 class CheckDialog(gui.QDialog):
     """Dialog die kan worden ingesteld om niet nogmaals te tonen
@@ -158,100 +93,57 @@ class MainFrame(gui.QMainWindow, ApoMixin):
         ## self.nb.setTabsClosable(True) # workaround: sluitgadgets
         self.nb.tabCloseRequested.connect(self.closetab)
 
+        for label, shortcuts, handler in (
+                ('reload', ('Ctrl+R',), self.load_data),
+                ('newtab', ('Ctrl+N',), self.newtab),
+                ('close', ('Ctrl+W',), self.closetab),
+                ('hide', ('Ctrl+H',), self.hide_app),
+                ('save', ('Ctrl+S',), self.save_data),
+                ('quit', ('Ctrl+Q', 'Escape'), self.close),
+                ('language', ('Ctrl+L',), self.choose_language),
+                ('next', ('Alt+Right',), self.goto_next),
+                ('prev', ('Alt+Left',), self.goto_previous),
+                ('help', ('F1',), self.helppage),
+                ('title', ('F2',), self.asktitle),
+                ):
+            action = gui.QAction(label, self)
+            action.setShortcuts([x for x in shortcuts])
+            self.connect(action, core.SIGNAL('triggered()'), handler)
+            self.addAction(action)
+
         self.initapp()
 
-    def page_changed(self, event=None):         # werkt!
+    def page_changed(self, event=None):
         """pagina aanpassen nadat een andere gekozen is
         """
         n = self.nb.count()                     # doen't seem to be necessary
         self.current = self.nb.currentIndex()
-        currentpage = self.nb.currentWidget() # self.nb.widget(self.current)
+        currentpage = self.nb.currentWidget()
         currentpage.txt.setFocus()
-        ## if True: # os.name == 'nt':
-        ## if sys.platform == 'win32':
-            ## event.Skip()
 
-    def keyPressEvent(self, e):                 # werkt!
-        skip = self.on_key(e)
-        if not skip:
-            gui.QMainWindow.keyPressEvent(self, e)
+    def load_data(self):
+        aant = self.nb.count()
+        widgets = [self.nb.widget(x) for x in range(aant)]
+        self.nb.clear()
+        for wdg in widgets:
+            wdg.destroy()
+        self.initapp()
+        self.confirm(setting="NotifyOnLoad", textitem="load_text")
 
-    def on_key(self, e):                        # werkt!
-        """afhandeling toetsaanslagen / toetsencombinaties
-        """
-        skip = False
-        keycode = e.key()
-        keymods = e.modifiers()
-        if keymods == core.Qt.ControlModifier:
-            if keycode == core.Qt.Key_R:
-                aant = self.nb.count()
-                widgets = [self.nb.widget(x) for x in range(aant)]
-                self.nb.clear()
-                for wdg in widgets:
-                    wdg.destroy()
-                self.initapp()
-                self.meld('(Re)loaded')
-                skip = True
-            elif keycode == core.Qt.Key_N:
-                self.newtab()
-                skip = True
-            elif keycode == core.Qt.Key_W:
-                self.closetab(self.current)
-                skip = True
-            # elif keycode == core.Qt.Key_LEFT:
-                # self.nb.AdvanceSelection(False)
-                # skip = True
-            # elif keycode == core.Qt.Key_RIGHT:
-                # self.nb.AdvanceSelection()
-                # skip = True
-            elif keycode == core.Qt.Key_H:
-                if self.opts["AskBeforeHide"]:
-                    dlg = CheckDialog(self, 'Apropos',
-                        message=languages[self.opts["language"]]["hide_text"],
-                        option='AskBeforeHide')
-                self.tray_icon.show()
-                self.hide()
-                skip = True
-            elif keycode == core.Qt.Key_S:
-                self.afsl()
-                if self.opts["NotifyOnSave"]:
-                    dlg = CheckDialog(self, 'Apropos',
-                        message=languages[self.opts["language"]]["save_text"],
-                        option='NotifyOnSave')
-                skip = True
-            elif keycode == core.Qt.Key_Q:
-                self.close()
-                ## self.afsl()
-                ## self.Destroy()
-                skip = True
-            elif keycode == core.Qt.Key_L:
-                self.choose_language()
-                skip = True
-        elif keycode == core.Qt.Key_F1:
-            self.helppage()
-            skip = True
-        elif keycode == core.Qt.Key_F2:
-            self.asktitle()
-            skip = True
-        elif keycode == core.Qt.Key_Escape:
-            self.close()
-            skip = True
-        return skip
+    def hide_app(self):
+        self.confirm(setting="AskBeforeHide", textitem="hide_text")
+        self.tray_icon.show()
+        self.hide()
 
-    ## def onLeftDblClick(self, event=None):
-        ## """reageert op dubbelklikken op tab t.b.v. verwijderen pagina
-        ## """
-        ## self.x = event.GetX()
-        ## self.y = event.GetY()
-        ## item, flags = self.nb.HitTest((self.x, self.y))
-        ## self.nb.DeletePage(item)
-        ## event.Skip()
+    def save_data(self):
+        self.afsl()
+        self.confirm(setting="NotifyOnSave", textitem="save_text")
 
-    def initapp(self):                          # werkt!
+    def initapp(self):
         """initialiseer de applicatie
         """
         self.opts = {"AskBeforeHide": True, "ActiveTab": 0, 'language': 'eng',
-            'NotifyOnSave': True}
+            'NotifyOnSave': True, 'NotifyOnLoad': True}
         self.load_notes()
         if self.apodata:
             for i, x in self.apodata.items():
@@ -266,7 +158,7 @@ class MainFrame(gui.QMainWindow, ApoMixin):
             self.newtab()
             self.current = 0
 
-    def newtab(self, titel=None, note=None):    # werkt!
+    def newtab(self, titel=None, note=None):
         """initialiseer een nieuwe tab
         """
         nieuw = self.nb.count() + 1
@@ -283,25 +175,21 @@ class MainFrame(gui.QMainWindow, ApoMixin):
         previous = self.current - 1
         if previous < 0:
             return
-        ## self.goto_page(previous)
         self.nb.setCurrentIndex(previous)
 
     def goto_next(self):
         next = self.current + 1
         if next > self.nb.count():
             return
-        ## self.goto_page(next)
         self.nb.setCurrentIndex(next)
 
-    ## def goto_page(index):
-        ## win =
-        ## self.nb.setCurrentIndex(self.current)
-
-    def closetab(self, pagetodelete):           # werkt! (NB)
+    def closetab(self, pagetodelete=None):
         """sluit de aangegeven tab
 
         bij de laatste tab: alleen leegmaken en titel generiek maken
         """
+        if pagetodelete is None:
+            pagetodelete = self.current
         aant = self.nb.count()
         if aant == 1:
             self.nb.setTabText(self.current, "1")
@@ -312,7 +200,7 @@ class MainFrame(gui.QMainWindow, ApoMixin):
             self.nb.removeTab(pagetodelete)
             test.destroy()
 
-    def revive(self, event=None):               # werkt!
+    def revive(self, event=None):
         """herleef het scherm vanuit de systray
         """
         if event == gui.QSystemTrayIcon.Unknown:
@@ -323,10 +211,10 @@ class MainFrame(gui.QMainWindow, ApoMixin):
             self.show()
             self.tray_icon.hide()
 
-    def closeEvent(self, event=None):           # werkt!
+    def closeEvent(self, event=None):
         self.afsl()
 
-    def afsl(self):                             # werkt!
+    def afsl(self):
         """applicatiedata opslaan voorafgaand aan afsluiten
         """
         self.opts["ActiveTab"] = self.nb.currentIndex()
@@ -338,15 +226,21 @@ class MainFrame(gui.QMainWindow, ApoMixin):
             self.apodata[i+1] = (title, text)
         self.save_notes()
 
-    def helppage(self):                         # werkt!
+    def helppage(self):
         """vertoon de hulp pagina met keyboard shortcuts
         """
         self.meld(languages[self.opts["language"]]["info"])
 
-    def meld(self, meld):                       # werkt!
+    def meld(self, meld):
         gui.QMessageBox.information(self, 'Apropos', meld, )
 
-    def asktitle(self):                         # werkt!
+    def confirm(self, setting='', textitem=''):
+        if self.opts[setting]:
+            dlg = CheckDialog(self, 'Apropos',
+                message=languages[self.opts["language"]][textitem],
+                option=setting)
+
+    def asktitle(self):
         """toon dialoog om tab titel in te vullen/aan te passen en verwerk antwoord
         """
         text, ok = gui.QInputDialog.getText(self, 'Apropos',
@@ -355,7 +249,7 @@ class MainFrame(gui.QMainWindow, ApoMixin):
         if ok:
             self.nb.setTabText(self.current, text)
 
-    def choose_language(self):                  # werkt!
+    def choose_language(self):
         """toon dialoog om taal te kiezen en verwerk antwoord
         """
         data = [(x, y["language"]) for x, y in languages.items()]
