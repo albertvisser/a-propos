@@ -143,7 +143,7 @@ class MainFrame(wx.Frame, ApoMixin):
         x = event.GetX()
         y = event.GetY()
         item, flags = self.nb.HitTest((x, y))
-        self.nb.DeletePage(item)
+        self.closetab(item)
         event.Skip()
 
     def load_data(self):
@@ -194,10 +194,11 @@ class MainFrame(wx.Frame, ApoMixin):
         self.nb.AddPage(newpage, titel)
         self.nb.SetSelection(nieuw)
 
-    def closetab(self):
-        """sluit de huidige tab
+    def closetab(self, pagetodelete=None):
+        """sluit de huidige of aangegeven tab
         """
-        pagetodelete = self.current
+        if pagetodelete is None:
+            pagetodelete = self.current
         aant = self.nb.GetPageCount()
         if aant == 1:
             self.afsl()
