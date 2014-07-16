@@ -1,6 +1,10 @@
 """
 Test stuff for the MainFrame methods in apropos_wx.py
+
 Trying to do this without an event loop
+Let's just ignore the key capturing; it's been rewritten so that for each shortcut
+a routine is called. Let's just test these routines
+This means that I still have to add a few
 """
 import os
 import sys
@@ -52,7 +56,7 @@ class TestWxMainFrame(unittest.TestCase):
         self.app = wx.App()
         self.testdata = {
             0: {"AskBeforeHide": True, "ActiveTab": 1, 'language': 'eng',
-                'NotifyOnSave': True},
+                'NotifyOnLoad': True, 'NotifyOnSave': True},
             1: ('eerste tab', "tekst voor eerste tab"),
             2: ('tweede tab', "tekst voor tweede tab"),
             3: ('derde tab', "tekst voor derde tab"),
@@ -89,61 +93,14 @@ class TestWxMainFrame(unittest.TestCase):
         self.frm.on_left_release(testobj)
         self.assertEqual(testobj.skipped, True)
 
+    @unittest.skip('maybe temporarily redefine the methods before calling them?')
     def test_on_key(self):
-        testobj = Dummy()
-        self.frm.on_key(testobj)
-        self.assertEqual(testobj.skipped, True)
+        for key in keytab:
+            testobj = Dummy(key)
+            self.frm.on_key(testobj)
+            self.assertEqual(testobj.skipped, True)
 
-    ## def test_on_key_reload(self):
-        ## testobj = Dummy('Ctrl-L')
-        ## self.frm.on_key(testobj)
-        ## self.assertEqual(testobj.skipped, True)
-
-    ## def test_on_key_newtab(self):
-        ## testobj = Dummy('Ctrl-N')
-        ## self.frm.on_key(testobj)
-        ## self.assertEqual(testobj.skipped, True)
-
-    ## def test_on_key_closetab(self):
-        ## testobj = Dummy('Ctrl-W')
-        ## self.frm.on_key(testobj)
-        ## self.assertEqual(testobj.skipped, False)
-
-    ## def test_on_key_hide(self):
-        ## testobj = Dummy('Ctrl-H')
-        ## self.frm.on_key(testobj)
-        ## self.assertEqual(testobj.skipped, True)
-
-    ## def test_on_key_save(self):
-        ## testobj = Dummy('Ctrl-S')
-        ## self.frm.on_key(testobj)
-        ## self.assertEqual(testobj.skipped, True)
-
-    ## def test_on_key_quit(self):
-        ## testobj = Dummy('Ctrl-Q')
-        ## self.frm.on_key(testobj)
-        ## self.assertEqual(testobj.skipped, True)
-
-    ## def test_on_key_language(self):
-        ## testobj = Dummy('Ctrl-F1')
-        ## self.frm.on_key(testobj)
-        ## self.assertEqual(testobj.skipped, True)
-
-    ## def test_on_key_help(self):
-        ## testobj = Dummy('F1')
-        ## self.frm.on_key(testobj)
-        ## self.assertEqual(testobj.skipped, True)
-
-    ## def test_on_key_asktitle(self):
-        ## testobj = Dummy('F2')
-        ## self.frm.on_key(testobj)
-        ## self.assertEqual(testobj.skipped, True)
-
-    ## def test_on_key_escape(self):
-        ## testobj = Dummy('Esc')
-        ## self.frm.on_key(testobj)
-        ## self.assertEqual(testobj.skipped, True)
-
+    @unittest.skip('maybe temporarily redefine the method before calling it?')
     def test_left_doubleclick(self):
         testobj = Dummy()
         count = self.frm.nb.PageCount
@@ -151,10 +108,24 @@ class TestWxMainFrame(unittest.TestCase):
         self.assertEqual(self.frm.nb.PageCount, count - 1)
         self.assertEqual(testobj.skipped, True)
 
+    def test_load_data(self):
+        self.frm.load_data()
+        # test result of initapp or the fact that it's been called
+
+    def test_hide_app(self):
+        self.frm.hide_app()
+        # test if taskbar icon is created
+
+    def test_on_key_save(self):
+        self.frm.save_data()
+        # test result of afsl or the fact that it's been called
+
     def test_initapp(self):
         """
         has already been executed in the mainframe's init,
         so just inspect the result"""
+        print(self.frm.opts)
+        print(self.testdata[0])
         self.assertEqual(self.frm.opts, self.testdata[0])
         for indx in range(self.frm.nb.PageCount):
             self.assertEqual(self.frm.nb.GetPageText(indx),
@@ -193,22 +164,28 @@ class TestWxMainFrame(unittest.TestCase):
         self.assertTrue(os.path.exists(apofile))
         self.assertEqual(testobj.skipped, True)
 
-    @unittest.skip("can't be tested this way")
+    @unittest.skip("can't be tested this way - or can it?")
     def test_helppage(self):
         self.frm.helppage()
-        pass
+        # test if instance of wxMessagedialog is created with the specified text
 
-    @unittest.skip("can't be tested this way")
+    @unittest.skip("can't be tested this way - or can it?")
+    def test_confirm(self):
+        self.frm.confirm()
+        # test if this runs without extra arguments
+        # test with a setting that's false
+        # test with a setting that's true: if instance of CheckDialog is created
+        #    with the specified text
+
+    @unittest.skip("can't be tested this way - or can it?")
     def test_asktitle(self):
         self.frm.asktitle()
-        pass
+        # test if an instance of wxTextentryDialog is created with the specified text
 
-    @unittest.skip("can't be tested this way")
+    @unittest.skip("can't be tested this way - or can it?")
     def test_choose_language(self):
         self.frm.choose_language()
-        pass
-
-
+        # test if an instance of wxSingleChoiceDialog is created with the specified contents
 
     def tearDown(self):
         self.frm.Destroy()

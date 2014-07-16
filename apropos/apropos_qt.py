@@ -119,7 +119,8 @@ class MainFrame(gui.QMainWindow, ApoMixin):
         n = self.nb.count()                     # doen't seem to be necessary
         self.current = self.nb.currentIndex()
         currentpage = self.nb.currentWidget()
-        currentpage.txt.setFocus()
+        if currentpage:
+            currentpage.txt.setFocus()
 
     def load_data(self):
         aant = self.nb.count()

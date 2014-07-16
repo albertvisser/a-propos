@@ -7,7 +7,7 @@ import sys
 import wx
 import unittest
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from apropos.apomixin import apofile, languages
+from apropos.apomixin import apofile, languages, ApoMixin
 from apropos.apropos_wx import Page, CheckDialog, MainFrame
 
 class TestWxObjects(unittest.TestCase):
@@ -61,7 +61,7 @@ class TestWxObjects(unittest.TestCase):
         """
         testobj = MainFrame(self.frm, -1)
         self.assertIsInstance(testobj, wx.Frame)
-        self.assertIsInstance(testObj, apropos.ApoMixin)
+        self.assertIsInstance(testobj, ApoMixin)
         self.assertIsInstance(testobj.apoicon, wx.Icon)
         # need to check which icon?
         self.assertIsInstance(testobj.nb, wx.Notebook)
