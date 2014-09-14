@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import os
+import pathlib # os
 import sys
 import wx
 from .apomixin import ApoMixin, languages
-HERE = os.path.split(__file__)[0]
+HERE = pathlib.Path(__file__).parent # os.path.dirname(__file__)
 
 class Page(wx.Panel):
     "Panel subclass voor de notebook pagina's"
@@ -60,7 +60,7 @@ class MainFrame(wx.Frame, ApoMixin):
     def __init__(self, parent, id=-1):
         wx.Frame.__init__(self, parent, id, "Apropos", pos=(10, 10), size=(650, 400))
         self.Bind(wx.EVT_CLOSE, self.afsl)
-        self.apoicon = wx.Icon(os.path.join(HERE, "apropos.ico"), wx.BITMAP_TYPE_ICO)
+        self.apoicon = wx.Icon(HERE / "apropos.ico"), wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.apoicon)
         pnl = wx.Panel(self, -1)
         self.nb = wx.Notebook(pnl, -1)

@@ -2,11 +2,13 @@
 Test stuff for the classes in apropos_wx.py
 This is just to test the creation of the objects; therefore no event loop is started
 """
-import os
 import sys
 import wx
 import unittest
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pathlib
+sys.path.append(pathlib.Path(__file__).parent.joinpath('..'))
+
+from apropos.a_propos import apropos
 from apropos.apomixin import apofile, languages, ApoMixin
 from apropos.apropos_wx import Page, CheckDialog, MainFrame
 

@@ -1,8 +1,9 @@
 """Various formats for starting up the application
 """
 import sys
-import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pathlib
+sys.path.append(pathlib.Path(__file__).parent.joinpath('..'))
+
 from apropos.a_propos import apropos
 
 ## apropos() # basic call: qt version, no logging

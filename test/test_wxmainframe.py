@@ -6,12 +6,15 @@ Let's just ignore the key capturing; it's been rewritten so that for each shortc
 a routine is called. Let's just test these routines
 This means that I still have to add a few
 """
-import os
 import sys
+import pathlib
+sys.path.append(pathlib.Path(__file__).parent.joinpath('..'))
+
 import wx
 import pickle
 import unittest
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+
+from apropos.a_propos import apropos
 from apropos.apomixin import apofile, languages
 from apropos.apropos_wx import MainFrame
 
@@ -61,7 +64,7 @@ class TestWxMainFrame(unittest.TestCase):
             2: ('tweede tab', "tekst voor tweede tab"),
             3: ('derde tab', "tekst voor derde tab"),
             }
-        with open(apofile, 'wb') as f:
+        with apofile.open(mode='wb') as f:
             pickle.dump(self.testdata, f, protocol=2)
         self.frm = MainFrame(None, -1)
 
@@ -161,7 +164,7 @@ class TestWxMainFrame(unittest.TestCase):
     def test_afsl(self):
         testobj = Dummy()
         self.frm.afsl(testobj)
-        self.assertTrue(os.path.exists(apofile))
+        self.assertTrue(apofile.exists())
         self.assertEqual(testobj.skipped, True)
 
     @unittest.skip("can't be tested this way - or can it?")

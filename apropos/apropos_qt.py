@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 
-import os
+import pathlib # os
 import sys
 import PyQt4.QtGui as gui
 import PyQt4.QtCore as core
 import logging
 from .apomixin import ApoMixin, languages
-HERE = os.path.dirname(__file__)
+HERE = pathlib.Path(__file__).parent # os.path.dirname(__file__)
 
 class Page(gui.QFrame):
     "Panel subclass voor de notebook pagina's"
@@ -72,10 +72,10 @@ class MainFrame(gui.QMainWindow, ApoMixin):
     def __init__(self, parent=None):
         gui.QMainWindow.__init__(self, parent)
         self.setWindowTitle("Apropos")
-        offset = 30 if os.name != 'posix' else 10
+        offset = 30 if sys.platform.startswith('win') else 10
         self.move(offset, offset)
         self.resize(650, 400)
-        self.apoicon = gui.QIcon(os.path.join(HERE, "apropos.ico"))
+        self.apoicon = gui.QIcon(HERE / "apropos.ico")
         self.setWindowIcon(self.apoicon)
         self.tray_icon = gui.QSystemTrayIcon(self.apoicon, self)
         self.tray_icon.setToolTip("Click to revive Apropos")

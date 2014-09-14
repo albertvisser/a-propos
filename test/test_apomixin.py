@@ -1,14 +1,16 @@
 """
 Test stuff for the ApoMixin class
 """
-import os
 import sys
+import pathlib
+basedir = pathlib.Path(__file__).parent.joinpath('..')
+sys.path.append(basedir)
+
 import pickle
 import copy
 import unittest
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 from apropos.apomixin import apofile, ApoMixin
-testdumpfile = 'apropos_test.pck'
+testdumpfile = pathlib.Path('apropos_test.pck')
 
 class TestApoMixin(unittest.TestCase):
 
@@ -29,7 +31,7 @@ class TestApoMixin(unittest.TestCase):
         run the load_notes method; compare the mixin's `apodata` attribute
         with the original data (must have the same value).
         """
-        with open(apofile, 'wb') as f:
+        with apofile.open(mode='wb') as f:
             pickle.dump(self.data, f, protocol=2)
         self.test.load_notes()
         self.assertEqual(self.test.apodata, self.data)
@@ -47,7 +49,7 @@ class TestApoMixin(unittest.TestCase):
         run the load_notes method with a non-pickle file; compare the mixin's
         `apodata` attribute with the original data (must raise an exception).
         """
-        with open(apofile, 'w') as f:
+        with apofile.open(mode='w') as f:
             f.write("oihgyavjjvjdvj  diidn dnni")
             f.write("\n")
         error = pickle.UnpicklingError if sys.version >= '3' else IndexError
@@ -61,11 +63,11 @@ class TestApoMixin(unittest.TestCase):
         optionally load and unpickle both files and compare the results
         (should also be the same value).
         """
-        with open(testdumpfile, 'wb') as f:
+        with testdumpfile.open(mode='wb') as f:
             pickle.dump(self.data, f, protocol=2)
         self.test.apodata = copy.deepcopy(self.data)
         self.test.save_notes()
-        with open(testdumpfile, 'rb') as f1, open(apofile, 'rb') as f2:
+        with testdumpfile.open(mode='rb') as f1, apofile.open(mode='rb') as f2:
             contents1 = f1.read()
             contents2 = f2.read()
         self.assertEqual(contents2, contents1)

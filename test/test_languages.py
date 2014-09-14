@@ -1,10 +1,11 @@
 """
 Test stuff for multi language support
 """
-import os
 import sys
 import unittest
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
+import pathlib
+sys.path.append(pathlib.Path(__file__).parent.joinpath('..'))
+
 from apropos.apomixin import languages
 
 class TestLanguages(unittest.TestCase):
