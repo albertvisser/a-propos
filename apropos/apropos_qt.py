@@ -75,7 +75,7 @@ class MainFrame(gui.QMainWindow, ApoMixin):
         offset = 30 if sys.platform.startswith('win') else 10
         self.move(offset, offset)
         self.resize(650, 400)
-        self.apoicon = gui.QIcon(HERE / "apropos.ico")
+        self.apoicon = gui.QIcon(str(HERE / "apropos.ico"))
         self.setWindowIcon(self.apoicon)
         self.tray_icon = gui.QSystemTrayIcon(self.apoicon, self)
         self.tray_icon.setToolTip("Click to revive Apropos")
