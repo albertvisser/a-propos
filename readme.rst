@@ -58,3 +58,6 @@ Requirements
 - Python
 - PyQt4 for the Python 3 version
 - wxPython for the Python 2 version
+
+Note that the current implementation uses *pickle* for storing the data, I'm in the
+process of changing that to something safer.
