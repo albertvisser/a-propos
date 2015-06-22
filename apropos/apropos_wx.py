@@ -60,7 +60,7 @@ class MainFrame(wx.Frame, ApoMixin):
     def __init__(self, parent, id=-1):
         wx.Frame.__init__(self, parent, id, "Apropos", pos=(10, 10), size=(650, 400))
         self.Bind(wx.EVT_CLOSE, self.afsl)
-        self.apoicon = wx.Icon(HERE / "apropos.ico"), wx.BITMAP_TYPE_ICO)
+        self.apoicon = wx.Icon(str(HERE / "apropos.ico"), wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.apoicon)
         pnl = wx.Panel(self, -1)
         self.nb = wx.Notebook(pnl, -1)
