@@ -69,9 +69,10 @@ class MainFrame(gui.QMainWindow, ApoMixin):
 
     subclass van Apomixin voor het gui-onafhankelijke gedeelte
     """
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, title=''):
         gui.QMainWindow.__init__(self, parent)
-        self.setWindowTitle("Apropos")
+        if not title: title = "A Propos"
+        self.setWindowTitle(title)
         offset = 30 if sys.platform.startswith('win') else 10
         self.move(offset, offset)
         self.resize(650, 400)
@@ -268,7 +269,7 @@ class MainFrame(gui.QMainWindow, ApoMixin):
                     self.opts["language"] = data[idx][0]
                     break
 
-def main(log=False):
+def main(log=False, title=''):
     """starts the application by calling the MainFrame class
     """
     if log:
@@ -280,6 +281,9 @@ def main(log=False):
         logging.basicConfig(level=logging.DEBUG,
             format='%(asctime)s %(message)s')
     app = gui.QApplication(sys.argv)
-    frm = MainFrame()
+    if title:
+        frm = MainFrame(title=title)
+    else:
+        frm = MainFrame()
     frm.show()
     sys.exit(app.exec_())
