@@ -7,11 +7,13 @@ def apropos(log=None, toolkit='qt', title=''):
     """
     if toolkit == 'qt':
         from .apropos_qt import main
+    elif toolkit == 'qt5':
+        from .apropos_qt5 import main
     elif toolkit == 'wx':
         from apropos_wx import main
     else:
         raise ValueError('Unknown GUI-toolkit specification: '
-            'currently only `qt` or `wx` are supported')
+            'currently only `qt(5)` and `wx` are supported')
     if log:
         main(log=True, title=title)
     else:
