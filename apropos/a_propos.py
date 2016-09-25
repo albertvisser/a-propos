@@ -1,6 +1,6 @@
 import sys
 
-def apropos(log=None, toolkit='qt', title=''):
+def apropos(log=None, toolkit='qt5', title=''):
     """start de GUI op.
 
     Importeert hiervoor de toolkit-specifieke code
