@@ -7,24 +7,31 @@ if sys.version >= '3':
     from apropos import en, nl
 else:
     import en, nl
-apofile = pathlib.Path("apropos.pck")
 
 languages = {}
 languages.update(en.lang)
 languages.update(nl.lang)
 
+
 class ApoMixin(object):
+
+    def set_apofile(self, name):
+        if name:
+            self.apofile = pathlib.Path(name)
+        else:
+            self.apofile = pathlib.Path("apropos.pck")
+
     def load_notes(self):
-        if not apofile.exists():
+        if not self.apofile.exists():
             self.apodata = {}
             return
         try:
-            with apofile.open(mode='rb') as f:
+            with self.apofile.open(mode='rb') as f:
                 self.apodata = pickle.load(f)
         except ValueError:
-            with apofile.open(mode='r') as f:
+            with self.apofile.open(mode='r') as f:
                 self.apodata = pickle.load(f)
 
     def save_notes(self):
-        with apofile.open(mode='wb') as f:
+        with self.apofile.open(mode='wb') as f:
             pickle.dump(self.apodata, f, protocol=2)

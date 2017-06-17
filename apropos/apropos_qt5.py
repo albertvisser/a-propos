@@ -1,4 +1,5 @@
-import pathlib # os
+import os
+import pathlib
 import sys
 import PyQt5.QtWidgets as QTW
 import PyQt5.QtGui as gui
@@ -6,6 +7,16 @@ import PyQt5.QtCore as core
 import logging
 from .apomixin import ApoMixin, languages
 HERE = pathlib.Path(__file__).parent # os.path.dirname(__file__)
+LOGDIR = HERE.parent / 'logs' / pathlib.Path.cwd().name
+if not LOGDIR.exists(): LOGDIR.mkdir()
+logging.basicConfig(filename=str(LOGDIR / 'apropos_qt.log'),
+    level=logging.DEBUG, format='%(asctime)s %(message)s')
+
+
+def log(message):
+    if 'DEBUG' in os.environ and os.environ["DEBUG"] != "0":
+        logging.info(message)
+
 
 class Page(QTW.QFrame):
     "Panel subclass voor de notebook pagina's"
@@ -18,6 +29,7 @@ class Page(QTW.QFrame):
         hbox.addWidget(self.txt)
         vbox.addLayout(hbox)
         self.setLayout(vbox)
+
 
 
 class CheckDialog(QTW.QDialog):
@@ -61,15 +73,17 @@ class CheckDialog(QTW.QDialog):
             self.parent.opts[self.option] = False
         super().done(0)
 
+
 class MainFrame(QTW.QMainWindow, ApoMixin):
     """main class voor de applicatie
 
     subclass van Apomixin voor het gui-onafhankelijke gedeelte
     """
-    def __init__(self, parent=None, title=''):
+    def __init__(self, parent=None, file='', title=''):
         ## QTW.QMainWindow.__init__(self, parent)
         super().__init__(parent)
         if not title: title = "A Propos QT 5 version"
+        self.set_apofile(file)
         self.setWindowTitle(title)
         offset = 30 if sys.platform.startswith('win') else 10
         self.move(offset, offset)
@@ -79,7 +93,7 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
         self.tray_icon = QTW.QSystemTrayIcon(self.apoicon, self)
         self.tray_icon.setToolTip("Click to revive Apropos")
         ## self.tray_icon.clicked.connect(self.revive)
-        tray_signal = "activated(QSystemTrayIcon::ActivationReason)"
+        ## tray_signal = "activated(QSystemTrayIcon::ActivationReason)"
         ## self.tray_icon.tray_signal.connect(self.revive)
         self.tray_icon.activated.connect(self.revive)
         self.tray_icon.hide()
@@ -269,21 +283,11 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
                     self.opts["language"] = data[idx][0]
                     break
 
-def main(log=False, title=''):
+
+def main(file='', title=''):
     """starts the application by calling the MainFrame class
     """
-    if log:
-        print('with logging to file')
-        logging.basicConfig(filename='apropos_qt.log', level=logging.DEBUG,
-            format='%(asctime)s %(message)s')
-    else:
-        print('"no" logging')
-        logging.basicConfig(level=logging.DEBUG,
-            format='%(asctime)s %(message)s')
     app = QTW.QApplication(sys.argv)
-    if title:
-        frm = MainFrame(title=title)
-    else:
-        frm = MainFrame()
+    frm = MainFrame(file=file, title=title)
     frm.show()
     sys.exit(app.exec_())
