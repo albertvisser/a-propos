@@ -3,6 +3,7 @@
 argumenten: filenaam, toolkit, venstertitel
 """
 
+
 def apropos(file='', toolkit='qt', title=''):
     """start de GUI op.
 
@@ -13,10 +14,10 @@ def apropos(file='', toolkit='qt', title=''):
     elif toolkit == 'qt':
         from .apropos_qt5 import main
     elif toolkit == 'wx':
-        from apropos_wx import main
+        from .apropos_wx import main
     else:
         raise ValueError('Unknown GUI-toolkit specification: '
-            'currently only `qt(5)` and `wx` are supported')
+                         'currently only `qt(5)` and `wx` are supported')
     main(file=file, title=title)
 
 if __name__ == "__main__":

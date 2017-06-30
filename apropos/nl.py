@@ -1,3 +1,5 @@
+"""Translated texts, Dutch version
+"""
 lang = {"dutch": {
     "language": "Nederlands",
     "info": """\
@@ -27,5 +29,4 @@ Er komt een icoontje waarop je kunt klikken om hem weer wakker te maken""",
     "ask_language": 'kies taal:',
     "load_text": "Notities zijn (opnieuw) geladen",
     "save_text": "Notities zijn opgeslagen",
-    }
-}
+    }}

@@ -1,3 +1,5 @@
+"""Translated text, English version
+"""
 lang = {"eng": {
     "language": "English",
     "info": """\
@@ -26,5 +28,4 @@ An icon will appear that you can click on to revive it""",
     "ask_language": 'choose language:',
     "load_text": "(Re)loaded",
     "save_text": "Saved",
-    }
-}
+    }}

@@ -1,35 +1,38 @@
+"""apropos_qt5.py
+
+presentation layer and most of the application logic, Qt5 version
+"""
 import os
 import pathlib
 import sys
+import logging
 import PyQt5.QtWidgets as QTW
 import PyQt5.QtGui as gui
-import PyQt5.QtCore as core
-import logging
+## import PyQt5.QtCore as core
 from .apomixin import ApoMixin, languages
 HERE = pathlib.Path(__file__).parent # os.path.dirname(__file__)
 LOGDIR = HERE.parent / 'logs' / pathlib.Path.cwd().name
 if not LOGDIR.exists(): LOGDIR.mkdir()
 logging.basicConfig(filename=str(LOGDIR / 'apropos_qt.log'),
-    level=logging.DEBUG, format='%(asctime)s %(message)s')
+                    level=logging.DEBUG, format='%(asctime)s %(message)s')
 
 
 def log(message):
+    "only log when DEBUG is set in environment"
     if 'DEBUG' in os.environ and os.environ["DEBUG"] != "0":
         logging.info(message)
 
 
 class Page(QTW.QFrame):
     "Panel subclass voor de notebook pagina's"
-    def __init__(self, mf):
-        super().__init__()
-        ## QTW.QFrame.__init__(self)
+    def __init__(self, parent):
+        super().__init__(parent)
         self.txt = QTW.QTextEdit(self)
         vbox = QTW.QVBoxLayout()
         hbox = QTW.QHBoxLayout()
         hbox.addWidget(self.txt)
         vbox.addLayout(hbox)
         self.setLayout(vbox)
-
 
 
 class CheckDialog(QTW.QDialog):
@@ -80,9 +83,8 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
     subclass van Apomixin voor het gui-onafhankelijke gedeelte
     """
     def __init__(self, parent=None, file='', title=''):
-        ## QTW.QMainWindow.__init__(self, parent)
         super().__init__(parent)
-        if not title: title = "A Propos QT 5 version"
+        if not title: title = "A Propos"
         self.set_apofile(file)
         self.setWindowTitle(title)
         offset = 30 if sys.platform.startswith('win') else 10
@@ -100,6 +102,7 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
 
         self.nb = QTW.QTabWidget(self)
         self.setCentralWidget(self.nb)
+        self.current = 0
         self.nb.currentChanged.connect(self.page_changed)
         # pagina sluiten op dubbel - of middelklik
         ## self.nb.setTabsClosable(True) # workaround: sluitgadgets
@@ -116,8 +119,7 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
                 ('next', ('Alt+Right',), self.goto_next),
                 ('prev', ('Alt+Left',), self.goto_previous),
                 ('help', ('F1',), self.helppage),
-                ('title', ('F2',), self.asktitle),
-                ):
+                ('title', ('F2',), self.asktitle), ):
             action = QTW.QAction(label, self)
             action.setShortcuts([x for x in shortcuts])
             action.triggered.connect(handler)
@@ -125,16 +127,17 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
 
         self.initapp()
 
-    def page_changed(self, event=None):
+    def page_changed(self):  # , event=None):
         """pagina aanpassen nadat een andere gekozen is
         """
-        n = self.nb.count()                     # doen't seem to be necessary
         self.current = self.nb.currentIndex()
         currentpage = self.nb.currentWidget()
         if currentpage:
             currentpage.txt.setFocus()
 
     def load_data(self):
+        """get data and setup notebook
+        """
         aant = self.nb.count()
         widgets = [self.nb.widget(x) for x in range(aant)]
         self.nb.clear()
@@ -144,11 +147,15 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
         self.confirm(setting="NotifyOnLoad", textitem="load_text")
 
     def hide_app(self):
+        """minimize to tray
+        """
         self.confirm(setting="AskBeforeHide", textitem="hide_text")
         self.tray_icon.show()
         self.hide()
 
     def save_data(self):
+        """update persistent storage
+        """
         self.afsl()
         self.confirm(setting="NotifyOnSave", textitem="save_text")
 
@@ -156,8 +163,8 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
         """initialiseer de applicatie
         """
         self.opts = {"AskBeforeHide": True, "ActiveTab": 0, 'language': 'eng',
-            'NotifyOnSave': True, 'NotifyOnLoad': True}
-        self.load_notes()
+                     'NotifyOnSave': True, 'NotifyOnLoad': True}
+        self.apodata = self.load_notes()
         if self.apodata:
             for i, x in self.apodata.items():
                 if i == 0 and "AskBeforeHide" in x:
@@ -177,7 +184,7 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
         nieuw = self.nb.count() + 1
         if not titel:
             titel = str(nieuw)
-        newpage = Page(mf=self)
+        newpage = Page(self)
         if note is not None:
             newpage.txt.setText(note)
         self.nb.addTab(newpage, titel)
@@ -185,16 +192,20 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
         self.nb.setCurrentWidget(newpage)
 
     def goto_previous(self):
-        previous = self.current - 1
-        if previous < 0:
+        """navigeer naar de voorgaande tab indien aanwezig
+        """
+        newtab = self.current - 1
+        if newtab < 0:
             return
-        self.nb.setCurrentIndex(previous)
+        self.nb.setCurrentIndex(newtab)
 
     def goto_next(self):
-        next = self.current + 1
-        if next > self.nb.count():
+        """navigeer naar de volgende tab indien aanwezig
+        """
+        newtab = self.current + 1
+        if newtab > self.nb.count():
             return
-        self.nb.setCurrentIndex(next)
+        self.nb.setCurrentIndex(newtab)
 
     def closetab(self, pagetodelete=None):
         """sluit de aangegeven tab
@@ -224,20 +235,22 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
             self.show()
             self.tray_icon.hide()
 
-    def closeEvent(self, event=None):
+    def closeEvent(self):  # , event=None):
+        """reimplemented: event handler voor afsluiten van de applicatie
+        """
         self.afsl()
 
     def afsl(self):
         """applicatiedata opslaan voorafgaand aan afsluiten
         """
         self.opts["ActiveTab"] = self.nb.currentIndex()
-        self.apodata = {0: self.opts}
+        apodata = {0: self.opts}
         for i in range(self.nb.count()):
             page = self.nb.widget(i)
             title = str(self.nb.tabText(i))
             text = str(page.txt.toPlainText())
-            self.apodata[i+1] = (title, text)
-        self.save_notes()
+            apodata[i+1] = (title, text)
+        self.save_notes(apodata)
 
     def helppage(self):
         """vertoon de hulp pagina met keyboard shortcuts
@@ -245,13 +258,17 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
         self.meld(languages[self.opts["language"]]["info"])
 
     def meld(self, meld):
+        """Toon een melding in een venster
+        """
         QTW.QMessageBox.information(self, 'Apropos', meld, )
 
     def confirm(self, setting='', textitem=''):
+        """Vraag om bevestiging (wordt afgehandeld in de dialoog)
+        """
         if self.opts[setting]:
-            dlg = CheckDialog(self, 'Apropos',
-                message=languages[self.opts["language"]][textitem],
-                option=setting)
+            CheckDialog(self, 'Apropos',
+                        message=languages[self.opts["language"]][textitem],
+                        option=setting)
         else:
             logging.info(languages[self.opts["language"]][textitem])
 
@@ -259,8 +276,8 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
     def asktitle(self):
         """toon dialoog om tab titel in te vullen/aan te passen en verwerk antwoord
         """
-        text, ok = QTW.QInputDialog.getText(self, 'Apropos',
-            languages[self.opts["language"]]["ask_title"],
+        text, ok = QTW.QInputDialog.getText(
+            self, 'Apropos', languages[self.opts["language"]]["ask_title"],
             QTW.QLineEdit.Normal, self.nb.tabText(self.current))
         if ok:
             self.nb.setTabText(self.current, text)
@@ -274,8 +291,8 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
             if lang == self.opts["language"]:
                 cur_lng = idx
                 break
-        item, ok = QTW.QInputDialog.getItem(self, 'Apropos',
-            languages[self.opts["language"]]["ask_language"],
+        item, ok = QTW.QInputDialog.getItem(
+            self, 'Apropos', languages[self.opts["language"]]["ask_language"],
             [x[1] for x in data], cur_lng, False)
         if ok:
             for idx, lang in enumerate([x[1] for x in data]):
