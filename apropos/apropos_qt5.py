@@ -10,9 +10,10 @@ import PyQt5.QtWidgets as QTW
 import PyQt5.QtGui as gui
 ## import PyQt5.QtCore as core
 from .apomixin import ApoMixin, languages
-HERE = pathlib.Path(__file__).parent # os.path.dirname(__file__)
+HERE = pathlib.Path(__file__).parent  # os.path.dirname(__file__)
 LOGDIR = HERE.parent / 'logs' / pathlib.Path.cwd().name
-if not LOGDIR.exists(): LOGDIR.mkdir()
+if not LOGDIR.exists():
+    LOGDIR.mkdir()
 logging.basicConfig(filename=str(LOGDIR / 'apropos_qt.log'),
                     level=logging.DEBUG, format='%(asctime)s %(message)s')
 
@@ -84,7 +85,8 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
     """
     def __init__(self, parent=None, file='', title=''):
         super().__init__(parent)
-        if not title: title = "A Propos"
+        if not title:
+            title = "A Propos"
         self.set_apofile(file)
         self.setWindowTitle(title)
         offset = 30 if sys.platform.startswith('win') else 10
@@ -249,7 +251,7 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
             page = self.nb.widget(i)
             title = str(self.nb.tabText(i))
             text = str(page.txt.toPlainText())
-            apodata[i+1] = (title, text)
+            apodata[i + 1] = (title, text)
         self.save_notes(apodata)
 
     def helppage(self):
@@ -271,7 +273,6 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
                         option=setting)
         else:
             logging.info(languages[self.opts["language"]][textitem])
-
 
     def asktitle(self):
         """toon dialoog om tab titel in te vullen/aan te passen en verwerk antwoord

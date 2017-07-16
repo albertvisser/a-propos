@@ -10,4 +10,3 @@ parser.add_argument('-f', '--file', help='path to the data file (defaults to '
 parser.add_argument('-n', '--title', help="provide a title for the window")
 args = parser.parse_args()
 apropos(file=args.file, title=args.title)
-

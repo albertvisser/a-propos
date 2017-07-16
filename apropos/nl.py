@@ -28,5 +28,4 @@ Er komt een icoontje waarop je kunt klikken om hem weer wakker te maken""",
     "ask_title": 'Nieuwe titel voor de huidige tab:',
     "ask_language": 'kies taal:',
     "load_text": "Notities zijn (opnieuw) geladen",
-    "save_text": "Notities zijn opgeslagen",
-    }}
+    "save_text": "Notities zijn opgeslagen", }}

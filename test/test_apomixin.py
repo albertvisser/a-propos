@@ -1,6 +1,7 @@
 """
 Test stuff for the ApoMixin class
 """
+import os
 import sys
 import pathlib
 basedir = pathlib.Path(__file__).parent.joinpath('..')
@@ -12,6 +13,7 @@ import unittest
 from apropos.apomixin import apofile, ApoMixin
 testdumpfile = pathlib.Path('apropos_test.pck')
 
+
 class TestApoMixin(unittest.TestCase):
 
     def setUp(self):
@@ -20,10 +22,8 @@ class TestApoMixin(unittest.TestCase):
         """
         self.data = {
             1: {"aaa": "aaaaaaaa", "bbb": "bbbbbbbb", "ccc": "cccccccc"},
-            2: {"ddd": "dddddddd", "eee": "eeeeeeee", "fff": "ffffffff"}
-            }
+            2: {"ddd": "dddddddd", "eee": "eeeeeeee", "fff": "ffffffff"}}
         self.test = ApoMixin()
-
 
     def test_load_notes_happy_flow(self):
         """

@@ -27,5 +27,4 @@ An icon will appear that you can click on to revive it""",
     "ask_title": 'New title for current tab:',
     "ask_language": 'choose language:',
     "load_text": "(Re)loaded",
-    "save_text": "Saved",
-    }}
+    "save_text": "Saved", }}

@@ -8,6 +8,7 @@ sys.path.append(pathlib.Path(__file__).parent.joinpath('..'))
 
 from apropos.apomixin import languages
 
+
 class TestLanguages(unittest.TestCase):
 
     def test_keys(self):
@@ -17,7 +18,7 @@ class TestLanguages(unittest.TestCase):
         self.assertEqual(languages['dutch']['language'], 'Nederlands')
 
     def test_english(self):
-        self.assertEqual(languages['eng']['language'],'English')
+        self.assertEqual(languages['eng']['language'], 'English')
 
 if __name__ == '__main__':
     unittest.main()
