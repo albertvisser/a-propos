@@ -1,13 +1,17 @@
-# -*- coding: utf-8 -*-
+"""apropos_qt4.py
+
+presentation layer and most of the application logic, Qt4 version
+"""
 from __future__ import print_function
 
-import pathlib # os
+import pathlib  # os
 import sys
+import logging
 import PyQt4.QtGui as gui
 import PyQt4.QtCore as core
-import logging
 from .apomixin import ApoMixin, languages
-HERE = pathlib.Path(__file__).parent # os.path.dirname(__file__)
+HERE = pathlib.Path(__file__).parent  # os.path.dirname(__file__)
+
 
 class Page(gui.QFrame):
     "Panel subclass voor de notebook pagina's"
@@ -64,6 +68,7 @@ class CheckDialog(gui.QDialog):
             self.parent.opts[self.option] = False
         gui.QDialog.done(self, 0)
 
+
 class MainFrame(gui.QMainWindow, ApoMixin):
     """main class voor de applicatie
 
@@ -71,7 +76,8 @@ class MainFrame(gui.QMainWindow, ApoMixin):
     """
     def __init__(self, parent=None, title=''):
         gui.QMainWindow.__init__(self, parent)
-        if not title: title = "A Propos"
+        if not title:
+            title = "A Propos"
         self.setWindowTitle(title)
         offset = 30 if sys.platform.startswith('win') else 10
         self.move(offset, offset)
@@ -80,11 +86,9 @@ class MainFrame(gui.QMainWindow, ApoMixin):
         self.setWindowIcon(self.apoicon)
         self.tray_icon = gui.QSystemTrayIcon(self.apoicon, self)
         self.tray_icon.setToolTip("Click to revive Apropos")
-        self.connect(self.tray_icon, core.SIGNAL('clicked'),
-            self.revive)
+        self.connect(self.tray_icon, core.SIGNAL('clicked'), self.revive)
         tray_signal = "activated(QSystemTrayIcon::ActivationReason)"
-        self.connect(self.tray_icon, core.SIGNAL(tray_signal),
-            self.revive)
+        self.connect(self.tray_icon, core.SIGNAL(tray_signal), self.revive)
         self.tray_icon.hide()
 
         self.nb = gui.QTabWidget(self)
@@ -105,8 +109,7 @@ class MainFrame(gui.QMainWindow, ApoMixin):
                 ('next', ('Alt+Right',), self.goto_next),
                 ('prev', ('Alt+Left',), self.goto_previous),
                 ('help', ('F1',), self.helppage),
-                ('title', ('F2',), self.asktitle),
-                ):
+                ('title', ('F2',), self.asktitle)):
             action = gui.QAction(label, self)
             action.setShortcuts([x for x in shortcuts])
             self.connect(action, core.SIGNAL('triggered()'), handler)
@@ -117,13 +120,14 @@ class MainFrame(gui.QMainWindow, ApoMixin):
     def page_changed(self, event=None):
         """pagina aanpassen nadat een andere gekozen is
         """
-        n = self.nb.count()                     # doen't seem to be necessary
         self.current = self.nb.currentIndex()
         currentpage = self.nb.currentWidget()
         if currentpage:
             currentpage.txt.setFocus()
 
     def load_data(self):
+        """get data and setup notebook
+        """
         aant = self.nb.count()
         widgets = [self.nb.widget(x) for x in range(aant)]
         self.nb.clear()
@@ -133,11 +137,15 @@ class MainFrame(gui.QMainWindow, ApoMixin):
         self.confirm(setting="NotifyOnLoad", textitem="load_text")
 
     def hide_app(self):
+        """minimize to tray
+        """
         self.confirm(setting="AskBeforeHide", textitem="hide_text")
         self.tray_icon.show()
         self.hide()
 
     def save_data(self):
+        """update persistent storage
+        """
         self.afsl()
         self.confirm(setting="NotifyOnSave", textitem="save_text")
 
@@ -145,7 +153,7 @@ class MainFrame(gui.QMainWindow, ApoMixin):
         """initialiseer de applicatie
         """
         self.opts = {"AskBeforeHide": True, "ActiveTab": 0, 'language': 'eng',
-            'NotifyOnSave': True, 'NotifyOnLoad': True}
+                     'NotifyOnSave': True, 'NotifyOnLoad': True}
         self.load_notes()
         if self.apodata:
             for i, x in self.apodata.items():
@@ -174,12 +182,16 @@ class MainFrame(gui.QMainWindow, ApoMixin):
         self.nb.setCurrentWidget(newpage)
 
     def goto_previous(self):
+        """navigeer naar de voorgaande tab indien aanwezig
+        """
         previous = self.current - 1
         if previous < 0:
             return
         self.nb.setCurrentIndex(previous)
 
     def goto_next(self):
+        """navigeer naar de volgende tab indien aanwezig
+        """
         next = self.current + 1
         if next > self.nb.count():
             return
@@ -214,6 +226,8 @@ class MainFrame(gui.QMainWindow, ApoMixin):
             self.tray_icon.hide()
 
     def closeEvent(self, event=None):
+        """reimplemented: event handler voor afsluiten van de applicatie
+        """
         self.afsl()
 
     def afsl(self):
@@ -225,8 +239,8 @@ class MainFrame(gui.QMainWindow, ApoMixin):
             page = self.nb.widget(i)
             title = str(self.nb.tabText(i))
             text = str(page.txt.toPlainText())
-            self.apodata[i+1] = (title, text)
-        self.save_notes()
+            self.apodata[i + 1] = (title, text)
+        self.save_notes(self.apodata)
 
     def helppage(self):
         """vertoon de hulp pagina met keyboard shortcuts
@@ -234,19 +248,23 @@ class MainFrame(gui.QMainWindow, ApoMixin):
         self.meld(languages[self.opts["language"]]["info"])
 
     def meld(self, meld):
+        """Toon een melding in een venster
+        """
         gui.QMessageBox.information(self, 'Apropos', meld, )
 
     def confirm(self, setting='', textitem=''):
+        """Vraag om bevestiging (wordt afgehandeld in de dialoog)
+        """
         if self.opts[setting]:
-            dlg = CheckDialog(self, 'Apropos',
-                message=languages[self.opts["language"]][textitem],
-                option=setting)
+            CheckDialog(self, 'Apropos',
+                        message=languages[self.opts["language"]][textitem],
+                        option=setting)
 
     def asktitle(self):
         """toon dialoog om tab titel in te vullen/aan te passen en verwerk antwoord
         """
-        text, ok = gui.QInputDialog.getText(self, 'Apropos',
-            languages[self.opts["language"]]["ask_title"],
+        text, ok = gui.QInputDialog.getText(
+            self, 'Apropos', languages[self.opts["language"]]["ask_title"],
             gui.QLineEdit.Normal, self.nb.tabText(self.current))
         if ok:
             self.nb.setTabText(self.current, text)
@@ -260,8 +278,8 @@ class MainFrame(gui.QMainWindow, ApoMixin):
             if lang == self.opts["language"]:
                 cur_lng = idx
                 break
-        item, ok = gui.QInputDialog.getItem(self, 'Apropos',
-            languages[self.opts["language"]]["ask_language"],
+        item, ok = gui.QInputDialog.getItem(
+            self, 'Apropos', languages[self.opts["language"]]["ask_language"],
             [x[1] for x in data], cur_lng, False)
         if ok:
             for idx, lang in enumerate([x[1] for x in data]):
@@ -269,17 +287,17 @@ class MainFrame(gui.QMainWindow, ApoMixin):
                     self.opts["language"] = data[idx][0]
                     break
 
+
 def main(log=False, title=''):
     """starts the application by calling the MainFrame class
     """
     if log:
         print('with logging to file')
         logging.basicConfig(filename='apropos_qt.log', level=logging.DEBUG,
-            format='%(asctime)s %(message)s')
+                            format='%(asctime)s %(message)s')
     else:
         print('"no" logging')
-        logging.basicConfig(level=logging.DEBUG,
-            format='%(asctime)s %(message)s')
+        logging.basicConfig(level=logging.DEBUG, format='%(asctime)s %(message)s')
     app = gui.QApplication(sys.argv)
     if title:
         frm = MainFrame(title=title)

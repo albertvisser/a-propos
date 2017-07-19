@@ -4,17 +4,17 @@ Test stuff for the ApoMixin class
 import os
 import sys
 import pathlib
-basedir = pathlib.Path(__file__).parent.joinpath('..')
-sys.path.append(basedir)
-
 import pickle
 import copy
 import unittest
 from apropos.apomixin import apofile, ApoMixin
+basedir = pathlib.Path(__file__).parent.joinpath('..')
+sys.path.append(basedir)
 testdumpfile = pathlib.Path('apropos_test.pck')
 
 
 class TestApoMixin(unittest.TestCase):
+    "Test class for ApoMixin"
 
     def setUp(self):
         """
