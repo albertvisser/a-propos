@@ -237,7 +237,7 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
             self.show()
             self.tray_icon.hide()
 
-    def closeEvent(self):  # , event=None):
+    def closeEvent(self, event=None):
         """reimplemented: event handler voor afsluiten van de applicatie
         """
         self.afsl()
