@@ -166,7 +166,7 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
         """
         self.opts = {"AskBeforeHide": True, "ActiveTab": 0, 'language': 'eng',
                      'NotifyOnSave': True, 'NotifyOnLoad': True}
-        self.apodata = self.load_notes()
+        self.load_notes()
         if self.apodata:
             for i, x in self.apodata.items():
                 if i == 0 and "AskBeforeHide" in x:

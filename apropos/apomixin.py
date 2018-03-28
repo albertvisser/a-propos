@@ -7,6 +7,7 @@ gui-independent part of my apropos application
 import pathlib
 import sys
 import pickle
+import pdb
 if sys.version >= '3':
     from apropos import en, nl
 else:
@@ -33,15 +34,14 @@ class ApoMixin(object):
         """load or initialize data file
         """
         if not self.apofile.exists():
-            apodata = {}
+            self.apodata = {}
         else:
             try:
                 with self.apofile.open(mode='rb') as f_in:
-                    apodata = pickle.load(f_in)
+                    self.apodata = pickle.load(f_in)
             except ValueError:
                 with self.apofile.open(mode='r') as f_in:
-                    apodata = pickle.load(f_in)
-        return apodata
+                    self.apodata = pickle.load(f_in)
 
     def save_notes(self, data):
         """(re)save data file
