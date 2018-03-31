@@ -64,8 +64,10 @@ class MainFrame(wx.Frame, ApoMixin):
 
     subclass van Apomixin voor het gui-onafhankelijke gedeelte
     """
-    def __init__(self, parent, id=-1):
-        wx.Frame.__init__(self, parent, id, "Apropos", pos=(10, 10), size=(650, 400))
+    def __init__(self, parent, fname, title, id=-1):
+        title = title or 'Apropos'
+        wx.Frame.__init__(self, parent, id, title=title, pos=(10, 10),
+            size=(650, 400))
         self.Bind(wx.EVT_CLOSE, self.afsl)
         self.apoicon = wx.Icon(str(HERE / "apropos.ico"), wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.apoicon)
@@ -76,6 +78,7 @@ class MainFrame(wx.Frame, ApoMixin):
         self.nb.Bind(wx.EVT_MIDDLE_DOWN, self.on_left_doubleclick)
         self.nb.Bind(wx.EVT_LEFT_UP, self.on_left_release)
         self.nb.Bind(wx.EVT_KEY_DOWN, self.on_key)
+        self.set_apofile(fname)
         self.initapp()
         sizer0 = wx.BoxSizer(wx.VERTICAL)
         sizer1 = wx.BoxSizer(wx.HORIZONTAL)
@@ -286,14 +289,15 @@ class MainFrame(wx.Frame, ApoMixin):
         dlg.Destroy()
 
 
-def main(log=False):
+def main(fname, title, log=False):
     """starts the application by calling the MainFrame class
     """
+    print fname
     if log:
         print('with logging')
         app = wx.App(redirect=True, filename="apropos.log")
     else:
         print('no logging')
         app = wx.App(redirect=False)
-    MainFrame(None, -1)
+    MainFrame(None, fname, title, -1)
     app.MainLoop()
