@@ -7,7 +7,7 @@ gui-independent part of my apropos application
 import pathlib
 import sys
 import pickle
-import pdb
+## import pdb
 if sys.version >= '3':
     from apropos import en, nl
 else:

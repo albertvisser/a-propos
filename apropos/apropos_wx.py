@@ -3,7 +3,7 @@
 
 presentation layer and most of the application logic, wxPython (2) version
 """
-
+from __future__ import print_function
 import pathlib  # os
 ## import sys
 import wx
@@ -67,7 +67,7 @@ class MainFrame(wx.Frame, ApoMixin):
     def __init__(self, parent, fname, title, id=-1):
         title = title or 'Apropos'
         wx.Frame.__init__(self, parent, id, title=title, pos=(10, 10),
-            size=(650, 400))
+                          size=(650, 400))
         self.Bind(wx.EVT_CLOSE, self.afsl)
         self.apoicon = wx.Icon(str(HERE / "apropos.ico"), wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.apoicon)
@@ -292,7 +292,7 @@ class MainFrame(wx.Frame, ApoMixin):
 def main(fname, title, log=False):
     """starts the application by calling the MainFrame class
     """
-    print fname
+    print(fname)
     if log:
         print('with logging')
         app = wx.App(redirect=True, filename="apropos.log")

@@ -28,11 +28,12 @@ class InputDialog(Gtk.Dialog):
     "dialog for getting text input"
     def __init__(self, parent, title=""):
         super().__init__(title, parent, 0,
-            (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-             Gtk.STOCK_OK, Gtk.ResponseType.OK))
+                         (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                          Gtk.STOCK_OK, Gtk.ResponseType.OK))
 
     def get_text(self, title="", caption="Enter some text", text=""):
-
+        """callback for text field
+        """
         self.input = Gtk.Entry()
         if text:
             self.input.set_text(text)
@@ -42,8 +43,11 @@ class InputDialog(Gtk.Dialog):
         box.add(self.input)
         self.show_all()
 
-    def get_item(self, title="", caption="Choose an item", items=[], default=0):
-
+    def get_item(self, title="", caption="Choose an item", items=None, default=0):
+        """callback for selection field (combobox)
+        """
+        if not items:
+            items = []
         self.input = Gtk.ComboBoxText()
         for text in items:
             self.input.append_text(text)
@@ -102,10 +106,14 @@ class MainFrame(Gtk.Application):
         self.title = title
 
     def do_activate(self):
-        win = MainWin(application = self, file=self.file, title=self.title)
+        """start GUI
+        """
+        win = MainWin(application=self, file=self.file, title=self.title)
         win.present()
 
     def close(self, action, param):
+        """end GUI
+        """
         self.quit()
 
 
@@ -115,7 +123,6 @@ class MainWin(Gtk.ApplicationWindow, ApoMixin):
     subclass van Apomixin voor het gui-onafhankelijke gedeelte
     """
     def __init__(self, application, file='', title=''):
-        ## super().__init__(parent)
         if not title:
             title = "A Propos"
         self.app = application
@@ -168,9 +175,7 @@ class MainWin(Gtk.ApplicationWindow, ApoMixin):
         # page en page_num is blijkbaar de pagina waar we naartoe gaan
         # terwijl get_current_page de pagina aangeeft waar we vandaan komen
         self.current = page_num
-        ## self.current = self.nb.get_current_page()
         self.currentpage = page
-        ## self.currentpage = self.nb.get_nth_page(self.nb.get_current_page())
         print('page changed:', self.current)
         if self.currentpage:
             self.currentpage.txt.grab_focus()
@@ -188,7 +193,7 @@ class MainWin(Gtk.ApplicationWindow, ApoMixin):
         """minimize to tray
         """
         self.confirm(setting="AskBeforeHide", textitem="hide_text")
-        self.tray_icon.set_visible(True)
+        self.tray_icon.set_visible(True)    # niet gedefinieerd
         self.hide()
 
     def save_data(self, *args):
@@ -267,7 +272,7 @@ class MainWin(Gtk.ApplicationWindow, ApoMixin):
             curpage.textbuffer.set_text("")
             self.close()
         else:
-            test = self.nb.get_nth_page(pagetodelete)
+            ## test = self.nb.get_nth_page(pagetodelete)
             self.nb.remove_page(pagetodelete)
 
     def revive(self, *args):           # TODO: test
@@ -279,7 +284,7 @@ class MainWin(Gtk.ApplicationWindow, ApoMixin):
             ## pass
         ## else:
         self.show()
-        self.tray_icon.set_visible(False)
+        self.tray_icon.set_visible(False)  # niet gedefinieerd
 
     def close(self, *args):
         self.afsl()
@@ -292,9 +297,7 @@ class MainWin(Gtk.ApplicationWindow, ApoMixin):
         """applicatiedata opslaan voorafgaand aan afsluiten
         """
         self.opts["ActiveTab"] = self.current
-        ## self.opts["ActiveTab"] = self.nb.get_current_page()
         apodata = {0: self.opts}
-        ## for i in range(self.nb.get_n_pages()):
         for i in range(len(self.nb)):
             page = self.nb.get_nth_page(i)
             title = self.nb.get_tab_label_text(page)
@@ -314,7 +317,7 @@ class MainWin(Gtk.ApplicationWindow, ApoMixin):
         """Toon een melding in een venster
         """
         dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO,
-            Gtk.ButtonsType.OK, meld)
+                                   Gtk.ButtonsType.OK, meld)
         ## dialog.format_secondary_text(
             ## "And this is the secondary text that explains things.")
         dialog.run()

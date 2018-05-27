@@ -4,6 +4,7 @@ argumenten: filenaam, venstertitel indien gewenst
 """
 from .toolkit import toolkit
 
+
 def apropos(file='', title=''):
     """start de GUI op.
 
@@ -22,4 +23,3 @@ def apropos(file='', title=''):
         raise ValueError('Unknown GUI-toolkit specification: '
                          'currently only `qt(5)`, `gtk` and `wx` are supported')
     main(file=file, title=title)
-
