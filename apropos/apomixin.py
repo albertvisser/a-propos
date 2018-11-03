@@ -4,13 +4,16 @@ gui-independent part of my apropos application
 (mostly I/O functions)
 """
 
-import pathlib
+try:
+    import pathlib
+except ImportError:
+    import pathlib2 as pathlib
 import sys
 import pickle
 ## import pdb
-if sys.version >= '3':
+try:    # if sys.version >= '3':
     from apropos import en, nl
-else:
+except ImportError: # else:
     import en, nl
 
 languages = {}

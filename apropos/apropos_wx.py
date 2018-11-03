@@ -1,10 +1,12 @@
-# -*- coding: utf-8 -*-
 """apropos_wx.py
 
-presentation layer and most of the application logic, wxPython (2) version
+presentation layer and most of the application logic, wxPython (Phoenix) version
 """
 from __future__ import print_function
-import pathlib  # os
+try:
+    import pathlib  # os
+except ImportError:
+    import pathlib2 as pathlib
 ## import sys
 import wx
 from .apomixin import ApoMixin, languages
@@ -95,6 +97,7 @@ class MainFrame(wx.Frame, ApoMixin):
     def page_changed(self, event=None):
         """pagina aanpassen nadat een andere gekozen is
         """
+        print("in MainFrame.page_changed")
         self.current = event.GetSelection()
         currentpage = self.nb.GetPage(self.current)
         currentpage.txt.SetFocus()
@@ -141,7 +144,10 @@ class MainFrame(wx.Frame, ApoMixin):
             self.asktitle()
         elif keycode == wx.WXK_ESCAPE:
             self.afsl()
-            self.Destroy()
+            wx.CallAfter(self.Destroy)
+            # wx.CallAfter(self.Close)
+            return
+        print(skip)
         if event and skip:
             event.Skip()
 
@@ -229,16 +235,22 @@ class MainFrame(wx.Frame, ApoMixin):
     def afsl(self, event=None):
         """applicatiedata opslaan voorafgaand aan afsluiten
         """
+        print("in MainFrame.afsl")
         self.opts["ActiveTab"] = self.nb.GetSelection()
+        print("   got selection")
         self.apodata = {0: self.opts}
         for i in range(self.nb.GetPageCount()):
+            print('    getting page', i)
             page = self.nb.GetPage(i)
             title = self.nb.GetPageText(i)
             text = page.txt.GetValue()
             self.apodata[i + 1] = (title, text)
+        print('saving notes')
         self.save_notes(self.apodata)
         if event:
+            print('    skip event handling')
             event.Skip()
+        print('end of MainFrame.afsl')
 
     def helppage(self):
         """vertoon de hulp pagina met keyboard shortcuts
