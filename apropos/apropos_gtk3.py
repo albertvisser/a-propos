@@ -141,6 +141,7 @@ class MainWin(Gtk.ApplicationWindow, ApoMixin):
         ## self.tray_icon.set_visible(False)
 
         self.nb = Gtk.Notebook()
+        self.nb.set_scrollable(True)
         self.add(self.nb)
         self.current = 0
         self.nb.connect('switch-page', self.page_changed)
