@@ -11,22 +11,23 @@ except ImportError:
 import wx
 from .apomixin import ApoMixin, languages
 HERE = pathlib.Path(__file__).parent  # os.path.dirname(__file__)
+DFLT_SIZE = (650, 400)
 
 
 class Page(wx.Panel):
     "Panel subclass voor de notebook pagina's"
     def __init__(self, parent, id, mf):
         wx.Panel.__init__(self, parent, id)
-        self.txt = wx.TextCtrl(self, -1, style=wx.TE_MULTILINE)
+        self.txt = wx.TextCtrl(self, -1, style=wx.TE_MULTILINE | wx.BORDER_NONE, size=DFLT_SIZE)
         self.txt.Bind(wx.EVT_KEY_DOWN, mf.on_key)
         ## self.Bind(wx.EVT_TEXT, self.OnEvtText, self.txt)
         sizer0 = wx.BoxSizer(wx.VERTICAL)
-        sizer1 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer1.Add(self.txt, 1, wx.EXPAND)
-        sizer0.Add(sizer1, 1, wx.EXPAND)
+        # sizer1 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer0.Add(self.txt, 1, wx.EXPAND | wx.ALL, 5)
+        # sizer0.Add(sizer1, 1, wx.EXPAND)
         self.SetSizer(sizer0)
-        self.SetAutoLayout(True)
-        sizer0.Fit(self)
+        # self.SetAutoLayout(True)
+        # sizer0.Fit(self)
         sizer0.SetSizeHints(self)
         self.Layout()
 
@@ -40,7 +41,7 @@ class CheckDialog(wx.Dialog):
                  style=wx.DEFAULT_DIALOG_STYLE, message=""):
         self.parent = parent
         wx.Dialog.__init__(self, parent, id, title, pos, size, style)
-        pnl = wx.Panel(self, -1)
+        pnl = self  # wx.Panel(self, -1)
         sizer0 = wx.BoxSizer(wx.VERTICAL)
         sizer0.Add(wx.StaticText(pnl, -1, message), 1, wx.ALL, 5)
         sizer1 = wx.BoxSizer(wx.HORIZONTAL)
@@ -52,8 +53,7 @@ class CheckDialog(wx.Dialog):
         btn = wx.Button(pnl, id=wx.ID_OK)
         sizer1.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
         ## sizer1 = self.CreateStdDialogButtonSizer(wx.OK | wx.CANCEL)
-        sizer0.Add(sizer1, 0,
-                   wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
+        sizer0.Add(sizer1, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
         pnl.SetSizer(sizer0)
         pnl.SetAutoLayout(True)
         sizer0.Fit(pnl)
@@ -68,12 +68,11 @@ class MainFrame(wx.Frame, ApoMixin):
     """
     def __init__(self, parent, fname, title, id=-1):
         title = title or 'Apropos'
-        wx.Frame.__init__(self, parent, id, title=title, pos=(10, 10),
-                          size=(650, 400))
-        self.Bind(wx.EVT_CLOSE, self.afsl)
+        self.quitting = False
+        wx.Frame.__init__(self, parent, id, title=title, pos=(10, 10))  # , size=DFLT_SIZE)
         self.apoicon = wx.Icon(str(HERE / "apropos.ico"), wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.apoicon)
-        pnl = wx.Panel(self, -1)
+        pnl = self  # wx.Panel(self, -1)
         self.nb = wx.Notebook(pnl, -1)
         self.nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.page_changed)
         self.nb.Bind(wx.EVT_LEFT_DCLICK, self.on_left_doubleclick)
@@ -83,26 +82,24 @@ class MainFrame(wx.Frame, ApoMixin):
         self.set_apofile(fname)
         self.initapp()
         sizer0 = wx.BoxSizer(wx.VERTICAL)
-        sizer1 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer1.Add(self.nb, 1, wx.EXPAND)
-        sizer0.Add(sizer1, 1, wx.EXPAND)
+        # sizer1 = wx.BoxSizer(wx.HORIZONTAL)
+        sizer0.Add(self.nb, 1, wx.EXPAND | wx.ALL, 10)
+        # sizer0.Add(sizer1, 1, wx.EXPAND)
         pnl.SetSizer(sizer0)
-        pnl.SetAutoLayout(True)
-        sizer0.Fit(pnl)
+        # pnl.SetAutoLayout(True)
+        # sizer0.Fit(pnl)
         sizer0.SetSizeHints(pnl)
-        pnl.Layout()
+        # pnl.Layout()
         self.Bind(wx.EVT_CLOSE, self.afsl)
         self.Show()
 
     def page_changed(self, event=None):
         """pagina aanpassen nadat een andere gekozen is
         """
-        print("in MainFrame.page_changed")
-        self.current = event.GetSelection()
-        currentpage = self.nb.GetPage(self.current)
-        currentpage.txt.SetFocus()
-        ## if sys.platform == 'win32':
-        if True:  # os.name == 'nt':
+        if not self.quitting:
+            self.current = event.GetSelection()
+            currentpage = self.nb.GetPage(self.current)
+            currentpage.txt.SetFocus()
             event.Skip()
 
     def on_left_release(self, evt=None):
@@ -136,6 +133,7 @@ class MainFrame(wx.Frame, ApoMixin):
             elif keycode == ord("Q"):  # 81: Ctrl-Q afsluiten na saven
                 self.afsl()
                 self.Destroy()
+                self.quitting = True
             elif keycode == ord("L"):  # Ctrl-L choose Language
                 self.choose_language()
         elif keycode == wx.WXK_F1:
@@ -146,8 +144,8 @@ class MainFrame(wx.Frame, ApoMixin):
             self.afsl()
             wx.CallAfter(self.Destroy)
             # wx.CallAfter(self.Close)
-            return
-        print(skip)
+            self.quitting = True
+        print(event, skip)
         if event and skip:
             event.Skip()
 
@@ -173,8 +171,8 @@ class MainFrame(wx.Frame, ApoMixin):
         self.confirm(setting="AskBeforeHide", textitem="hide_text")
         self.tbi = wx.TaskBarIcon()
         self.tbi.SetIcon(self.apoicon, "Click to revive Apropos")
-        wx.EVT_TASKBAR_LEFT_UP(self.tbi, self.revive)
-        wx.EVT_TASKBAR_RIGHT_UP(self.tbi, self.revive)
+        self.tbi.Bind(wx.EVT_TASKBAR_LEFT_UP, self.revive)
+        self.tbi.Bind(wx.EVT_TASKBAR_RIGHT_UP, self.revive)
         self.Hide()
 
     def save_data(self):
@@ -283,7 +281,7 @@ class MainFrame(wx.Frame, ApoMixin):
     def choose_language(self):
         """toon dialoog om taal te kiezen en verwerk antwoord
         """
-        data = [(x, y["language"]) for x, y in languages.iteritems()]
+        data = [(x, y["language"]) for x, y in languages.items()]
         dlg = wx.SingleChoiceDialog(
             self, languages[self.opts["language"]]["ask_language"], "Apropos",
             [x[1] for x in data], wx.CHOICEDLG_STYLE)
@@ -304,12 +302,9 @@ class MainFrame(wx.Frame, ApoMixin):
 def main(fname, title, log=False):
     """starts the application by calling the MainFrame class
     """
-    print(fname)
     if log:
-        print('with logging')
         app = wx.App(redirect=True, filename="apropos.log")
     else:
-        print('no logging')
         app = wx.App(redirect=False)
     MainFrame(None, fname, title, -1)
     app.MainLoop()
