@@ -299,12 +299,12 @@ class MainFrame(wx.Frame, ApoMixin):
         dlg.Destroy()
 
 
-def main(fname, title, log=False):
+def main(file, title, log=False):
     """starts the application by calling the MainFrame class
     """
     if log:
         app = wx.App(redirect=True, filename="apropos.log")
     else:
         app = wx.App(redirect=False)
-    MainFrame(None, fname, title, -1)
+    MainFrame(None, file, title, -1)
     app.MainLoop()
