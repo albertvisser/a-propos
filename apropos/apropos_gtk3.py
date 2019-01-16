@@ -11,16 +11,18 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio
 from .apomixin import ApoMixin, languages
 HERE = pathlib.Path(__file__).parent
-LOGDIR = HERE.parent / 'logs' / pathlib.Path.cwd().name
-if not LOGDIR.exists():
-    LOGDIR.mkdir()
-logging.basicConfig(filename=str(LOGDIR / 'apropos_gtk3.log'),
-                    level=logging.DEBUG, format='%(asctime)s %(message)s')
+LOGFILE = HERE.parent / 'logs' / 'apropos_gtk3.log'
+WANT_LOGGING = 'DEBUG' in os.environ and os.environ["DEBUG"] != "0"
+if WANT_LOGGING:
+    LOGFILE.parent.mkdir(exist_ok=True)
+    LOGFILE.touch(exist_ok=True)
+    logging.basicConfig(filename=str(LOGFILE),
+                        level=logging.DEBUG, format='%(asctime)s %(message)s')
 
 
 def log(message):
     "only log when DEBUG is set in environment"
-    if 'DEBUG' in os.environ and os.environ["DEBUG"] != "0":
+    if WANT_LOGGING:
         logging.info(message)
 
 
