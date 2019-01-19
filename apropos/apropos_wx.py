@@ -61,6 +61,45 @@ class CheckDialog(wx.Dialog):
         pnl.Layout()
 
 
+class OptionsDialog(wx.Dialog):
+    """Dialog om de instellingen voor te tonen meldingen te tonen en eventueel te kunnen wijzigen
+    """
+    sett2text = {'AskBeforeHide': 'Melden dat de applicatie verborgen wordt in de system tray',
+                 'NotifyOnLoad': 'Melden dat de data opnieuw opgehaald is',
+                 'NotifyOnSave': 'Melden dat de data opgeslagen is'}
+
+    def __init__(self, parent, id):
+        self.parent = parent
+        super().__init__(parent, id, title='A Propos settings voor meldingen')
+        pnl = self  # wx.Panel(self, -1)
+        sizer0 = wx.BoxSizer(wx.VERTICAL)
+        sizer1 = wx.FlexGridSizer(cols=2)
+        self.controls = []
+        for key, value in self.parent.opts.items():
+            if key not in self.sett2text:
+                continue
+            sizer1.Add(wx.StaticText(pnl, -1, self.sett2text[key]), 1, wx.ALL, 5)
+            chk = wx.CheckBox(self, -1, '')
+            chk.SetValue(value)
+            sizer1.Add(chk, 1, wx.ALL, 5)
+            self.controls.append((key, chk))
+        sizer0.Add(sizer1, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
+        sizer1 = wx.BoxSizer(wx.HORIZONTAL)
+        btn = wx.Button(pnl, id=wx.ID_APPLY)
+        sizer1.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
+        self.SetAffirmativeId(wx.ID_APPLY)
+        btn = wx.Button(pnl, id=wx.ID_CLOSE)
+        sizer1.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
+        self.SetEscapeId(wx.ID_CLOSE)
+        # sizer1 = self.CreateStdDialogButtonSizer(wx.OK | wx.CANCEL)
+        sizer0.Add(sizer1, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
+        pnl.SetSizer(sizer0)
+        pnl.SetAutoLayout(True)
+        sizer0.Fit(pnl)
+        sizer0.SetSizeHints(pnl)
+        pnl.Layout()
+
+
 class MainFrame(wx.Frame, ApoMixin):
     """main class voor de applicatie
 
@@ -89,7 +128,8 @@ class MainFrame(wx.Frame, ApoMixin):
                 ('next', ('Alt+Right',), self.goto_next),
                 ('prev', ('Alt+Left',), self.goto_previous),
                 ('help', ('F1',), self.helppage),
-                ('title', ('F2',), self.asktitle), ):
+                ('title', ('F2',), self.asktitle),
+                ('settings', ('Alt+P',), self.options), ):
             menuitem = wx.MenuItem(None, -1, label)
             self.Bind(wx.EVT_MENU, handler, menuitem)
             for key in shortcuts:
@@ -140,7 +180,9 @@ class MainFrame(wx.Frame, ApoMixin):
         self.quitting = True  # bypass page_changed handling
         self.nb.DeleteAllPages()
         self.quitting = not self.quitting
+        # self.oldopts = self.opts   # settings veiligstellen
         self.initapp()
+        # self.opts.update({x: y for x, y in self.oldopts.items() if x != 'ActiveTab'})
         self.confirm(setting="NotifyOnLoad", textitem="load_text")
 
     def hide_app(self, event=None):
@@ -284,6 +326,14 @@ class MainFrame(wx.Frame, ApoMixin):
                     self.opts["language"] = data[idx][0]
                     break
         dlg.Destroy()
+
+    def options(self, event=None):
+        """check settings to show various messages"""
+        with OptionsDialog(self, -1) as dlg:
+            h = dlg.ShowModal()
+            if h == wx.ID_APPLY:
+                for keyvalue, control in dlg.controls:
+                    self.opts[keyvalue] = control.GetValue()
 
 
 def main(file, title, log=False):
