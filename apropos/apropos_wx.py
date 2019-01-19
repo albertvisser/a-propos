@@ -75,10 +75,8 @@ class MainFrame(wx.Frame, ApoMixin):
         pnl = self  # wx.Panel(self, -1)
         self.nb = wx.Notebook(pnl, -1)
         self.nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.page_changed)
-        ## self.nb.Bind(wx.EVT_LEFT_DCLICK, self.on_left_doubleclick)
-        ## self.nb.Bind(wx.EVT_MIDDLE_DOWN, self.on_left_doubleclick)
-        ## self.nb.Bind(wx.EVT_LEFT_UP, self.on_left_release)
-        # self.nb.Bind(wx.EVT_KEY_DOWN, self.on_key)
+        self.nb.Bind(wx.EVT_LEFT_DCLICK, self.on_left_doubleclick)
+        self.nb.Bind(wx.EVT_MIDDLE_DOWN, self.on_left_doubleclick)
         accel_list = []
         for label, shortcuts, handler in (
                 ('reload', ('Ctrl+R',), self.load_data),
@@ -97,7 +95,8 @@ class MainFrame(wx.Frame, ApoMixin):
             for key in shortcuts:
                 accel = wx.AcceleratorEntry(cmd=menuitem.GetId())
                 ok = accel.FromString(key)
-                accel_list.append(accel)
+                if ok:
+                    accel_list.append(accel)
         accel_table = wx.AcceleratorTable(accel_list)
         self.SetAcceleratorTable(accel_table)
         self.set_apofile(fname)
@@ -123,66 +122,24 @@ class MainFrame(wx.Frame, ApoMixin):
             currentpage.txt.SetFocus()
             event.Skip()
 
-    def on_left_release(self, evt=None):
-        """reageert op muis loslaten na selecteren andere tab
-        """
-        currentpage = self.nb.GetPage(self.current)
-        currentpage.txt.SetFocus()
-        evt.Skip()
-
-    def on_key(self, event=None):
-        """afhandeling toetsaanslagen / toetsencombinaties
-        """
-        skip = True
-        keycode = event.GetKeyCode()
-        if event.GetModifiers() == wx.MOD_CONTROL:  # evt.ControlDown()
-            if keycode == ord("R"):    # 76: Ctrl-R reload tabs
-                self.load_data()
-            elif keycode == ord("N"):  # 78: Ctrl-N nieuwe tab
-                self.newtab()
-            elif keycode == ord("W"):  # 87: Ctrl-W tab sluiten
-                self.closetab()
-                skip = False
-            ## elif keycode == wx.WXK_LEFT or keycode == wx.WXK_NUMPAD_LEFT: #  keycode == 314
-            ##     self.nb.AdvanceSelection(False)
-            ## elif keycode == wx.WXK_RIGHT or keycode == wx.WXK_NUMPAD_RIGHT: #  keycode == 316
-            ##     self.nb.AdvanceSelection()
-            elif keycode == ord("H"):  # 72: Ctrl-H Hide/minimize
-                self.hide_app()
-            elif keycode == ord("S"):  # 83: Ctrl-S saven zonder afsluiten
-                self.save_data()
-            elif keycode == ord("Q"):  # 81: Ctrl-Q afsluiten na saven
-                self.afsl()
-                self.Destroy()
-                self.quitting = True
-            elif keycode == ord("L"):  # Ctrl-L choose Language
-                self.choose_language()
-        elif keycode == wx.WXK_F1:
-            self.helppage()
-        elif keycode == wx.WXK_F2:
-            self.asktitle()
-        elif keycode == wx.WXK_ESCAPE:
-            self.afsl()
-            wx.CallAfter(self.Destroy)
-            # wx.CallAfter(self.Close)
-            self.quitting = True
-        print(event, skip)
-        if event and skip:
-            event.Skip()
-
     def on_left_doubleclick(self, event=None):
         """reageert op dubbelklikken op tab t.b.v. verwijderen pagina
         """
+        print('in mainframe.on_left_doubleclick')
         x = event.GetX()
         y = event.GetY()
         item, _ = self.nb.HitTest((x, y))
+        print('    event item is', item)
         self.closetab(item)
         event.Skip()
 
     def load_data(self, event=None):
         """get data and setup notebook
         """
+        print('in load_data')
+        self.quitting = True  # bypass page_changed handling
         self.nb.DeleteAllPages()
+        self.quitting = not self.quitting
         self.initapp()
         self.confirm(setting="NotifyOnLoad", textitem="load_text")
 
@@ -190,10 +147,10 @@ class MainFrame(wx.Frame, ApoMixin):
         """minimize to tray
         """
         self.confirm(setting="AskBeforeHide", textitem="hide_text")
-        self.tbi = wx.TaskBarIcon()
+        self.tbi = wx.adv.TaskBarIcon()
         self.tbi.SetIcon(self.apoicon, "Click to revive Apropos")
-        self.tbi.Bind(wx.EVT_TASKBAR_LEFT_UP, self.revive)
-        self.tbi.Bind(wx.EVT_TASKBAR_RIGHT_UP, self.revive)
+        self.tbi.Bind(wx.adv.EVT_TASKBAR_LEFT_UP, self.revive)
+        self.tbi.Bind(wx.adv.EVT_TASKBAR_RIGHT_UP, self.revive)
         self.Hide()
 
     def save_data(self, event=None):
@@ -234,9 +191,11 @@ class MainFrame(wx.Frame, ApoMixin):
         self.nb.SetSelection(nieuw)
 
     def goto_previous(self, event=None):
+        "switch to previous page in the notebook"
         self.nb.AdvanceSelection(False)
 
     def goto_next(self, event=None):
+        "switch to next page in the notebook"
         self.nb.AdvanceSelection()
 
     def closetab(self, event=None, pagetodelete=None):
@@ -250,6 +209,8 @@ class MainFrame(wx.Frame, ApoMixin):
             self.Destroy()
         else:
             self.nb.DeletePage(pagetodelete)
+            currentpage = self.nb.GetPage(self.current)
+            currentpage.txt.SetFocus()
 
     def revive(self, event=None):
         """herleef het scherm vanuit de systray
@@ -258,6 +219,8 @@ class MainFrame(wx.Frame, ApoMixin):
         self.tbi.Destroy()
 
     def close(self, event=None):
+        """Quit the application
+        """
         self.afsl()
         self.quitting = True
         self.nb.DeleteAllPages()
@@ -287,12 +250,11 @@ class MainFrame(wx.Frame, ApoMixin):
         """Vraag om bevestiging
         """
         if self.opts[setting]:
-            dlg = CheckDialog(self, -1, 'Apropos',
-                              message=languages[self.opts["language"]][textitem])
-            dlg.ShowModal()
-            if dlg.check.GetValue():
-                self.opts[setting] = False
-            dlg.Destroy()
+            with CheckDialog(self, -1, 'Apropos',
+                             message=languages[self.opts["language"]][textitem]) as dlg:
+                dlg.ShowModal()
+                if dlg.check.GetValue():
+                    self.opts[setting] = False
 
     def asktitle(self, event=None):
         """toon dialoog om tab titel in te vullen/aan te passen en verwerk antwoord
