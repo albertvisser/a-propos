@@ -62,6 +62,27 @@ class CheckDialog(wx.Dialog):
         pnl.Layout()
 
 
+class TaskbarIcon(wx.adv.TaskBarIcon):
+    "icon in the taskbar"
+    id_revive = wx.NewId()
+    id_close = wx.NewId()
+
+    def __init__(self, parent):
+        # super().__init__(wx.adv.TBI_DOCK)
+        wx.adv.TaskBarIcon.__init__(self)
+        self.SetIcon(parent.apoicon, "Click to revive Apropos")
+        self.Bind(wx.adv.EVT_TASKBAR_LEFT_DCLICK, parent.revive)
+        self.Bind(wx.EVT_MENU, parent.revive, id=self.id_revive)
+        self.Bind(wx.EVT_MENU, parent.close, id=self.id_close)
+
+    def CreatePopupMenu(self):
+        """reimplemented"""
+        menu = wx.Menu()
+        menu.Append(self.id_revive, 'Revive Apropos')
+        menu.Append(self.id_close, 'Close Apropos')
+        return menu
+
+
 class OptionsDialog(wx.Dialog):
     """Dialog om de instellingen voor te tonen meldingen te tonen en eventueel te kunnen wijzigen
     """
@@ -190,10 +211,10 @@ class MainFrame(wx.Frame, ApoMixin):
         """minimize to tray
         """
         self.confirm(setting="AskBeforeHide", textitem="hide_text")
-        self.tbi = wx.adv.TaskBarIcon()
-        self.tbi.SetIcon(self.apoicon, "Click to revive Apropos")
-        self.tbi.Bind(wx.adv.EVT_TASKBAR_LEFT_UP, self.revive)
-        self.tbi.Bind(wx.adv.EVT_TASKBAR_RIGHT_UP, self.revive)
+        self.tbi = TaskbarIcon(self)
+        # self.tbi.SetIcon(self.apoicon, "Click to revive Apropos")
+        # self.tbi.Bind(wx.adv.EVT_TASKBAR_LEFT_UP, self.revive)
+        # self.tbi.Bind(wx.adv.EVT_TASKBAR_RIGHT_UP, self.revive)
         self.Hide()
 
     def save_data(self, event=None):
