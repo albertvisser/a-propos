@@ -8,11 +8,25 @@ try:
 except ImportError:
     import pathlib2 as pathlib
 ## import sys
+import logging
 import wx
 import wx.adv
 from .apomixin import ApoMixin, languages
 HERE = pathlib.Path(__file__).parent  # os.path.dirname(__file__)
 DFLT_SIZE = (650, 400)
+LOGFILE = HERE.parent / 'logs' / 'apropos_wx.log'
+WANT_LOGGING = 'DEBUG' in os.environ and os.environ["DEBUG"] != "0"
+if WANT_LOGGING:
+    LOGFILE.parent.mkdir(exist_ok=True)
+    LOGFILE.touch(exist_ok=True)
+    logging.basicConfig(filename=str(LOGFILE),
+                        level=logging.DEBUG, format='%(asctime)s %(message)s')
+
+
+def log(message):
+    "only log when DEBUG is set in environment"
+    if WANT_LOGGING:
+        logging.info(message)
 
 
 class Page(wx.Panel):
@@ -358,9 +372,6 @@ class MainFrame(wx.Frame, ApoMixin):
 def main(file, title, log=False):
     """starts the application by calling the MainFrame class
     """
-    if log:
-        app = wx.App(redirect=True, filename="apropos.log")
-    else:
-        app = wx.App(redirect=False)
+    app = wx.App()
     MainFrame(None, file, title, -1)
     app.MainLoop()
