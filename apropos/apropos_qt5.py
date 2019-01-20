@@ -11,7 +11,7 @@ import PyQt5.QtGui as gui
 ## import PyQt5.QtCore as core
 from .apomixin import ApoMixin, languages
 HERE = pathlib.Path(__file__).parent  # os.path.dirname(__file__)
-LOGFILE = HERE.parent / 'logs' / 'apropos_gtk3.log'
+LOGFILE = HERE.parent / 'logs' / 'apropos_qt.log'
 WANT_LOGGING = 'DEBUG' in os.environ and os.environ["DEBUG"] != "0"
 if WANT_LOGGING:
     LOGFILE.parent.mkdir(exist_ok=True)
