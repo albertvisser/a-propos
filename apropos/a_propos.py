@@ -10,7 +10,6 @@ def apropos(file='', title=''):
 
     Importeert hiervoor de toolkit-specifieke code
     """
-    print(toolkit)
     if toolkit == 'qt4':
         from .apropos_qt4 import main
     elif toolkit == 'qt':
@@ -20,6 +19,6 @@ def apropos(file='', title=''):
     elif toolkit == 'wx':
         from .apropos_wx import main
     else:
-        raise ValueError('Unknown GUI-toolkit specification: '
-                         'currently only `qt(5)`, `gtk` and `wx` are supported')
+        raise ValueError('Unknown GUI-toolkit specification `{}`: '.format(toolkit)
+                         ', currently only `qt(4)`, `gtk` and `wx` are supported')
     main(file=file, title=title)
