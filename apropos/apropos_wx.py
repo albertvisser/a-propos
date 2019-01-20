@@ -65,7 +65,6 @@ class CheckDialog(wx.Dialog):
 class TaskbarIcon(wx.adv.TaskBarIcon):
     "icon in the taskbar"
     id_revive = wx.NewId()
-    id_close = wx.NewId()
 
     def __init__(self, parent):
         # super().__init__(wx.adv.TBI_DOCK)
@@ -73,13 +72,11 @@ class TaskbarIcon(wx.adv.TaskBarIcon):
         self.SetIcon(parent.apoicon, "Click to revive Apropos")
         self.Bind(wx.adv.EVT_TASKBAR_LEFT_DCLICK, parent.revive)
         self.Bind(wx.EVT_MENU, parent.revive, id=self.id_revive)
-        self.Bind(wx.EVT_MENU, parent.close, id=self.id_close)
 
     def CreatePopupMenu(self):
         """reimplemented"""
         menu = wx.Menu()
         menu.Append(self.id_revive, 'Revive Apropos')
-        menu.Append(self.id_close, 'Close Apropos')
         return menu
 
 
