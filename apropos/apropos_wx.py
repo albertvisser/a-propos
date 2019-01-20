@@ -9,6 +9,7 @@ except ImportError:
     import pathlib2 as pathlib
 ## import sys
 import wx
+import wx.adv
 from .apomixin import ApoMixin, languages
 HERE = pathlib.Path(__file__).parent  # os.path.dirname(__file__)
 DFLT_SIZE = (650, 400)
