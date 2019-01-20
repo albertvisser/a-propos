@@ -3,8 +3,9 @@
 presentation layer and most of the application logic, wxPython (Phoenix) version
 """
 from __future__ import print_function
+import os
 try:
-    import pathlib  # os
+    import pathlib
 except ImportError:
     import pathlib2 as pathlib
 ## import sys
