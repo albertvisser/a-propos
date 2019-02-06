@@ -19,6 +19,6 @@ def apropos(file='', title=''):
     elif toolkit == 'wx':
         from .apropos_wx import main
     else:
-        raise ValueError('Unknown GUI-toolkit specification `{}`: '.format(toolkit)
-                         ', currently only `qt(4)`, `gtk` and `wx` are supported')
+        raise ValueError('Unknown GUI-toolkit specification `{}`; '
+                         'currently only `qt(4)`, `gtk` and `wx` are supported'.format(toolkit))
     main(file=file, title=title)
