@@ -17,6 +17,7 @@ Ctrl-L          - kies taal
 
 Alt-rechts      - volgende tab
 Alt-links       - vorige tab
+Alt-P           - opties voor het tonen van dialogen
 
 F1              - deze (help)informatie
 F2              - wijzig tab titel
@@ -28,4 +29,7 @@ Er komt een icoontje waarop je kunt klikken om hem weer wakker te maken""",
     "ask_title": 'Nieuwe titel voor de huidige tab:',
     "ask_language": 'kies taal:',
     "load_text": "Notities zijn (opnieuw) geladen",
-    "save_text": "Notities zijn opgeslagen", }}
+    "save_text": "Notities zijn opgeslagen",
+    'ask_hide': 'Melden dat de applicatie verborgen wordt in de system tray',
+    'notify_load': 'Melden dat de data opnieuw opgehaald is',
+    'notify_save': 'Melden dat de data opgeslagen is' }}

@@ -98,21 +98,20 @@ class TaskbarIcon(wx.adv.TaskBarIcon):
 class OptionsDialog(wx.Dialog):
     """Dialog om de instellingen voor te tonen meldingen te tonen en eventueel te kunnen wijzigen
     """
-    sett2text = {'AskBeforeHide': 'Melden dat de applicatie verborgen wordt in de system tray',
-                 'NotifyOnLoad': 'Melden dat de data opnieuw opgehaald is',
-                 'NotifyOnSave': 'Melden dat de data opgeslagen is'}
-
     def __init__(self, parent, id):
         self.parent = parent
-        super().__init__(parent, id, title='A Propos settings voor meldingen')
+        sett2text = {'AskBeforeHide': languages[self.parent.opts["language"]]['ask_hide'],
+                     'NotifyOnLoad': languages[self.parent.opts["language"]]['notify_load'],
+                     'NotifyOnSave': languages[self.parent.opts["language"]]['notify_save']}
+        super().__init__(parent, id, title='A Propos Settings')
         pnl = self  # wx.Panel(self, -1)
         sizer0 = wx.BoxSizer(wx.VERTICAL)
         sizer1 = wx.FlexGridSizer(cols=2)
         self.controls = []
         for key, value in self.parent.opts.items():
-            if key not in self.sett2text:
+            if key not in sett2text:
                 continue
-            sizer1.Add(wx.StaticText(pnl, -1, self.sett2text[key]), 1, wx.ALL, 5)
+            sizer1.Add(wx.StaticText(pnl, -1, sett2text[key]), 1, wx.ALL, 5)
             chk = wx.CheckBox(self, -1, '')
             chk.SetValue(value)
             sizer1.Add(chk, 1, wx.ALL, 5)

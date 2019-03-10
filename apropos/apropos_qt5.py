@@ -80,6 +80,55 @@ class CheckDialog(QTW.QDialog):
         super().done(0)
 
 
+class OptionsDialog(QTW.QDialog):
+    """Dialog om de instellingen voor te tonen meldingen te tonen en eventueel te kunnen wijzigen
+    """
+    def __init__(self, parent):
+        self.parent = parent
+        sett2text = {'AskBeforeHide': languages[self.parent.opts["language"]]['ask_hide'],
+                     'NotifyOnLoad': languages[self.parent.opts["language"]]['notify_load'],
+                     'NotifyOnSave': languages[self.parent.opts["language"]]['notify_save']}
+        super().__init__(parent)
+        self.setWindowTitle('A Propos Settings')
+        vbox = QTW.QVBoxLayout()
+        self.controls = []
+
+        gbox = QTW.QGridLayout()
+        col = 0
+        for key, value in self.parent.opts.items():
+            if key not in sett2text:
+                continue
+            col += 1
+            lbl = QTW.QLabel(sett2text[key], self)
+            gbox.addWidget(lbl, col, 0)
+            chk = QTW.QCheckBox('', self)
+            chk.setChecked(value)
+            gbox.addWidget(chk, col, 1)
+            self.controls.append((key, chk))
+        vbox.addLayout(gbox)
+
+        hbox = QTW.QHBoxLayout()
+        hbox.addStretch(1)
+        ok_button = QTW.QPushButton("&Apply", self)
+        ok_button.clicked.connect(self.accept)
+        hbox.addWidget(ok_button)
+        cancel_button = QTW.QPushButton("&Close", self)
+        cancel_button.clicked.connect(self.reject)
+        hbox.addWidget(cancel_button)
+        hbox.addStretch(1)
+        vbox.addLayout(hbox)
+
+        self.setLayout(vbox)
+        self.exec_()
+
+    def accept(self):
+        """overridden event handler
+        """
+        for keyvalue, control in self.controls:
+            self.parent.opts[keyvalue] = control.GetValue()
+        super().accept()
+
+
 class MainFrame(QTW.QMainWindow, ApoMixin):
     """main class voor de applicatie
 
@@ -123,7 +172,8 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
                 ('next', ('Alt+Right',), self.goto_next),
                 ('prev', ('Alt+Left',), self.goto_previous),
                 ('help', ('F1',), self.helppage),
-                ('title', ('F2',), self.asktitle), ):
+                ('title', ('F2',), self.asktitle),
+                ('settings', ('Alt+P',), self.options), ):
             action = QTW.QAction(label, self)
             action.setShortcuts([x for x in shortcuts])
             action.triggered.connect(handler)
@@ -228,7 +278,7 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
             self.nb.removeTab(pagetodelete)
             test.destroy()
 
-    def revive(self, event=None):
+    def revive(self):
         """herleef het scherm vanuit de systray
         """
         if event == QTW.QSystemTrayIcon.Unknown:
@@ -239,7 +289,7 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
             self.show()
             self.tray_icon.hide()
 
-    def closeEvent(self, event=None):
+    def closeEvent(self):
         """reimplemented: event handler voor afsluiten van de applicatie
         """
         self.afsl()
@@ -302,6 +352,10 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
                 if lang == item:
                     self.opts["language"] = data[idx][0]
                     break
+
+    def options(self, event=None):
+        """check settings to show various messages"""
+        OptionsDialog(self)
 
 
 def main(file='', title=''):

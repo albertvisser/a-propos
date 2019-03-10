@@ -16,6 +16,7 @@ Ctrl-L          - choose language
 
 Alt-right       - next tab
 Alt-left        - previous tab
+Alt-P           - options for showing dialogs
 
 F1              - this (help)information
 F2              - edit tab title
@@ -27,4 +28,7 @@ An icon will appear that you can click on to revive it""",
     "ask_title": 'New title for current tab:',
     "ask_language": 'choose language:',
     "load_text": "(Re)loaded",
-    "save_text": "Saved", }}
+    "save_text": "Saved",
+    'ask_hide': 'Notify the application will be hidden in the system tray',
+    'notify_load': 'Notify the data has been reloaded',
+    'notify_save': 'Melden the data has been saved' }}

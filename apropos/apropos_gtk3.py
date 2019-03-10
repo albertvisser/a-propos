@@ -99,6 +99,35 @@ class CheckDialog(Gtk.Dialog):
         self.show_all()
 
 
+class OptionsDialog(Gtk.Dialog):
+    """Dialog om de instellingen voor te tonen meldingen te tonen en eventueel te kunnen wijzigen
+    """
+    def __init__(self, parent):
+        self.parent = parent
+        sett2text = {'AskBeforeHide': languages[self.parent.opts["language"]]['ask_hide'],
+                     'NotifyOnLoad': languages[self.parent.opts["language"]]['notify_load'],
+                     'NotifyOnSave': languages[self.parent.opts["language"]]['notify_save']}
+        super().__init__('A Propos Settings', parent, 0,
+                         (Gtk.STOCK_OK, Gtk.ResponseType.OK,
+                          Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL))
+        box = self.get_content_area()
+        grid = Gtk.Grid()
+        grid.set_column_spacing(15)
+        self.controls = []
+        row = -1
+        for key, value in self.parent.opts.items():
+            if key not in sett2text:
+                continue
+            row += 1
+            grid.attach(Gtk.Label(sett2text[key]), 0, row, 1, 1)
+            chk = Gtk.CheckButton.new_with_label('')
+            chk.set_active(value)
+            grid.attach(chk, 1, row, 1, 1)
+            self.controls.append((key, chk))
+        box.add(grid)
+        self.show_all()
+
+
 class MainFrame(Gtk.Application):
     """main class voor de applicatie
     """
@@ -161,11 +190,11 @@ class MainWin(Gtk.ApplicationWindow, ApoMixin):
                 ('next', ('<Alt>Right',), self.goto_next),
                 ('prev', ('<Alt>Left',), self.goto_previous),
                 ('help', ('F1',), self.helppage),
-                ('title', ('F2',), self.asktitle), ):
+                ('title', ('F2',), self.asktitle),
+                ('settings', ('<Alt>p',), self.options), ):
             action = Gio.SimpleAction.new(label, None)
             action.connect("activate", handler)
             for accel in shortcuts:
-                print(accel)
                 self.add_action(action)
                 self.app.add_accelerator(accel, 'win.' + label, None)
 
@@ -179,7 +208,6 @@ class MainWin(Gtk.ApplicationWindow, ApoMixin):
         # terwijl get_current_page de pagina aangeeft waar we vandaan komen
         self.current = page_num
         self.currentpage = page
-        print('page changed:', self.current)
         if self.currentpage:
             self.currentpage.txt.grab_focus()
 
@@ -308,7 +336,6 @@ class MainWin(Gtk.ApplicationWindow, ApoMixin):
                                             page.textbuffer.get_end_iter(),
                                             True)
             apodata[i + 1] = (title, text)
-        print(apodata)
         self.save_notes(apodata)
 
     def helppage(self, *args):
@@ -373,6 +400,15 @@ class MainWin(Gtk.ApplicationWindow, ApoMixin):
                 if lang == text:
                     self.opts["language"] = data[idx][0]
                     break
+        dlg.destroy()
+
+    def options(self, *args):
+        """check settings to show various messages"""
+        dlg = OptionsDialog(self)
+        response = dlg.run()
+        if response == Gtk.ResponseType.OK:
+            for keyvalue, control in dlg.controls:
+                self.opts[keyvalue] = control.get_active()
         dlg.destroy()
 
 
