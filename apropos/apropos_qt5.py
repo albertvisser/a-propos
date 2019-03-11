@@ -125,7 +125,7 @@ class OptionsDialog(QTW.QDialog):
         """overridden event handler
         """
         for keyvalue, control in self.controls:
-            self.parent.opts[keyvalue] = control.GetValue()
+            self.parent.opts[keyvalue] = control.isChecked()
         super().accept()
 
 
@@ -289,7 +289,7 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
             self.show()
             self.tray_icon.hide()
 
-    def closeEvent(self):
+    def closeEvent(self, event=None):
         """reimplemented: event handler voor afsluiten van de applicatie
         """
         self.afsl()
