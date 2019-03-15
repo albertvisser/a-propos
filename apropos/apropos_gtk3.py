@@ -419,5 +419,5 @@ def main(file='', title=''):
     ## win = MainFrame(app, file=file, title=title)
     ## win.connect("delete-event", Gtk.main_quit)
     ## win.show_all()
-    app.run(sys.argv)
+    app.run()  # sys.argv)
     ## Gtk.main()
