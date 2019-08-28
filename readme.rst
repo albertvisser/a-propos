@@ -39,25 +39,29 @@ It has the following functions, activated by keyboard shortcuts:
 Usage
 -----
 
-The root of this repo contains a file called ``apo_start.pyw`` which - as the name
+The root of this repo contains a file called ``start.py`` which - as the name
 suggests - starts the application. It can be called without parameters, or with
 a filename.
 If no name is given, the notes file is loaded from the directory you started
 the application from- using a standard name - and is created if it isn't present.
+
+Functionality is not guaranteed for Python < 3.5
+
 It's possible to have what explanatory texts there are displayed in a language of
 choice, however currently only Dutch and English are available.
 
-To make this application work under Python 3 I had to change GUI toolkits so I made
-a PyQt version.
-To change back to the wx version simply change the import in a_propos.py and call
-apo_start using Python 2.
+Some history
+------------
+I started building this app using wxPython. To make it work under Python 3 I had to change GUI toolkits so I made a PyQt version.
+
+Since the release of wxPhoenix, the wxPython version was reinstated and brought up-to-date. Just for kicks I also wrote a Gtk version.
 
 Requirements
 ------------
 
 - Python
-- PyQt4 for the Python 3 version
-- wxPython for the Python 2 version
+- either PyQt5, wxPython (>=4) or Gtk (3) for the GUI part
+  
 
 Note that the current implementation uses *pickle* for storing the data, I'm in the
 process of changing that to something safer.

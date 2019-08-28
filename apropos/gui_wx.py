@@ -2,48 +2,21 @@
 
 presentation layer and most of the application logic, wxPython (Phoenix) version
 """
-from __future__ import print_function
-import os
-try:
-    import pathlib
-except ImportError:
-    import pathlib2 as pathlib
-## import sys
-import logging
 import wx
 import wx.adv
-from .apomixin import ApoMixin, languages
-HERE = pathlib.Path(__file__).parent  # os.path.dirname(__file__)
+import apropos.shared as shared
+languages = shared.languages
 DFLT_SIZE = (650, 400)
-LOGFILE = HERE.parent / 'logs' / 'apropos_wx.log'
-WANT_LOGGING = 'DEBUG' in os.environ and os.environ["DEBUG"] != "0"
-if WANT_LOGGING:
-    LOGFILE.parent.mkdir(exist_ok=True)
-    LOGFILE.touch(exist_ok=True)
-    logging.basicConfig(filename=str(LOGFILE),
-                        level=logging.DEBUG, format='%(asctime)s %(message)s')
-
-
-def log(message):
-    "only log when DEBUG is set in environment"
-    if WANT_LOGGING:
-        logging.info(message)
 
 
 class Page(wx.Panel):
     "Panel subclass voor de notebook pagina's"
-    def __init__(self, parent, id, mf):
-        wx.Panel.__init__(self, parent, id)
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
         self.txt = wx.TextCtrl(self, -1, style=wx.TE_MULTILINE, size=DFLT_SIZE)
-        # self.txt.Bind(wx.EVT_KEY_DOWN, mf.on_key)
-        ## self.Bind(wx.EVT_TEXT, self.OnEvtText, self.txt)
         sizer0 = wx.BoxSizer(wx.VERTICAL)
-        # sizer1 = wx.BoxSizer(wx.HORIZONTAL)
         sizer0.Add(self.txt, 1, wx.EXPAND | wx.ALL, 10)
-        # sizer0.Add(sizer1, 1, wx.EXPAND)
         self.SetSizer(sizer0)
-        # self.SetAutoLayout(True)
-        # sizer0.Fit(self)
         sizer0.SetSizeHints(self)
         self.Layout()
 
@@ -100,9 +73,7 @@ class OptionsDialog(wx.Dialog):
     """
     def __init__(self, parent, id):
         self.parent = parent
-        sett2text = {'AskBeforeHide': languages[self.parent.opts["language"]]['ask_hide'],
-                     'NotifyOnLoad': languages[self.parent.opts["language"]]['notify_load'],
-                     'NotifyOnSave': languages[self.parent.opts["language"]]['notify_save']}
+        sett2text = shared.get_setttexts(self.parent.opts)
         super().__init__(parent, id, title='A Propos Settings')
         pnl = self  # wx.Panel(self, -1)
         sizer0 = wx.BoxSizer(wx.VERTICAL)
@@ -133,16 +104,14 @@ class OptionsDialog(wx.Dialog):
         pnl.Layout()
 
 
-class MainFrame(wx.Frame, ApoMixin):
+class MainFrame(wx.Frame):
     """main class voor de applicatie
-
-    subclass van Apomixin voor het gui-onafhankelijke gedeelte
     """
-    def __init__(self, parent, fname, title, id=-1):
+    def __init__(self, parent, fname, title):
         title = title or 'Apropos'
         self.quitting = False
-        wx.Frame.__init__(self, parent, id, title=title, pos=(10, 10))  # , size=DFLT_SIZE)
-        self.apoicon = wx.Icon(str(HERE / "apropos.ico"), wx.BITMAP_TYPE_ICO)
+        wx.Frame.__init__(self, parent, title=title, pos=(10, 10))  # , size=DFLT_SIZE)
+        self.apoicon = wx.Icon(shared.iconame, wx.BITMAP_TYPE_ICO)
         self.SetIcon(self.apoicon)
         pnl = self  # wx.Panel(self, -1)
         self.nb = wx.Notebook(pnl, -1)
@@ -150,19 +119,9 @@ class MainFrame(wx.Frame, ApoMixin):
         self.nb.Bind(wx.EVT_LEFT_DCLICK, self.on_left_doubleclick)
         self.nb.Bind(wx.EVT_MIDDLE_DOWN, self.on_left_doubleclick)
         accel_list = []
-        for label, shortcuts, handler in (
-                ('reload', ('Ctrl+R',), self.load_data),
-                ('newtab', ('Ctrl+N',), self.newtab),
-                ('close', ('Ctrl+W',), self.closetab),
-                ('hide', ('Ctrl+H',), self.hide_app),
-                ('save', ('Ctrl+S',), self.save_data),
-                ('quit', ('Ctrl+Q', 'Escape'), self.close),
-                ('language', ('Ctrl+L',), self.choose_language),
-                ('next', ('Alt+Right',), self.goto_next),
-                ('prev', ('Alt+Left',), self.goto_previous),
-                ('help', ('F1',), self.helppage),
-                ('title', ('F2',), self.asktitle),
-                ('settings', ('Alt+P',), self.options), ):
+        self.handlers = self.map_shortcuts_to_handlers()
+        for label, shortcuts in shared.get_shortcuts():
+            handler = self.handlers[label]
             menuitem = wx.MenuItem(None, -1, label)
             self.Bind(wx.EVT_MENU, handler, menuitem)
             for key in shortcuts:
@@ -172,7 +131,7 @@ class MainFrame(wx.Frame, ApoMixin):
                     accel_list.append(accel)
         accel_table = wx.AcceleratorTable(accel_list)
         self.SetAcceleratorTable(accel_table)
-        self.set_apofile(fname)
+        self.apofile = shared.get_apofile(fname)
         self.initapp()
         sizer0 = wx.BoxSizer(wx.VERTICAL)
         # sizer1 = wx.BoxSizer(wx.HORIZONTAL)
@@ -185,6 +144,21 @@ class MainFrame(wx.Frame, ApoMixin):
         # pnl.Layout()
         self.Bind(wx.EVT_CLOSE, self.close)
         self.Show()
+
+    def map_shortcuts_to_handlers(self):
+        "because we cannot import the handlers from shared"
+        return {'reload': self.load_data,
+                'newtab': self.newtab,
+                'close': self.closetab,
+                'hide': self.hide_app,
+                'save': self.save_data,
+                'quit': self.close,
+                'language': self.choose_language,
+                'next': self.goto_next,
+                'prev': self.goto_previous,
+                'help': self.helppage,
+                'title': self.asktitle,
+                'settings': self.options}
 
     def page_changed(self, event=None):
         """pagina aanpassen nadat een andere gekozen is
@@ -237,16 +211,10 @@ class MainFrame(wx.Frame, ApoMixin):
     def initapp(self):
         """initialiseer de applicatie
         """
-        self.opts = {"AskBeforeHide": True, "ActiveTab": 0, 'language': 'eng',
-                     'NotifyOnSave': True, 'NotifyOnLoad': True}
-        self.load_notes()
+        self.opts, self.apodata = shared.load_notes(self.apofile)
         if self.apodata:
-            for i, x in self.apodata.items():
-                if i == 0 and "AskBeforeHide" in x:
-                    for key, val in x.items():
-                        self.opts[key] = val
-                else:
-                    self.newtab(titel=x[0], note=x[1])
+            for x in self.apodata.values():
+                self.newtab(titel=x[0], note=x[1])
             self.nb.ChangeSelection(self.opts["ActiveTab"])
             self.current = self.opts["ActiveTab"]
         else:
@@ -259,7 +227,7 @@ class MainFrame(wx.Frame, ApoMixin):
         nieuw = self.nb.GetPageCount()
         if titel is None:
             titel = str(nieuw)
-        newpage = Page(self.nb, -1, mf=self)
+        newpage = Page(self.nb)
         if note is not None:
             newpage.txt.SetValue(note)
         self.nb.AddPage(newpage, titel)
@@ -311,7 +279,7 @@ class MainFrame(wx.Frame, ApoMixin):
             title = self.nb.GetPageText(i)
             text = page.txt.GetValue()
             self.apodata[i + 1] = (title, text)
-        self.save_notes(self.apodata)
+        shared.save_notes(self.apofile, self.apodata)
 
     def helppage(self, event=None):
         """vertoon de hulp pagina met keyboard shortcuts
@@ -369,9 +337,10 @@ class MainFrame(wx.Frame, ApoMixin):
                     self.opts[keyvalue] = control.GetValue()
 
 
-def main(file, title, log=False):
+def main(fname, title):
     """starts the application by calling the MainFrame class
     """
+    print('in wx version')
     app = wx.App()
-    MainFrame(None, file, title, -1)
+    MainFrame(None, fname=fname, title=title)
     app.MainLoop()

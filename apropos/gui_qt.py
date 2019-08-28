@@ -2,28 +2,12 @@
 
 presentation layer and most of the application logic, Qt5 version
 """
-import os
-import pathlib
 import sys
-import logging
 import PyQt5.QtWidgets as QTW
 import PyQt5.QtGui as gui
 ## import PyQt5.QtCore as core
-from .apomixin import ApoMixin, languages
-HERE = pathlib.Path(__file__).parent  # os.path.dirname(__file__)
-LOGFILE = HERE.parent / 'logs' / 'apropos_qt.log'
-WANT_LOGGING = 'DEBUG' in os.environ and os.environ["DEBUG"] != "0"
-if WANT_LOGGING:
-    LOGFILE.parent.mkdir(exist_ok=True)
-    LOGFILE.touch(exist_ok=True)
-    logging.basicConfig(filename=str(LOGFILE),
-                        level=logging.DEBUG, format='%(asctime)s %(message)s')
-
-
-def log(message):
-    "only log when DEBUG is set in environment"
-    if WANT_LOGGING:
-        logging.info(message)
+import apropos.shared as shared
+languages = shared.languages
 
 
 class Page(QTW.QFrame):
@@ -85,9 +69,7 @@ class OptionsDialog(QTW.QDialog):
     """
     def __init__(self, parent):
         self.parent = parent
-        sett2text = {'AskBeforeHide': languages[self.parent.opts["language"]]['ask_hide'],
-                     'NotifyOnLoad': languages[self.parent.opts["language"]]['notify_load'],
-                     'NotifyOnSave': languages[self.parent.opts["language"]]['notify_save']}
+        sett2text = shared.get_setttexts(self.parent.opts)
         super().__init__(parent)
         self.setWindowTitle('A Propos Settings')
         vbox = QTW.QVBoxLayout()
@@ -129,21 +111,20 @@ class OptionsDialog(QTW.QDialog):
         super().accept()
 
 
-class MainFrame(QTW.QMainWindow, ApoMixin):
+class MainFrame(QTW.QMainWindow):
     """main class voor de applicatie
-
-    subclass van Apomixin voor het gui-onafhankelijke gedeelte
     """
-    def __init__(self, parent=None, file='', title=''):
+    def __init__(self, parent=None, fname='', title=''):
         super().__init__(parent)
         if not title:
             title = "A Propos"
-        self.set_apofile(file)
+        self.apofile = shared.get_apofile(fname)
         self.setWindowTitle(title)
         offset = 30 if sys.platform.startswith('win') else 10
         self.move(offset, offset)
         self.resize(650, 400)
-        self.apoicon = gui.QIcon(str(HERE / "apropos.ico"))
+        # self.apoicon = gui.QIcon(str(HERE / "apropos.ico"))
+        self.apoicon = gui.QIcon(shared.iconame)
         self.setWindowIcon(self.apoicon)
         self.tray_icon = QTW.QSystemTrayIcon(self.apoicon, self)
         self.tray_icon.setToolTip("Click to revive Apropos")
@@ -161,25 +142,30 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
         ## self.nb.setTabsClosable(True) # workaround: sluitgadgets
         self.nb.tabCloseRequested.connect(self.closetab)
 
-        for label, shortcuts, handler in (
-                ('reload', ('Ctrl+R',), self.load_data),
-                ('newtab', ('Ctrl+N',), self.newtab),
-                ('close', ('Ctrl+W',), self.closetab),
-                ('hide', ('Ctrl+H',), self.hide_app),
-                ('save', ('Ctrl+S',), self.save_data),
-                ('quit', ('Ctrl+Q', 'Escape'), self.close),
-                ('language', ('Ctrl+L',), self.choose_language),
-                ('next', ('Alt+Right',), self.goto_next),
-                ('prev', ('Alt+Left',), self.goto_previous),
-                ('help', ('F1',), self.helppage),
-                ('title', ('F2',), self.asktitle),
-                ('settings', ('Alt+P',), self.options), ):
+        self.handlers = self.map_shortcuts_to_handlers()
+        for label, shortcuts in shared.get_shortcuts():
+            handler = self.handlers[label]
             action = QTW.QAction(label, self)
             action.setShortcuts([x for x in shortcuts])
             action.triggered.connect(handler)
             self.addAction(action)
 
         self.initapp()
+
+    def map_shortcuts_to_handlers(self):
+        "because we cannot import the handlers from shared"
+        return {'reload': self.load_data,
+                'newtab': self.newtab,
+                'close': self.closetab,
+                'hide': self.hide_app,
+                'save': self.save_data,
+                'quit': self.close,
+                'language': self.choose_language,
+                'next': self.goto_next,
+                'prev': self.goto_previous,
+                'help': self.helppage,
+                'title': self.asktitle,
+                'settings': self.options}
 
     def page_changed(self):  # , event=None):
         """pagina aanpassen nadat een andere gekozen is
@@ -216,9 +202,7 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
     def initapp(self):
         """initialiseer de applicatie
         """
-        self.opts = {"AskBeforeHide": True, "ActiveTab": 0, 'language': 'eng',
-                     'NotifyOnSave': True, 'NotifyOnLoad': True}
-        self.load_notes()
+        self.opts, self.apodata = shared.load_notes(self.apofile)
         if self.apodata:
             for i, x in self.apodata.items():
                 if i == 0 and "AskBeforeHide" in x:
@@ -278,7 +262,7 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
             self.nb.removeTab(pagetodelete)
             test.destroy()
 
-    def revive(self):
+    def revive(self, event=None):
         """herleef het scherm vanuit de systray
         """
         if event == QTW.QSystemTrayIcon.Unknown:
@@ -304,7 +288,7 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
             title = str(self.nb.tabText(i))
             text = str(page.txt.toPlainText())
             apodata[i + 1] = (title, text)
-        self.save_notes(apodata)
+        shared.save_notes(self.apofile, apodata)
 
     def helppage(self):
         """vertoon de hulp pagina met keyboard shortcuts
@@ -324,7 +308,7 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
                         message=languages[self.opts["language"]][textitem],
                         option=setting)
         else:
-            logging.info(languages[self.opts["language"]][textitem])
+            shared.log(languages[self.opts["language"]][textitem])
 
     def asktitle(self):
         """toon dialoog om tab titel in te vullen/aan te passen en verwerk antwoord
@@ -358,10 +342,11 @@ class MainFrame(QTW.QMainWindow, ApoMixin):
         OptionsDialog(self)
 
 
-def main(file='', title=''):
+def main(fname='', title=''):
     """starts the application by calling the MainFrame class
     """
+    print('in qt version')
     app = QTW.QApplication(sys.argv)
-    frm = MainFrame(file=file, title=title)
+    frm = MainFrame(fname=fname, title=title)
     frm.show()
     sys.exit(app.exec_())

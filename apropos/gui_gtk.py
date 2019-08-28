@@ -2,28 +2,23 @@
 
 presentation layer and most of the application logic, gtk3 version
 """
-import os
-import pathlib
 import sys
-import logging
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio
-from .apomixin import ApoMixin, languages
-HERE = pathlib.Path(__file__).parent
-LOGFILE = HERE.parent / 'logs' / 'apropos_gtk3.log'
-WANT_LOGGING = 'DEBUG' in os.environ and os.environ["DEBUG"] != "0"
-if WANT_LOGGING:
-    LOGFILE.parent.mkdir(exist_ok=True)
-    LOGFILE.touch(exist_ok=True)
-    logging.basicConfig(filename=str(LOGFILE),
-                        level=logging.DEBUG, format='%(asctime)s %(message)s')
+import apropos.shared as shared
+languages = shared.languages
 
 
-def log(message):
-    "only log when DEBUG is set in environment"
-    if WANT_LOGGING:
-        logging.info(message)
+def convert2gtk(accel):
+    "rebuild the accel string in gtk format"
+    parts = accel.split('+')
+    for ix, part in enumerate(parts[:-1]):
+        parts[ix] = part.replace('ctrl', 'Control').join(('<', '>'))
+    if len(parts[-1]) == 1:
+        parts[-1] = parts[-1].upper()
+    accel = ''.join(parts)
+    return accel
 
 
 class InputDialog(Gtk.Dialog):
@@ -104,9 +99,7 @@ class OptionsDialog(Gtk.Dialog):
     """
     def __init__(self, parent):
         self.parent = parent
-        sett2text = {'AskBeforeHide': languages[self.parent.opts["language"]]['ask_hide'],
-                     'NotifyOnLoad': languages[self.parent.opts["language"]]['notify_load'],
-                     'NotifyOnSave': languages[self.parent.opts["language"]]['notify_save']}
+        sett2text = shared.get_setttexts(self.parent.opts)
         super().__init__('A Propos Settings', parent, 0,
                          (Gtk.STOCK_OK, Gtk.ResponseType.OK,
                           Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL))
@@ -115,9 +108,11 @@ class OptionsDialog(Gtk.Dialog):
         grid.set_column_spacing(15)
         self.controls = []
         row = -1
-        for key, value in self.parent.opts.items():
-            if key not in sett2text:
-                continue
+        # for key, value in self.parent.opts.items():
+        #     if key not in sett2text:
+        #         continue
+        for key in sett2text:
+            value = self.parent.opts.items[key]
             row += 1
             grid.attach(Gtk.Label(sett2text[key]), 0, row, 1, 1)
             chk = Gtk.CheckButton.new_with_label('')
@@ -131,15 +126,15 @@ class OptionsDialog(Gtk.Dialog):
 class MainFrame(Gtk.Application):
     """main class voor de applicatie
     """
-    def __init__(self, file='', title=''):
+    def __init__(self, fname='', title=''):
         super().__init__()
-        self.file = file
+        self.fname = fname
         self.title = title
 
     def do_activate(self):
         """start GUI
         """
-        win = MainWin(application=self, file=self.file, title=self.title)
+        win = MainWin(application=self, fname=self.fname, title=self.title)
         win.present()
 
     def close(self, action, param):
@@ -148,22 +143,19 @@ class MainFrame(Gtk.Application):
         self.quit()
 
 
-class MainWin(Gtk.ApplicationWindow, ApoMixin):
+class MainWin(Gtk.ApplicationWindow):
     """main window voor de applicatie
-
-    subclass van Apomixin voor het gui-onafhankelijke gedeelte
     """
-    def __init__(self, application, file='', title=''):
+    def __init__(self, application, fname='', title=''):
         if not title:
             title = "A Propos"
         self.app = application
         Gtk.ApplicationWindow.__init__(self, application=application, title=title)
-        ApoMixin.__init__(self)
-        self.set_apofile(file)
+        self.apofile = shared.get_apofile(fname)
         offset = 30 if sys.platform.startswith('win') else 10
         self.move(offset, offset)
         self.resize(650, 400)
-        self.apoicon = str(HERE / "apropos.ico")
+        self.apoicon = shared.iconame
         self.set_icon_from_file(self.apoicon)
         # let's not do this feature yet
         ## self.tray_icon = Gtk.StatusIcon.new_from_file(self.apoicon)
@@ -179,27 +171,34 @@ class MainWin(Gtk.ApplicationWindow, ApoMixin):
         # pagina sluiten op dubbel - of middelklik
         ## self.nb.setTabsClosable(True) # workaround: sluitgadgets
 
-        for label, shortcuts, handler in (
-                ('reload', ('<Control>r',), self.load_data),
-                ('newtab', ('<Control>n',), self.newtab),
-                ('close', ('<Control>w',), self.closetab),
-                ## ('hide', ('<Control>h',), self.hide_app),                # TODO
-                ('save', ('<Control>s',), self.save_data),
-                ('quit', ('<Control>q', 'Escape'), self.close),
-                ('language', ('<Control>l',), self.choose_language),
-                ('next', ('<Alt>Right',), self.goto_next),
-                ('prev', ('<Alt>Left',), self.goto_previous),
-                ('help', ('F1',), self.helppage),
-                ('title', ('F2',), self.asktitle),
-                ('settings', ('<Alt>p',), self.options), ):
+        self.handlers = self.map_shortcuts_to_handlers()
+        for label, shortcuts, in shared.get_shortcuts():
+            if label == 'hide':
+                continue            # TODO: make hiding in tray possible
+            handler = self.handlers[label]
             action = Gio.SimpleAction.new(label, None)
             action.connect("activate", handler)
             for accel in shortcuts:
                 self.add_action(action)
-                self.app.add_accelerator(accel, 'win.' + label, None)
+                self.app.add_accelerator(convert2gtk(accel), 'win.' + label, None)
 
         self.initapp()
         self.nb.show()
+
+    def map_shortcuts_to_handlers(self):
+        "because we cannot import the handlers from shared"
+        return {'reload': self.load_data,
+                'newtab': self.newtab,
+                'close': self.closetab,
+                'hide': self.hide_app,
+                'save': self.save_data,
+                'quit': self.close,
+                'language': self.choose_language,
+                'next': self.goto_next,
+                'prev': self.goto_previous,
+                'help': self.helppage,
+                'title': self.asktitle,
+                'settings': self.options}
 
     def page_changed(self, nb, page, page_num):
         """pagina aanpassen nadat een andere gekozen is
@@ -236,16 +235,10 @@ class MainWin(Gtk.ApplicationWindow, ApoMixin):
     def initapp(self):
         """initialiseer de applicatie
         """
-        self.opts = {"AskBeforeHide": True, "ActiveTab": 0, 'language': 'eng',
-                     'NotifyOnSave': True, 'NotifyOnLoad': True}
-        self.load_notes()
+        self.opts, self.apodata = shared.load_notes(self.apofile)
         if self.apodata:
             for i, x in self.apodata.items():
-                if i == 0 and "AskBeforeHide" in x:
-                    for key, val in x.items():
-                        self.opts[key] = val
-                else:
-                    self.newtab(titel=x[0], note=x[1])
+                self.newtab(titel=x[0], note=x[1])
             self.current = self.opts["ActiveTab"]
             self.nb.set_current_page(self.current)
         else:
@@ -336,7 +329,7 @@ class MainWin(Gtk.ApplicationWindow, ApoMixin):
                                             page.textbuffer.get_end_iter(),
                                             True)
             apodata[i + 1] = (title, text)
-        self.save_notes(apodata)
+        shared.save_notes(self.apofile, apodata)
 
     def helppage(self, *args):
         """vertoon de hulp pagina met keyboard shortcuts
@@ -412,10 +405,11 @@ class MainWin(Gtk.ApplicationWindow, ApoMixin):
         dlg.destroy()
 
 
-def main(file='', title=''):
+def main(fname='', title=''):
     """starts the application by calling the MainFrame class
     """
-    app = MainFrame(file=file, title=title)
+    print('in gtk version')
+    app = MainFrame(fname=fname, title=title)
     ## win = MainFrame(app, file=file, title=title)
     ## win.connect("delete-event", Gtk.main_quit)
     ## win.show_all()
