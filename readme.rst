@@ -60,7 +60,7 @@ Requirements
 ------------
 
 - Python
-- either PyQt5, wxPython (>=4) or Gtk (3) for the GUI part
+- either PyQt(5), wxPython(>=4) or Gtk(3) for the GUI part
   
 
 Note that the current implementation uses *pickle* for storing the data, I'm in the

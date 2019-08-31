@@ -345,7 +345,6 @@ class MainFrame(QTW.QMainWindow):
 def main(fname='', title=''):
     """starts the application by calling the MainFrame class
     """
-    print('in qt version')
     app = QTW.QApplication(sys.argv)
     frm = MainFrame(fname=fname, title=title)
     frm.show()

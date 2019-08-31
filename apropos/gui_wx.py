@@ -340,7 +340,6 @@ class MainFrame(wx.Frame):
 def main(fname, title):
     """starts the application by calling the MainFrame class
     """
-    print('in wx version')
     app = wx.App()
     MainFrame(None, fname=fname, title=title)
     app.MainLoop()

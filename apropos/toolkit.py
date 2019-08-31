@@ -1,4 +1,4 @@
 """config: specify which GUI toolkit to use
 """
 
-toolkit = 'wx'
+toolkit = 'qt'

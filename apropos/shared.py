@@ -43,6 +43,9 @@ def get_setttexts(settdict):
 
 def get_shortcuts():
     """return a list of actions and associated keyboard shortcuts
+
+    Because of how the application is constructed, the callbacks cannot be defined here but have
+    to be associated in the gui modules.
     """
     return (('reload', ('Ctrl+R',)),
             ('newtab', ('Ctrl+N',)),

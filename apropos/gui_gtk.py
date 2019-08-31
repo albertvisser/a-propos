@@ -408,7 +408,6 @@ class MainWin(Gtk.ApplicationWindow):
 def main(fname='', title=''):
     """starts the application by calling the MainFrame class
     """
-    print('in gtk version')
     app = MainFrame(fname=fname, title=title)
     ## win = MainFrame(app, file=file, title=title)
     ## win.connect("delete-event", Gtk.main_quit)
