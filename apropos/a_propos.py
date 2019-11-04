@@ -10,7 +10,6 @@ def apropos(fname='', title=''):
 
     Importeert hiervoor de toolkit-specifieke code
     """
-    print('working with', toolkit)
     if toolkit == 'qt':
         from .gui_qt import main
     elif toolkit == 'gtk':
