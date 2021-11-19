@@ -10,105 +10,13 @@ import apropos.shared as shared
 languages = shared.languages
 
 
-class Page(QTW.QFrame):
-    "Panel subclass voor de notebook pagina's"
-    def __init__(self, parent):
-        super().__init__(parent)
-        self.txt = QTW.QTextEdit(self)
-        vbox = QTW.QVBoxLayout()
-        hbox = QTW.QHBoxLayout()
-        hbox.addWidget(self.txt)
-        vbox.addLayout(hbox)
-        self.setLayout(vbox)
-
-
-class CheckDialog(QTW.QDialog):
-    """Dialog die kan worden ingesteld om niet nogmaals te tonen
-
-    wordt aangestuurd met de boodschap die in de dialoog moet worden getoond
+def main(fname='', title=''):
+    """starts the application by calling the MainFrame class
     """
-    def __init__(self, parent, title, message="", option=""):
-        self.parent = parent
-        self.option = option
-        super().__init__(parent)
-        self.setWindowTitle(title)
-        self.setWindowIcon(self.parent.apoicon)
-        txt = QTW.QLabel(message)
-        show_text = languages[self.parent.opts["language"]]["show_text"]
-        self.check = QTW.QCheckBox(show_text, self)
-        ok_button = QTW.QPushButton("&Ok", self)
-        ok_button.clicked.connect(self.klaar)
-        vbox = QTW.QVBoxLayout()
-
-        hbox = QTW.QHBoxLayout()
-        hbox.addWidget(txt)
-        vbox.addLayout(hbox)
-
-        hbox = QTW.QHBoxLayout()
-        hbox.addWidget(self.check)
-        vbox.addLayout(hbox)
-
-        hbox = QTW.QHBoxLayout()
-        hbox.addWidget(ok_button)
-        hbox.insertStretch(0, 1)
-        hbox.addStretch(1)
-        vbox.addLayout(hbox)
-
-        self.setLayout(vbox)
-        self.exec_()
-
-    def klaar(self):
-        "dialoog afsluiten"
-        if self.check.isChecked():
-            self.parent.opts[self.option] = False
-        super().done(0)
-
-
-class OptionsDialog(QTW.QDialog):
-    """Dialog om de instellingen voor te tonen meldingen te tonen en eventueel te kunnen wijzigen
-    """
-    def __init__(self, parent):
-        self.parent = parent
-        sett2text = shared.get_setttexts(self.parent.opts)
-        super().__init__(parent)
-        self.setWindowTitle('A Propos Settings')
-        vbox = QTW.QVBoxLayout()
-        self.controls = []
-
-        gbox = QTW.QGridLayout()
-        col = 0
-        for key, value in self.parent.opts.items():
-            if key not in sett2text:
-                continue
-            col += 1
-            lbl = QTW.QLabel(sett2text[key], self)
-            gbox.addWidget(lbl, col, 0)
-            chk = QTW.QCheckBox('', self)
-            chk.setChecked(value)
-            gbox.addWidget(chk, col, 1)
-            self.controls.append((key, chk))
-        vbox.addLayout(gbox)
-
-        hbox = QTW.QHBoxLayout()
-        hbox.addStretch(1)
-        ok_button = QTW.QPushButton("&Apply", self)
-        ok_button.clicked.connect(self.accept)
-        hbox.addWidget(ok_button)
-        cancel_button = QTW.QPushButton("&Close", self)
-        cancel_button.clicked.connect(self.reject)
-        hbox.addWidget(cancel_button)
-        hbox.addStretch(1)
-        vbox.addLayout(hbox)
-
-        self.setLayout(vbox)
-        self.exec_()
-
-    def accept(self):
-        """overridden event handler
-        """
-        for keyvalue, control in self.controls:
-            self.parent.opts[keyvalue] = control.isChecked()
-        super().accept()
+    app = QTW.QApplication(sys.argv)
+    frm = MainFrame(fname=fname, title=title)
+    frm.show()
+    sys.exit(app.exec_())
 
 
 class MainFrame(QTW.QMainWindow):
@@ -342,10 +250,102 @@ class MainFrame(QTW.QMainWindow):
         OptionsDialog(self)
 
 
-def main(fname='', title=''):
-    """starts the application by calling the MainFrame class
+class Page(QTW.QFrame):
+    "Panel subclass voor de notebook pagina's"
+    def __init__(self, parent):
+        super().__init__(parent)
+        self.txt = QTW.QTextEdit(self)
+        vbox = QTW.QVBoxLayout()
+        hbox = QTW.QHBoxLayout()
+        hbox.addWidget(self.txt)
+        vbox.addLayout(hbox)
+        self.setLayout(vbox)
+
+
+class CheckDialog(QTW.QDialog):
+    """Dialog die kan worden ingesteld om niet nogmaals te tonen
+
+    wordt aangestuurd met de boodschap die in de dialoog moet worden getoond
     """
-    app = QTW.QApplication(sys.argv)
-    frm = MainFrame(fname=fname, title=title)
-    frm.show()
-    sys.exit(app.exec_())
+    def __init__(self, parent, title, message="", option=""):
+        self.parent = parent
+        self.option = option
+        super().__init__(parent)
+        self.setWindowTitle(title)
+        self.setWindowIcon(self.parent.apoicon)
+        txt = QTW.QLabel(message)
+        show_text = languages[self.parent.opts["language"]]["show_text"]
+        self.check = QTW.QCheckBox(show_text, self)
+        ok_button = QTW.QPushButton("&Ok", self)
+        ok_button.clicked.connect(self.klaar)
+        vbox = QTW.QVBoxLayout()
+
+        hbox = QTW.QHBoxLayout()
+        hbox.addWidget(txt)
+        vbox.addLayout(hbox)
+
+        hbox = QTW.QHBoxLayout()
+        hbox.addWidget(self.check)
+        vbox.addLayout(hbox)
+
+        hbox = QTW.QHBoxLayout()
+        hbox.addWidget(ok_button)
+        hbox.insertStretch(0, 1)
+        hbox.addStretch(1)
+        vbox.addLayout(hbox)
+
+        self.setLayout(vbox)
+        self.exec_()
+
+    def klaar(self):
+        "dialoog afsluiten"
+        if self.check.isChecked():
+            self.parent.opts[self.option] = False
+        super().done(0)
+
+
+class OptionsDialog(QTW.QDialog):
+    """Dialog om de instellingen voor te tonen meldingen te tonen en eventueel te kunnen wijzigen
+    """
+    def __init__(self, parent):
+        self.parent = parent
+        sett2text = shared.get_setttexts(self.parent.opts)
+        super().__init__(parent)
+        self.setWindowTitle('A Propos Settings')
+        vbox = QTW.QVBoxLayout()
+        self.controls = []
+
+        gbox = QTW.QGridLayout()
+        col = 0
+        for key, value in self.parent.opts.items():
+            if key not in sett2text:
+                continue
+            col += 1
+            lbl = QTW.QLabel(sett2text[key], self)
+            gbox.addWidget(lbl, col, 0)
+            chk = QTW.QCheckBox('', self)
+            chk.setChecked(value)
+            gbox.addWidget(chk, col, 1)
+            self.controls.append((key, chk))
+        vbox.addLayout(gbox)
+
+        hbox = QTW.QHBoxLayout()
+        hbox.addStretch(1)
+        ok_button = QTW.QPushButton("&Apply", self)
+        ok_button.clicked.connect(self.accept)
+        hbox.addWidget(ok_button)
+        cancel_button = QTW.QPushButton("&Close", self)
+        cancel_button.clicked.connect(self.reject)
+        hbox.addWidget(cancel_button)
+        hbox.addStretch(1)
+        vbox.addLayout(hbox)
+
+        self.setLayout(vbox)
+        self.exec_()
+
+    def accept(self):
+        """overridden event handler
+        """
+        for keyvalue, control in self.controls:
+            self.parent.opts[keyvalue] = control.isChecked()
+        super().accept()

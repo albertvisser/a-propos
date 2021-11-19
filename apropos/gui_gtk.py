@@ -10,6 +10,17 @@ import apropos.shared as shared
 languages = shared.languages
 
 
+def main(fname='', title=''):
+    """starts the application by calling the MainFrame class
+    """
+    app = MainFrame(fname=fname, title=title)
+    ## win = MainFrame(app, file=file, title=title)
+    ## win.connect("delete-event", Gtk.main_quit)
+    ## win.show_all()
+    app.run()  # sys.argv)
+    ## Gtk.main()
+
+
 def convert2gtk(accel):
     "rebuild the accel string in gtk format"
     parts = accel.split('+')
@@ -19,108 +30,6 @@ def convert2gtk(accel):
         parts[-1] = parts[-1].upper()
     accel = ''.join(parts)
     return accel
-
-
-class InputDialog(Gtk.Dialog):
-    "dialog for getting text input"
-    def __init__(self, parent, title=""):
-        super().__init__(title, parent, 0,
-                         (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-                          Gtk.STOCK_OK, Gtk.ResponseType.OK))
-
-    def get_text(self, title="", caption="Enter some text", text=""):
-        """callback for text field
-        """
-        self.input = Gtk.Entry()
-        if text:
-            self.input.set_text(text)
-
-        box = self.get_content_area()
-        box.add(Gtk.Label(caption))
-        box.add(self.input)
-        self.show_all()
-
-    def get_item(self, title="", caption="Choose an item", items=None, default=0):
-        """callback for selection field (combobox)
-        """
-        if not items:
-            items = []
-        self.input = Gtk.ComboBoxText()
-        for text in items:
-            self.input.append_text(text)
-        self.input.set_active(default)
-
-        box = self.get_content_area()
-        box.add(Gtk.Label(caption))
-        box.add(self.input)
-        self.show_all()
-
-
-class Page(Gtk.Frame):
-    "Panel subclass voor de notebook pagina's"
-    def __init__(self, parent):
-        super().__init__()
-        self.set_border_width(10)
-        grid = Gtk.Grid()
-
-        scrolledwindow = Gtk.ScrolledWindow()
-        scrolledwindow.set_hexpand(True)
-        scrolledwindow.set_vexpand(True)
-        grid.attach(scrolledwindow, 0, 0, 1, 1)
-
-        self.txt = Gtk.TextView()
-        self.textbuffer = self.txt.get_buffer()
-        self.txt.set_editable(True)
-        self.txt.set_wrap_mode(Gtk.WrapMode.WORD)
-        scrolledwindow.add(self.txt)
-        self.add(grid)
-        self.show_all()
-
-
-class CheckDialog(Gtk.Dialog):
-    """Dialog die kan worden ingesteld om niet nogmaals te tonen
-
-    wordt aangestuurd met de boodschap die in de dialoog moet worden getoond
-    """
-    def __init__(self, parent, title, message="", option=""):
-        self._parent = parent
-        self.option = option
-        super().__init__(title, parent, 0, (Gtk.STOCK_OK, Gtk.ResponseType.OK))
-        box = self.get_content_area()
-        box.add(Gtk.Label(message))
-        show_text = languages[self._parent.opts["language"]]["show_text"]
-        self.check = Gtk.CheckButton.new_with_label(show_text)
-        box.add(self.check)
-        self.show_all()
-
-
-class OptionsDialog(Gtk.Dialog):
-    """Dialog om de instellingen voor te tonen meldingen te tonen en eventueel te kunnen wijzigen
-    """
-    def __init__(self, parent):
-        self.parent = parent
-        sett2text = shared.get_setttexts(self.parent.opts)
-        super().__init__('A Propos Settings', parent, 0,
-                         (Gtk.STOCK_OK, Gtk.ResponseType.OK,
-                          Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL))
-        box = self.get_content_area()
-        grid = Gtk.Grid()
-        grid.set_column_spacing(15)
-        self.controls = []
-        row = -1
-        # for key, value in self.parent.opts.items():
-        #     if key not in sett2text:
-        #         continue
-        for key in sett2text:
-            value = self.parent.opts.items[key]
-            row += 1
-            grid.attach(Gtk.Label(sett2text[key]), 0, row, 1, 1)
-            chk = Gtk.CheckButton.new_with_label('')
-            chk.set_active(value)
-            grid.attach(chk, 1, row, 1, 1)
-            self.controls.append((key, chk))
-        box.add(grid)
-        self.show_all()
 
 
 class MainFrame(Gtk.Application):
@@ -405,12 +314,103 @@ class MainWin(Gtk.ApplicationWindow):
         dlg.destroy()
 
 
-def main(fname='', title=''):
-    """starts the application by calling the MainFrame class
+class Page(Gtk.Frame):
+    "Panel subclass voor de notebook pagina's"
+    def __init__(self, parent):
+        super().__init__()
+        self.set_border_width(10)
+        grid = Gtk.Grid()
+
+        scrolledwindow = Gtk.ScrolledWindow()
+        scrolledwindow.set_hexpand(True)
+        scrolledwindow.set_vexpand(True)
+        grid.attach(scrolledwindow, 0, 0, 1, 1)
+
+        self.txt = Gtk.TextView()
+        self.textbuffer = self.txt.get_buffer()
+        self.txt.set_editable(True)
+        self.txt.set_wrap_mode(Gtk.WrapMode.WORD)
+        scrolledwindow.add(self.txt)
+        self.add(grid)
+        self.show_all()
+
+
+class CheckDialog(Gtk.Dialog):
+    """Dialog die kan worden ingesteld om niet nogmaals te tonen
+
+    wordt aangestuurd met de boodschap die in de dialoog moet worden getoond
     """
-    app = MainFrame(fname=fname, title=title)
-    ## win = MainFrame(app, file=file, title=title)
-    ## win.connect("delete-event", Gtk.main_quit)
-    ## win.show_all()
-    app.run()  # sys.argv)
-    ## Gtk.main()
+    def __init__(self, parent, title, message="", option=""):
+        self._parent = parent
+        self.option = option
+        super().__init__(title, parent, 0, (Gtk.STOCK_OK, Gtk.ResponseType.OK))
+        box = self.get_content_area()
+        box.add(Gtk.Label(message))
+        show_text = languages[self._parent.opts["language"]]["show_text"]
+        self.check = Gtk.CheckButton.new_with_label(show_text)
+        box.add(self.check)
+        self.show_all()
+
+
+class OptionsDialog(Gtk.Dialog):
+    """Dialog om de instellingen voor te tonen meldingen te tonen en eventueel te kunnen wijzigen
+    """
+    def __init__(self, parent):
+        self.parent = parent
+        sett2text = shared.get_setttexts(self.parent.opts)
+        super().__init__('A Propos Settings', parent, 0,
+                         (Gtk.STOCK_OK, Gtk.ResponseType.OK,
+                          Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL))
+        box = self.get_content_area()
+        grid = Gtk.Grid()
+        grid.set_column_spacing(15)
+        self.controls = []
+        row = -1
+        # for key, value in self.parent.opts.items():
+        #     if key not in sett2text:
+        #         continue
+        for key in sett2text:
+            value = self.parent.opts.items[key]
+            row += 1
+            grid.attach(Gtk.Label(sett2text[key]), 0, row, 1, 1)
+            chk = Gtk.CheckButton.new_with_label('')
+            chk.set_active(value)
+            grid.attach(chk, 1, row, 1, 1)
+            self.controls.append((key, chk))
+        box.add(grid)
+        self.show_all()
+
+
+class InputDialog(Gtk.Dialog):
+    "dialog for getting text input"
+    def __init__(self, parent, title=""):
+        super().__init__(title, parent, 0,
+                         (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+                          Gtk.STOCK_OK, Gtk.ResponseType.OK))
+
+    def get_text(self, title="", caption="Enter some text", text=""):
+        """callback for text field
+        """
+        self.input = Gtk.Entry()
+        if text:
+            self.input.set_text(text)
+
+        box = self.get_content_area()
+        box.add(Gtk.Label(caption))
+        box.add(self.input)
+        self.show_all()
+
+    def get_item(self, title="", caption="Choose an item", items=None, default=0):
+        """callback for selection field (combobox)
+        """
+        if not items:
+            items = []
+        self.input = Gtk.ComboBoxText()
+        for text in items:
+            self.input.append_text(text)
+        self.input.set_active(default)
+
+        box = self.get_content_area()
+        box.add(Gtk.Label(caption))
+        box.add(self.input)
+        self.show_all()

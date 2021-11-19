@@ -9,99 +9,12 @@ languages = shared.languages
 DFLT_SIZE = (650, 400)
 
 
-class Page(wx.Panel):
-    "Panel subclass voor de notebook pagina's"
-    def __init__(self, parent):
-        wx.Panel.__init__(self, parent)
-        self.txt = wx.TextCtrl(self, -1, style=wx.TE_MULTILINE, size=DFLT_SIZE)
-        sizer0 = wx.BoxSizer(wx.VERTICAL)
-        sizer0.Add(self.txt, 1, wx.EXPAND | wx.ALL, 10)
-        self.SetSizer(sizer0)
-        sizer0.SetSizeHints(self)
-        self.Layout()
-
-
-class CheckDialog(wx.Dialog):
-    """Dialog die kan worden ingesteld om niet nogmaals te tonen
-
-    wordt aangestuurd met de boodschap die in de dialoog moet worden getoond
+def main(fname, title):
+    """starts the application by calling the MainFrame class
     """
-    def __init__(self, parent, id, title, size=(-1, 120), pos=wx.DefaultPosition,
-                 style=wx.DEFAULT_DIALOG_STYLE, message=""):
-        self.parent = parent
-        wx.Dialog.__init__(self, parent, id, title, pos, size, style)
-        pnl = self  # wx.Panel(self, -1)
-        sizer0 = wx.BoxSizer(wx.VERTICAL)
-        sizer0.Add(wx.StaticText(pnl, -1, message), 1, wx.ALL, 5)
-        sizer1 = wx.BoxSizer(wx.HORIZONTAL)
-        self.check = wx.CheckBox(pnl, -1,
-                                 languages[self.parent.opts["language"]]["show_text"])
-        sizer1.Add(self.check, 0, wx.EXPAND)
-        sizer0.Add(sizer1, 0, wx.ALIGN_CENTER_HORIZONTAL)
-        sizer1 = wx.BoxSizer(wx.HORIZONTAL)
-        btn = wx.Button(pnl, id=wx.ID_OK)
-        sizer1.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
-        ## sizer1 = self.CreateStdDialogButtonSizer(wx.OK | wx.CANCEL)
-        sizer0.Add(sizer1, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
-        pnl.SetSizer(sizer0)
-        pnl.SetAutoLayout(True)
-        sizer0.Fit(pnl)
-        sizer0.SetSizeHints(pnl)
-        pnl.Layout()
-
-
-class TaskbarIcon(wx.adv.TaskBarIcon):
-    "icon in the taskbar"
-    id_revive = wx.NewId()
-
-    def __init__(self, parent):
-        # super().__init__(wx.adv.TBI_DOCK)
-        wx.adv.TaskBarIcon.__init__(self)
-        self.SetIcon(parent.apoicon, "Click to revive Apropos")
-        self.Bind(wx.adv.EVT_TASKBAR_LEFT_DCLICK, parent.revive)
-        self.Bind(wx.EVT_MENU, parent.revive, id=self.id_revive)
-
-    def CreatePopupMenu(self):
-        """reimplemented"""
-        menu = wx.Menu()
-        menu.Append(self.id_revive, 'Revive Apropos')
-        return menu
-
-
-class OptionsDialog(wx.Dialog):
-    """Dialog om de instellingen voor te tonen meldingen te tonen en eventueel te kunnen wijzigen
-    """
-    def __init__(self, parent, id):
-        self.parent = parent
-        sett2text = shared.get_setttexts(self.parent.opts)
-        super().__init__(parent, id, title='A Propos Settings')
-        pnl = self  # wx.Panel(self, -1)
-        sizer0 = wx.BoxSizer(wx.VERTICAL)
-        sizer1 = wx.FlexGridSizer(cols=2)
-        self.controls = []
-        for key, value in self.parent.opts.items():
-            if key not in sett2text:
-                continue
-            sizer1.Add(wx.StaticText(pnl, -1, sett2text[key]), 1, wx.ALL, 5)
-            chk = wx.CheckBox(self, -1, '')
-            chk.SetValue(value)
-            sizer1.Add(chk, 1, wx.ALL, 5)
-            self.controls.append((key, chk))
-        sizer0.Add(sizer1, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
-        sizer1 = wx.BoxSizer(wx.HORIZONTAL)
-        btn = wx.Button(pnl, id=wx.ID_APPLY)
-        sizer1.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
-        self.SetAffirmativeId(wx.ID_APPLY)
-        btn = wx.Button(pnl, id=wx.ID_CLOSE)
-        sizer1.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
-        self.SetEscapeId(wx.ID_CLOSE)
-        # sizer1 = self.CreateStdDialogButtonSizer(wx.OK | wx.CANCEL)
-        sizer0.Add(sizer1, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
-        pnl.SetSizer(sizer0)
-        pnl.SetAutoLayout(True)
-        sizer0.Fit(pnl)
-        sizer0.SetSizeHints(pnl)
-        pnl.Layout()
+    app = wx.App()
+    MainFrame(None, fname=fname, title=title)
+    app.MainLoop()
 
 
 class MainFrame(wx.Frame):
@@ -337,9 +250,96 @@ class MainFrame(wx.Frame):
                     self.opts[keyvalue] = control.GetValue()
 
 
-def main(fname, title):
-    """starts the application by calling the MainFrame class
+class Page(wx.Panel):
+    "Panel subclass voor de notebook pagina's"
+    def __init__(self, parent):
+        wx.Panel.__init__(self, parent)
+        self.txt = wx.TextCtrl(self, -1, style=wx.TE_MULTILINE, size=DFLT_SIZE)
+        sizer0 = wx.BoxSizer(wx.VERTICAL)
+        sizer0.Add(self.txt, 1, wx.EXPAND | wx.ALL, 10)
+        self.SetSizer(sizer0)
+        sizer0.SetSizeHints(self)
+        self.Layout()
+
+
+class CheckDialog(wx.Dialog):
+    """Dialog die kan worden ingesteld om niet nogmaals te tonen
+
+    wordt aangestuurd met de boodschap die in de dialoog moet worden getoond
     """
-    app = wx.App()
-    MainFrame(None, fname=fname, title=title)
-    app.MainLoop()
+    def __init__(self, parent, id, title, size=(-1, 120), pos=wx.DefaultPosition,
+                 style=wx.DEFAULT_DIALOG_STYLE, message=""):
+        self.parent = parent
+        wx.Dialog.__init__(self, parent, id, title, pos, size, style)
+        pnl = self  # wx.Panel(self, -1)
+        sizer0 = wx.BoxSizer(wx.VERTICAL)
+        sizer0.Add(wx.StaticText(pnl, -1, message), 1, wx.ALL, 5)
+        sizer1 = wx.BoxSizer(wx.HORIZONTAL)
+        self.check = wx.CheckBox(pnl, -1,
+                                 languages[self.parent.opts["language"]]["show_text"])
+        sizer1.Add(self.check, 0, wx.EXPAND)
+        sizer0.Add(sizer1, 0, wx.ALIGN_CENTER_HORIZONTAL)
+        sizer1 = wx.BoxSizer(wx.HORIZONTAL)
+        btn = wx.Button(pnl, id=wx.ID_OK)
+        sizer1.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
+        ## sizer1 = self.CreateStdDialogButtonSizer(wx.OK | wx.CANCEL)
+        sizer0.Add(sizer1, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
+        pnl.SetSizer(sizer0)
+        pnl.SetAutoLayout(True)
+        sizer0.Fit(pnl)
+        sizer0.SetSizeHints(pnl)
+        pnl.Layout()
+
+
+class TaskbarIcon(wx.adv.TaskBarIcon):
+    "icon in the taskbar"
+    id_revive = wx.NewId()
+
+    def __init__(self, parent):
+        # super().__init__(wx.adv.TBI_DOCK)
+        wx.adv.TaskBarIcon.__init__(self)
+        self.SetIcon(parent.apoicon, "Click to revive Apropos")
+        self.Bind(wx.adv.EVT_TASKBAR_LEFT_DCLICK, parent.revive)
+        self.Bind(wx.EVT_MENU, parent.revive, id=self.id_revive)
+
+    def CreatePopupMenu(self):
+        """reimplemented"""
+        menu = wx.Menu()
+        menu.Append(self.id_revive, 'Revive Apropos')
+        return menu
+
+
+class OptionsDialog(wx.Dialog):
+    """Dialog om de instellingen voor te tonen meldingen te tonen en eventueel te kunnen wijzigen
+    """
+    def __init__(self, parent, id):
+        self.parent = parent
+        sett2text = shared.get_setttexts(self.parent.opts)
+        super().__init__(parent, id, title='A Propos Settings')
+        pnl = self  # wx.Panel(self, -1)
+        sizer0 = wx.BoxSizer(wx.VERTICAL)
+        sizer1 = wx.FlexGridSizer(cols=2)
+        self.controls = []
+        for key, value in self.parent.opts.items():
+            if key not in sett2text:
+                continue
+            sizer1.Add(wx.StaticText(pnl, -1, sett2text[key]), 1, wx.ALL, 5)
+            chk = wx.CheckBox(self, -1, '')
+            chk.SetValue(value)
+            sizer1.Add(chk, 1, wx.ALL, 5)
+            self.controls.append((key, chk))
+        sizer0.Add(sizer1, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
+        sizer1 = wx.BoxSizer(wx.HORIZONTAL)
+        btn = wx.Button(pnl, id=wx.ID_APPLY)
+        sizer1.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
+        self.SetAffirmativeId(wx.ID_APPLY)
+        btn = wx.Button(pnl, id=wx.ID_CLOSE)
+        sizer1.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
+        self.SetEscapeId(wx.ID_CLOSE)
+        # sizer1 = self.CreateStdDialogButtonSizer(wx.OK | wx.CANCEL)
+        sizer0.Add(sizer1, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
+        pnl.SetSizer(sizer0)
+        pnl.SetAutoLayout(True)
+        sizer0.Fit(pnl)
+        sizer0.SetSizeHints(pnl)
+        pnl.Layout()
