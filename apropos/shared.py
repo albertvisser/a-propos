@@ -66,11 +66,7 @@ def get_apofile(name):
 
     use standard name if empty
     """
-    if name:
-        apofile = pathlib.Path(name)
-    else:
-        apofile = pathlib.Path("apropos.pck")
-    return apofile
+    return pathlib.Path(name or 'apropos').with_suffix('.apo')
 
 
 def load_notes(apofile):
