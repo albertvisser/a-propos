@@ -32,7 +32,7 @@ def convert2gtk(accel):
     return accel
 
 
-class MainFrame(Gtk.Application):
+class AproposGui(Gtk.Application):
     """main class voor de applicatie
     """
     def __init__(self, fname='', title=''):

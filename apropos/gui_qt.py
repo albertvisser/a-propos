@@ -6,84 +6,91 @@ import sys
 import PyQt5.QtWidgets as QTW
 import PyQt5.QtGui as gui
 ## import PyQt5.QtCore as core
-import apropos.shared as shared
-languages = shared.languages
 
 
-def main(fname='', title=''):
-    """starts the application by calling the MainFrame class
-    """
-    app = QTW.QApplication(sys.argv)
-    frm = MainFrame(fname=fname, title=title)
-    frm.show()
-    sys.exit(app.exec_())
-
-
-class MainFrame(QTW.QMainWindow):
+class AproposGui(QTW.QMainWindow):
     """main class voor de applicatie
     """
-    def __init__(self, parent=None, fname='', title=''):
+    def __init__(self, master, parent=None, title='Apropos'):
+        self.master = master
+        self.app = QTW.QApplication(sys.argv)
         super().__init__(parent)
-        if not title:
-            title = "A Propos"
-        self.apofile = shared.get_apofile(fname)
-        self.setWindowTitle(title)
+        # self.setWindowTitle(title)
         offset = 30 if sys.platform.startswith('win') else 10
         self.move(offset, offset)
         self.resize(650, 400)
-        # self.apoicon = gui.QIcon(str(HERE / "apropos.ico"))
-        self.apoicon = gui.QIcon(shared.iconame)
+
+    def set_appicon(self, iconame):
+        "give the window an icon"
+        self.apoicon = gui.QIcon(iconame)
         self.setWindowIcon(self.apoicon)
-        self.tray_icon = QTW.QSystemTrayIcon(self.apoicon, self)
+
+    def init_trayicon(self, iconame, tooltip):
+        "create an icon to show in the systray"
+        self.tray_icon = QTW.QSystemTrayIcon(gui.QIcon(iconame), self)
         self.tray_icon.setToolTip("Click to revive Apropos")
         ## self.tray_icon.clicked.connect(self.revive)
         ## tray_signal = "activated(QSystemTrayIcon::ActivationReason)"
         ## self.tray_icon.tray_signal.connect(self.revive)
-        self.tray_icon.activated.connect(self.revive)
+        self.tray_icon.activated.connect(self.master.revive)
         self.tray_icon.hide()
 
+    def setup_tabwidget(self, change_page, close_page):
+        "build the container to show the tabs in"
         self.nb = QTW.QTabWidget(self)
         self.setCentralWidget(self.nb)
-        self.current = 0
-        self.nb.currentChanged.connect(self.page_changed)
+        self.master.current = 0
+        self.nb.currentChanged.connect(change_page)
         # pagina sluiten op dubbel - of middelklik
         ## self.nb.setTabsClosable(True) # workaround: sluitgadgets
-        self.nb.tabCloseRequested.connect(self.closetab)
+        self.nb.tabCloseRequested.connect(close_page)
 
-        self.handlers = self.map_shortcuts_to_handlers()
-        for label, shortcuts in shared.get_shortcuts():
-            handler = self.handlers[label]
+    def setup_shortcuts(self, handler_dict):
+        "create the app navigation"
+        for label, data in handler_dict.items():
+            shortcuts, handler = data
             action = QTW.QAction(label, self)
-            action.setShortcuts([x for x in shortcuts])
+            # action.setShortcuts([x for x in shortcuts])
+            action.setShortcuts(list(shortcuts))
             action.triggered.connect(handler)
             self.addAction(action)
 
-        self.initapp()
+    def go(self):
+        "show the screen and start the event loop"
+        self.show()
+        sys.exit(self.app.exec_())
 
-    def map_shortcuts_to_handlers(self):
-        "because we cannot import the handlers from shared"
-        return {'reload': self.load_data,
-                'newtab': self.newtab,
-                'close': self.closetab,
-                'hide': self.hide_app,
-                'save': self.save_data,
-                'quit': self.close,
-                'language': self.choose_language,
-                'next': self.goto_next,
-                'prev': self.goto_previous,
-                'help': self.helppage,
-                'title': self.asktitle,
-                'settings': self.options}
+    def get_page_count(self):
+        "return number of pages"
+        return self.nb.count()
 
-    def page_changed(self):  # , event=None):
-        """pagina aanpassen nadat een andere gekozen is
-        """
-        self.current = self.nb.currentIndex()
+    def get_current_page(self):
+        "return selected page"
+        return self.nb.currentIndex()
+
+    def set_previous_page(self):
+        "switch to previous page in the notebook"
+        page_number = self.master.current - 1
+        if page_number >= 0:
+            self.set_current_page(page_number)
+
+    def set_next_page(self):
+        "switch to next page in the notebook"
+        page_number = self.master.current + 1
+        if page_number <= self.get_page_count():
+            self.set_current_page(page_number)
+
+    def set_current_page(self, page_number):
+        "set selected page"
+        self.nb.setCurrentIndex(page_number)
+
+    def set_focus_to_page(self):
+        "activate (bring to front) selected page"
         currentpage = self.nb.currentWidget()
         if currentpage:
             currentpage.txt.setFocus()
 
-    def load_data(self):
+    def clear_all(self):
         """get data and setup notebook
         """
         aant = self.nb.count()
@@ -91,45 +98,10 @@ class MainFrame(QTW.QMainWindow):
         self.nb.clear()
         for wdg in widgets:
             wdg.destroy()
-        self.initapp()
-        self.confirm(setting="NotifyOnLoad", textitem="load_text")
 
-    def hide_app(self):
-        """minimize to tray
-        """
-        self.confirm(setting="AskBeforeHide", textitem="hide_text")
-        self.tray_icon.show()
-        self.hide()
-
-    def save_data(self):
-        """update persistent storage
-        """
-        self.afsl()
-        self.confirm(setting="NotifyOnSave", textitem="save_text")
-
-    def initapp(self):
-        """initialiseer de applicatie
-        """
-        self.opts, self.apodata = shared.load_notes(self.apofile)
-        if self.apodata:
-            for i, x in self.apodata.items():
-                if i == 0 and "AskBeforeHide" in x:
-                    for key, val in x.items():
-                        self.opts[key] = val
-                else:
-                    self.newtab(titel=x[0], note=x[1])
-            self.current = self.opts["ActiveTab"]
-            self.nb.setCurrentIndex(self.current)
-        else:
-            self.newtab()
-            self.current = 0
-
-    def newtab(self, titel=None, note=None):
+    def new_page(self, nieuw, titel, note):
         """initialiseer een nieuwe tab
         """
-        nieuw = self.nb.count() + 1
-        if not titel:
-            titel = str(nieuw)
         newpage = Page(self)
         if note is not None:
             newpage.txt.setText(note)
@@ -137,40 +109,29 @@ class MainFrame(QTW.QMainWindow):
         self.nb.setCurrentIndex(nieuw)
         self.nb.setCurrentWidget(newpage)
 
-    def goto_previous(self):
-        """navigeer naar de voorgaande tab indien aanwezig
+    def clear_last_page(self):
+        "clear out the last remaining tab"
+        self.nb.setTabText(self.master.current, "1")
+        self.nb.widget(self.master.current).txt.setText("")
+
+    def delete_page(self, pagetodelete):
+        "delete the chosen tab"
+        test = self.nb.widget(pagetodelete)
+        self.nb.removeTab(pagetodelete)
+        test.destroy()
+
+    def closeEvent(self, event=None):  # FIXME: is event argument nodig?
+        """reimplemented: event handler voor afsluiten van de applicatie
         """
-        newtab = self.current - 1
-        if newtab < 0:
-            return
-        self.nb.setCurrentIndex(newtab)
+        self.master.afsl()
 
-    def goto_next(self):
-        """navigeer naar de volgende tab indien aanwezig
+    def hide_app(self):
+        """minimize to tray
         """
-        newtab = self.current + 1
-        if newtab > self.nb.count():
-            return
-        self.nb.setCurrentIndex(newtab)
+        self.tray_icon.show()
+        self.hide()
 
-    def closetab(self, pagetodelete=None):
-        """sluit de aangegeven tab
-
-        bij de laatste tab: alleen leegmaken en titel generiek maken
-        """
-        if not pagetodelete:
-            pagetodelete = self.current
-        aant = self.nb.count()
-        if aant == 1:
-            self.nb.setTabText(self.current, "1")
-            self.nb.widget(self.current).txt.setText("")
-            self.close()
-        else:
-            test = self.nb.widget(pagetodelete)
-            self.nb.removeTab(pagetodelete)
-            test.destroy()
-
-    def revive(self, event=None):
+    def reshow_app(self, event):
         """herleef het scherm vanuit de systray
         """
         if event == QTW.QSystemTrayIcon.Unknown:
@@ -181,73 +142,37 @@ class MainFrame(QTW.QMainWindow):
             self.show()
             self.tray_icon.hide()
 
-    def closeEvent(self, event=None):
-        """reimplemented: event handler voor afsluiten van de applicatie
-        """
-        self.afsl()
+    def get_page_title(self, pageno):
+        "paginaheader (naam in tab) ophalen"
+        return str(self.nb.tabText(pageno))
 
-    def afsl(self):
-        """applicatiedata opslaan voorafgaand aan afsluiten
-        """
-        self.opts["ActiveTab"] = self.nb.currentIndex()
-        apodata = {0: self.opts}
-        for i in range(self.nb.count()):
-            page = self.nb.widget(i)
-            title = str(self.nb.tabText(i))
-            text = str(page.txt.toPlainText())
-            apodata[i + 1] = (title, text)
-        shared.save_notes(self.apofile, apodata)
-
-    def helppage(self):
-        """vertoon de hulp pagina met keyboard shortcuts
-        """
-        self.meld(languages[self.opts["language"]]["info"])
+    def get_page_text(self, pageno):
+        "pagina tekst ophalen"
+        page = self.nb.widget(pageno)
+        return str(page.txt.toPlainText())
 
     def meld(self, meld):
         """Toon een melding in een venster
         """
         QTW.QMessageBox.information(self, 'Apropos', meld, )
 
-    def confirm(self, setting='', textitem=''):
+    def show_dialog(self, cls, kwargs):
         """Vraag om bevestiging (wordt afgehandeld in de dialoog)
         """
-        if self.opts[setting]:
-            CheckDialog(self, 'Apropos',
-                        message=languages[self.opts["language"]][textitem],
-                        option=setting)
-        else:
-            shared.log(languages[self.opts["language"]][textitem])
+        cls(self, 'Apropos', **kwargs)
 
-    def asktitle(self):
+    def get_text(self, prompt, initial=''):
         """toon dialoog om tab titel in te vullen/aan te passen en verwerk antwoord
         """
-        text, ok = QTW.QInputDialog.getText(
-            self, 'Apropos', languages[self.opts["language"]]["ask_title"],
-            QTW.QLineEdit.Normal, self.nb.tabText(self.current))
-        if ok:
-            self.nb.setTabText(self.current, text)
+        return QTW.QInputDialog.getText(self, 'Apropos', prompt, QTW.QLineEdit.Normal, initial)
 
-    def choose_language(self):
-        """toon dialoog om taal te kiezen en verwerk antwoord
-        """
-        data = [(x, y["language"]) for x, y in languages.items()]
-        cur_lng = 0
-        for idx, lang in enumerate([x[0] for x in data]):
-            if lang == self.opts["language"]:
-                cur_lng = idx
-                break
-        item, ok = QTW.QInputDialog.getItem(
-            self, 'Apropos', languages[self.opts["language"]]["ask_language"],
-            [x[1] for x in data], cur_lng, False)
-        if ok:
-            for idx, lang in enumerate([x[1] for x in data]):
-                if lang == item:
-                    self.opts["language"] = data[idx][0]
-                    break
+    def set_page_title(self, pageno, title):
+        "set text for tab"
+        self.nb.setTabText(pageno, title)
 
-    def options(self, event=None):
-        """check settings to show various messages"""
-        OptionsDialog(self)
+    def get_item(self, prompt, itemlist, initial=0):
+        "return choice from input dialog"
+        return QTW.QInputDialog.getItem(self, 'Apropos', prompt, itemlist, initial, False)
 
 
 class Page(QTW.QFrame):
@@ -267,15 +192,15 @@ class CheckDialog(QTW.QDialog):
 
     wordt aangestuurd met de boodschap die in de dialoog moet worden getoond
     """
-    def __init__(self, parent, title, message="", option=""):
+    def __init__(self, parent, title, message="", option="", caption=True):
         self.parent = parent
         self.option = option
         super().__init__(parent)
         self.setWindowTitle(title)
         self.setWindowIcon(self.parent.apoicon)
         txt = QTW.QLabel(message)
-        show_text = languages[self.parent.opts["language"]]["show_text"]
-        self.check = QTW.QCheckBox(show_text, self)
+        self.check = QTW.QCheckBox(caption, self)
+        self.check.setChecked(self.parent.master.opts[option])
         ok_button = QTW.QPushButton("&Ok", self)
         ok_button.clicked.connect(self.klaar)
         vbox = QTW.QVBoxLayout()
@@ -298,26 +223,27 @@ class CheckDialog(QTW.QDialog):
         self.exec_()
 
     def klaar(self):
-        "dialoog afsluiten"
-        if self.check.isChecked():
-            self.parent.opts[self.option] = False
+        "(un)set the setting and close the dialog"
+        self.parent.master.opts[self.option] = not self.check.isChecked()
         super().done(0)
 
 
 class OptionsDialog(QTW.QDialog):
     """Dialog om de instellingen voor te tonen meldingen te tonen en eventueel te kunnen wijzigen
     """
-    def __init__(self, parent):
+    def __init__(self, parent, title, sett2text=None):
         self.parent = parent
-        sett2text = shared.get_setttexts(self.parent.opts)
+        if sett2text is None:
+            sett2text = {}
         super().__init__(parent)
-        self.setWindowTitle('A Propos Settings')
+        self.setWindowTitle(title)
+        self.setWindowIcon(self.parent.apoicon)
         vbox = QTW.QVBoxLayout()
         self.controls = []
 
         gbox = QTW.QGridLayout()
         col = 0
-        for key, value in self.parent.opts.items():
+        for key, value in self.parent.master.opts.items():
             if key not in sett2text:
                 continue
             col += 1
@@ -347,5 +273,5 @@ class OptionsDialog(QTW.QDialog):
         """overridden event handler
         """
         for keyvalue, control in self.controls:
-            self.parent.opts[keyvalue] = control.isChecked()
+            self.parent.master.opts[keyvalue] = control.isChecked()
         super().accept()

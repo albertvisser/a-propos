@@ -4,37 +4,47 @@ presentation layer and most of the application logic, wxPython (Phoenix) version
 """
 import wx
 import wx.adv
-import apropos.shared as shared
-languages = shared.languages
+# import apropos.shared as shared
+# languages = shared.languages
 DFLT_SIZE = (650, 400)
 
 
-def main(fname, title):
-    """starts the application by calling the MainFrame class
-    """
-    app = wx.App()
-    MainFrame(None, fname=fname, title=title)
-    app.MainLoop()
-
-
-class MainFrame(wx.Frame):
+class AproposGui(wx.Frame):
     """main class voor de applicatie
     """
-    def __init__(self, parent, fname, title):
-        title = title or 'Apropos'
+    def __init__(self, master, parent=None, fname='', title='Apropos'):
+        self.app = wx.App()
+        self.master = master
+        # self.parent = parent
         self.quitting = False
         wx.Frame.__init__(self, parent, title=title, pos=(10, 10))  # , size=DFLT_SIZE)
-        self.apoicon = wx.Icon(shared.iconame, wx.BITMAP_TYPE_ICO)
-        self.SetIcon(self.apoicon)
+        self.Bind(wx.EVT_CLOSE, self.close)
+
+    def set_appicon(self, iconame):
+        "give the window an icon"
+        self.SetIcon(wx.Icon(shared.iconame, wx.BITMAP_TYPE_ICO))
+
+    def init_trayicon(self, iconame, tooltip):
+        "create an icon to show in the systray"
+        self.tray_icon = TaskbarIcon(self)
+
+    def setup_tabwidget(self, change_page, close_page):
+        "build the container to show the tabs in"
         pnl = self  # wx.Panel(self, -1)
         self.nb = wx.Notebook(pnl, -1)
-        self.nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, self.page_changed)
-        self.nb.Bind(wx.EVT_LEFT_DCLICK, self.on_left_doubleclick)
-        self.nb.Bind(wx.EVT_MIDDLE_DOWN, self.on_left_doubleclick)
+        self.nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, change_page)  # self.page_changed)
+        self.nb.Bind(wx.EVT_LEFT_DCLICK, close_page)   # self.on_left_doubleclick)
+        self.nb.Bind(wx.EVT_MIDDLE_DOWN, close_page)   # self.on_left_doubleclick)
+        sizer0 = wx.BoxSizer(wx.VERTICAL)
+        sizer0.Add(self.nb, 1, wx.EXPAND)  # | wx.ALL, 10)
+        pnl.SetSizer(sizer0)
+        sizer0.SetSizeHints(pnl)
+
+    def setup_shortcuts(self, handler_dict):
+        "create the app navigation"
         accel_list = []
-        self.handlers = self.map_shortcuts_to_handlers()
-        for label, shortcuts in shared.get_shortcuts():
-            handler = self.handlers[label]
+        for label, data in handler_dict.items():
+            shortcuts, handler = data
             menuitem = wx.MenuItem(None, -1, label)
             self.Bind(wx.EVT_MENU, handler, menuitem)
             for key in shortcuts:
@@ -44,44 +54,116 @@ class MainFrame(wx.Frame):
                     accel_list.append(accel)
         accel_table = wx.AcceleratorTable(accel_list)
         self.SetAcceleratorTable(accel_table)
-        self.apofile = shared.get_apofile(fname)
-        self.initapp()
-        sizer0 = wx.BoxSizer(wx.VERTICAL)
-        # sizer1 = wx.BoxSizer(wx.HORIZONTAL)
-        sizer0.Add(self.nb, 1, wx.EXPAND)  # | wx.ALL, 10)
-        # sizer0.Add(sizer1, 1, wx.EXPAND)
-        pnl.SetSizer(sizer0)
-        # pnl.SetAutoLayout(True)
-        # sizer0.Fit(pnl)
-        sizer0.SetSizeHints(pnl)
-        # pnl.Layout()
-        self.Bind(wx.EVT_CLOSE, self.close)
+
+    def go(self):
+        "show the screen and start the event loop"
         self.Show()
+        self.app.MainLoop()
 
-    def map_shortcuts_to_handlers(self):
-        "because we cannot import the handlers from shared"
-        return {'reload': self.load_data,
-                'newtab': self.newtab,
-                'close': self.closetab,
-                'hide': self.hide_app,
-                'save': self.save_data,
-                'quit': self.close,
-                'language': self.choose_language,
-                'next': self.goto_next,
-                'prev': self.goto_previous,
-                'help': self.helppage,
-                'title': self.asktitle,
-                'settings': self.options}
+    def get_page_count(self):
+        "return number of pages"
+        return self.nb.GetPageCount()
 
-    def page_changed(self, event=None):
-        """pagina aanpassen nadat een andere gekozen is
-        """
-        if not self.quitting:
-            self.current = event.GetSelection()
-            currentpage = self.nb.GetPage(self.current)
+    def get_current_page(self, event):
+        "return selected page"
+        return event.GetSelection()
+
+    def set_previous_page(self):
+        "switch to previous page in the notebook"
+        self.nb.AdvanceSelection(False)
+
+    def set_next_page(self):
+        "switch to next page in the notebook"
+        self.nb.AdvanceSelection()
+
+    def set_current_page(self, page_number):
+        "set selected page"
+        self.nb.SetSelection(page_number)
+        # conform de oorspronkelijke code zou dit zijn    self.nb.ChangeSelection(page_number)
+
+    def set_focus_to_page(self, event=None):
+        "activate (bring to front) selected page"
+        # currentpage = self.nb.GetPage(self.get_current_page())
+        currentpage = self.nb.GetPage(self.master.current)
+        if currentpage:
             currentpage.txt.SetFocus()
+        if event:
             event.Skip()
 
+    def clear_all(self):
+        self.quitting = True  # bypass page_changed handling
+        self.nb.DeleteAllPages()
+        self.quitting = not self.quitting
+
+    def new_page(self, nieuw, titel, note):
+        """initialiseer een nieuwe tab
+        """
+        newpage = Page(self.nb)
+        if note is not None:
+            newpage.txt.SetValue(note)
+        self.nb.AddPage(newpage, titel)
+        self.nb.SetSelection(nieuw)
+
+    def clear_last_page(self):
+        self.afsl()
+        self.Destroy()  # TODO naar main?
+
+    def delete_page(self, page_number):
+        self.nb.DeletePage(page_number)
+        self.set_focus_to_page()
+
+    def hide_app(self):
+        """minimize to tray
+        """
+        self.Hide()
+
+    def reshow_app(self, event=None):
+        """herleef het scherm vanuit de systray
+        """
+        self.Show()
+        self.tray_icon.Destroy()
+
+    def get_page_title(self, pageno):
+        "paginaheader (naam in tab) ophalen"
+        return self.nb.GetPageText(pageno)
+
+    def get_page_text(self, pageno):
+        "pagina tekst ophalen"
+        page = self.nb.GetPage(pageno)
+        return page.txt.GetValue()
+
+    def meld(self, text):
+        with wx.MessageDialog(self, text, 'Apropos', wx.OK | wx.ICON_INFORMATION) as dlg:
+            dlg.ShowModal()
+
+    def show_dialog(self, cls, options):
+        """handel custom dialoog af"""
+        with cls(self, **options) as dlg:
+            if dlg.showmodal() == wx.ID_OK:
+                dlg.accept()
+
+    def get_text(self, prompt, initial=''):
+        """handel dialoog om tekst op te geven af
+        """
+        with wx.TextEntryDialog(self, prompt, 'Apropos', initial) as dlg:
+            ok = dlg.ShowModal() == wx.ID_OK
+            text = dlg.GetValue()
+        return text, ok
+
+    def set_page_title(self, pageno, title):
+        self.nb.SetPageText(pageno, title)
+
+    def get_item(self, prompt, itemlist, initial=None):
+        """handel dialoog om tekst te selecteren af
+        """
+        with wx.SingleChoiceDialog(self, prompt, 'Apropos', itemlist) as dlg:
+            if initial is not None:
+                dlg.SetSelection(initial)
+            ok = dlg.ShowModal() == wx.ID_OK
+            text = dlg.GetValue()
+        return text, ok
+
+    # niet in qt versie is geïmplementeerd en ook niet in main.py
     def on_left_doubleclick(self, event=None):
         """reageert op dubbelklikken op tab t.b.v. verwijderen pagina
         """
@@ -93,161 +175,14 @@ class MainFrame(wx.Frame):
         self.closetab(item)
         event.Skip()
 
-    def load_data(self, event=None):
-        """get data and setup notebook
-        """
-        print('in load_data')
-        self.quitting = True  # bypass page_changed handling
-        self.nb.DeleteAllPages()
-        self.quitting = not self.quitting
-        # self.oldopts = self.opts   # settings veiligstellen
-        self.initapp()
-        # self.opts.update({x: y for x, y in self.oldopts.items() if x != 'ActiveTab'})
-        self.confirm(setting="NotifyOnLoad", textitem="load_text")
-
-    def hide_app(self, event=None):
-        """minimize to tray
-        """
-        self.confirm(setting="AskBeforeHide", textitem="hide_text")
-        self.tbi = TaskbarIcon(self)
-        # self.tbi.SetIcon(self.apoicon, "Click to revive Apropos")
-        # self.tbi.Bind(wx.adv.EVT_TASKBAR_LEFT_UP, self.revive)
-        # self.tbi.Bind(wx.adv.EVT_TASKBAR_RIGHT_UP, self.revive)
-        self.Hide()
-
-    def save_data(self, event=None):
-        """update persistent storage
-        """
-        self.afsl()
-        self.confirm(setting="NotifyOnSave", textitem="save_text")
-
-    def initapp(self):
-        """initialiseer de applicatie
-        """
-        self.opts, self.apodata = shared.load_notes(self.apofile)
-        if self.apodata:
-            for x in self.apodata.values():
-                self.newtab(titel=x[0], note=x[1])
-            self.nb.ChangeSelection(self.opts["ActiveTab"])
-            self.current = self.opts["ActiveTab"]
-        else:
-            self.newtab()
-            self.current = 0
-
-    def newtab(self, event=None, titel=None, note=None):
-        """initialiseer een nieuwe tab
-        """
-        nieuw = self.nb.GetPageCount()
-        if titel is None:
-            titel = str(nieuw)
-        newpage = Page(self.nb)
-        if note is not None:
-            newpage.txt.SetValue(note)
-        self.nb.AddPage(newpage, titel)
-        self.nb.SetSelection(nieuw)
-
-    def goto_previous(self, event=None):
-        "switch to previous page in the notebook"
-        self.nb.AdvanceSelection(False)
-
-    def goto_next(self, event=None):
-        "switch to next page in the notebook"
-        self.nb.AdvanceSelection()
-
-    def closetab(self, event=None, pagetodelete=None):
-        """sluit de huidige of aangegeven tab
-        """
-        if pagetodelete is None:
-            pagetodelete = self.current
-        aant = self.nb.GetPageCount()
-        if aant == 1:
-            self.afsl()
-            self.Destroy()
-        else:
-            self.nb.DeletePage(pagetodelete)
-            currentpage = self.nb.GetPage(self.current)
-            currentpage.txt.SetFocus()
-
-    def revive(self, event=None):
-        """herleef het scherm vanuit de systray
-        """
-        self.Show()
-        self.tbi.Destroy()
-
+    # niet geherimplementeerd in Qt, wel nodig
     def close(self, event=None):
         """Quit the application
         """
-        self.afsl()
+        # self.afsl()  --> naar main
         self.quitting = True
         self.nb.DeleteAllPages()
         self.Destroy()
-
-    def afsl(self):
-        """applicatiedata opslaan voorafgaand aan afsluiten
-        """
-        self.opts["ActiveTab"] = self.nb.GetSelection()
-        self.apodata = {0: self.opts}
-        for i in range(self.nb.GetPageCount()):
-            page = self.nb.GetPage(i)
-            title = self.nb.GetPageText(i)
-            text = page.txt.GetValue()
-            self.apodata[i + 1] = (title, text)
-        shared.save_notes(self.apofile, self.apodata)
-
-    def helppage(self, event=None):
-        """vertoon de hulp pagina met keyboard shortcuts
-        """
-        dlg = wx.MessageDialog(self, languages[self.opts["language"]]["info"],
-                               'Apropos', wx.OK | wx.ICON_INFORMATION)
-        dlg.ShowModal()
-        dlg.Destroy()
-
-    def confirm(self, setting='', textitem=''):
-        """Vraag om bevestiging
-        """
-        if self.opts[setting]:
-            with CheckDialog(self, -1, 'Apropos',
-                             message=languages[self.opts["language"]][textitem]) as dlg:
-                dlg.ShowModal()
-                if dlg.check.GetValue():
-                    self.opts[setting] = False
-
-    def asktitle(self, event=None):
-        """toon dialoog om tab titel in te vullen/aan te passen en verwerk antwoord
-        """
-        dlg = wx.TextEntryDialog(self, languages[self.opts["language"]]["ask_title"],
-                                 'Apropos', self.nb.GetPageText(self.current))
-        if dlg.ShowModal() == wx.ID_OK:
-            self.nb.SetPageText(self.current, dlg.GetValue())
-        dlg.Destroy()
-
-    def choose_language(self, event=None):
-        """toon dialoog om taal te kiezen en verwerk antwoord
-        """
-        data = [(x, y["language"]) for x, y in languages.items()]
-        dlg = wx.SingleChoiceDialog(
-            self, languages[self.opts["language"]]["ask_language"], "Apropos",
-            [x[1] for x in data], wx.CHOICEDLG_STYLE)
-        for idx, lang in enumerate([x[0] for x in data]):
-            if lang == self.opts["language"]:
-                dlg.SetSelection(idx)
-                break
-        h = dlg.ShowModal()
-        if h == wx.ID_OK:
-            sel = dlg.GetStringSelection()
-            for idx, lang in enumerate([x[1] for x in data]):
-                if lang == sel:
-                    self.opts["language"] = data[idx][0]
-                    break
-        dlg.Destroy()
-
-    def options(self, event=None):
-        """check settings to show various messages"""
-        with OptionsDialog(self, -1) as dlg:
-            h = dlg.ShowModal()
-            if h == wx.ID_APPLY:
-                for keyvalue, control in dlg.controls:
-                    self.opts[keyvalue] = control.GetValue()
 
 
 class Page(wx.Panel):
@@ -263,7 +198,7 @@ class Page(wx.Panel):
 
 
 class CheckDialog(wx.Dialog):
-    """Dialog die kan worden ingesteld om niet nogmaals te tonen
+    """Dialog die kan worden ingesteld om iets niet nogmaals te tonen
 
     wordt aangestuurd met de boodschap die in de dialoog moet worden getoond
     """
@@ -275,8 +210,8 @@ class CheckDialog(wx.Dialog):
         sizer0 = wx.BoxSizer(wx.VERTICAL)
         sizer0.Add(wx.StaticText(pnl, -1, message), 1, wx.ALL, 5)
         sizer1 = wx.BoxSizer(wx.HORIZONTAL)
-        self.check = wx.CheckBox(pnl, -1,
-                                 languages[self.parent.opts["language"]]["show_text"])
+        # languages hoort hier niet thuis
+        self.check = wx.CheckBox(pnl, -1, languages[self.parent.opts["language"]]["show_text"])
         sizer1.Add(self.check, 0, wx.EXPAND)
         sizer0.Add(sizer1, 0, wx.ALIGN_CENTER_HORIZONTAL)
         sizer1 = wx.BoxSizer(wx.HORIZONTAL)
@@ -289,6 +224,10 @@ class CheckDialog(wx.Dialog):
         sizer0.Fit(pnl)
         sizer0.SetSizeHints(pnl)
         pnl.Layout()
+
+    def accept(self):
+        "(un)set the setting"
+        self.parent.opts[setting] = not dlg.check.GetValue()
 
 
 class TaskbarIcon(wx.adv.TaskBarIcon):
@@ -343,3 +282,8 @@ class OptionsDialog(wx.Dialog):
         sizer0.Fit(pnl)
         sizer0.SetSizeHints(pnl)
         pnl.Layout()
+
+    def accept(self):
+        "(un)set the aettings"
+        for keyvalue, control in self.controls:
+            self.parent.opts[keyvalue] = control.isChecked()

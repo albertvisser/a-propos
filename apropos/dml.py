@@ -1,0 +1,41 @@
+"""apropos data management routines
+"""
+
+import pathlib
+import pickle
+
+
+def get_apofile(name):
+    """convert name of data file to a path
+
+    use standard name if empty
+    """
+    return pathlib.Path(name or 'apropos').with_suffix('.apo')
+
+
+def load_notes(apofile):
+    """load or initialize data file
+
+    expects a pathlib.Path; returns options and notes data separately
+    """
+    if not apofile.exists():
+        opts = {"AskBeforeHide": True, "ActiveTab": 0, 'language': 'eng',
+                'NotifyOnSave': True, 'NotifyOnLoad': True}
+        apodata = {}
+    else:
+        try:
+            with apofile.open(mode='rb') as f_in:
+                apodata = pickle.load(f_in)
+        except ValueError:
+            with apofile.open(mode='r') as f_in:
+                apodata = pickle.load(f_in)
+        if 0 in apodata:
+            opts = apodata.pop(0)
+    return opts, apodata
+
+
+def save_notes(apofile, data):
+    """(re)save data file
+    """
+    with apofile.open(mode='wb') as f_out:
+        pickle.dump(data, f_out, protocol=2)

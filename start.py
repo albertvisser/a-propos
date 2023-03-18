@@ -2,7 +2,7 @@
 """Starter for the apropos application
 """
 import argparse
-from apropos.a_propos import apropos
+from apropos.main import apropos
 
 parser = argparse.ArgumentParser(description='Simple notes application')
 parser.add_argument('-f', '--file', help='path to the data file (defaults to '

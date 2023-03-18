@@ -1,0 +1,8 @@
+[testdir]
+test
+
+[testscripts]
+main: test_main.py
+
+[testees]
+main: apropos/main.py
