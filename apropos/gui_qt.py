@@ -11,10 +11,10 @@ import PyQt5.QtGui as gui
 class AproposGui(QTW.QMainWindow):
     """main class voor de applicatie
     """
-    def __init__(self, master, parent=None, title='Apropos'):
+    def __init__(self, master, title='Apropos'):
         self.master = master
         self.app = QTW.QApplication(sys.argv)
-        super().__init__(parent)
+        super().__init__(parent=None)
         # self.setWindowTitle(title)
         offset = 30 if sys.platform.startswith('win') else 10
         self.move(offset, offset)
