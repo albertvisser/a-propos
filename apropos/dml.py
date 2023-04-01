@@ -34,8 +34,9 @@ def load_notes(apofile):
     return opts, apodata
 
 
-def save_notes(apofile, data):
+def save_notes(apofile, opts, data):
     """(re)save data file
     """
+    data[0] = opts
     with apofile.open(mode='wb') as f_out:
         pickle.dump(data, f_out, protocol=2)

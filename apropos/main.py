@@ -59,19 +59,19 @@ class Apropos:
         """
         self.gui.clear_all()
         self.initapp()
-        self.confirm(setting="NotifyOnLoad", textitem="load_text")
+        self.confirm("NotifyOnLoad", "load_text")
 
     def hide_app(self):
         """minimize to tray
         """
-        self.confirm(setting="AskBeforeHide", textitem="hide_text")
+        self.confirm("AskBeforeHide", "hide_text")
         self.gui.hide_app()
 
     def save_data(self):
         """update persistent storage
         """
         self.afsl()
-        self.confirm(setting="NotifyOnSave", textitem="save_text")
+        self.confirm("NotifyOnSave", "save_text")
 
     def initapp(self):
         """initialiseer de applicatie
@@ -79,11 +79,7 @@ class Apropos:
         self.opts, self.apodata = dml.load_notes(self.apofile)
         if self.apodata:
             for i, x in self.apodata.items():
-                if i == 0 and "AskBeforeHide" in x:
-                    for key, val in x.items():
-                        self.opts[key] = val
-                else:
-                    self.newtab(titel=x[0], note=x[1])
+                self.newtab(titel=x[0], note=x[1])
             self.current = self.opts["ActiveTab"]
             self.gui.set_current_page(self.current)
         else:
@@ -131,20 +127,20 @@ class Apropos:
     def afsl(self):
         """applicatiedata opslaan (voorafgaand aan afsluiten)
         """
+        apodata = {}
         self.opts["ActiveTab"] = self.gui.get_current_page()
-        apodata = {0: self.opts}
         for i in range(self.gui.get_page_count()):
             title = self.gui.get_page_title(i)
             text = self.gui.get_page_text(i)
             apodata[i + 1] = (title, text)
-        dml.save_notes(self.apofile, apodata)
+        dml.save_notes(self.apofile, self.opts, apodata)
 
     def helppage(self):
         """vertoon de hulp pagina met keyboard shortcuts
         """
         self.gui.meld(languages[self.opts["language"]]["info"])
 
-    def confirm(self, setting='', textitem=''):
+    def confirm(self, setting, textitem):
         """Vraag om bevestiging (wordt afgehandeld in de dialoog)
         """
         if self.opts[setting]:
