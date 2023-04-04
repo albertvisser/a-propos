@@ -3,6 +3,8 @@ test
 
 [testscripts]
 main: test_main.py
+dml: test_dml.py
 
 [testees]
 main: apropos/main.py
+dml: apropos/dml.py
