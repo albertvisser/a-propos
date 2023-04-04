@@ -26,11 +26,10 @@ def load_notes(apofile):
         try:
             with apofile.open(mode='rb') as f_in:
                 apodata = pickle.load(f_in)
-        except ValueError:
-            with apofile.open(mode='r') as f_in:
-                apodata = pickle.load(f_in)
-        if 0 in apodata:
-            opts = apodata.pop(0)
+        except pickle.UnpicklingError:
+            opts, apodata = {}, {}
+        else:
+            opts = apodata.pop(0)  # zie save_notes: hoort altijd aanwezig te zijn
     return opts, apodata
 
 
