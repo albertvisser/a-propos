@@ -51,23 +51,23 @@ class Apropos:
     def page_changed(self, event=None):
         """pagina aanpassen nadat een andere gekozen is
         """
-        self.current = self.gui.get_current_page()  # (event)
+        self.current = self.gui.get_current_page()  # event)
         self.gui.set_focus_to_page()  # (event)
 
-    def load_data(self):
+    def load_data(self, *args):
         """get data and setup notebook
         """
         self.gui.clear_all()
         self.initapp()
         self.confirm("NotifyOnLoad", "load_text")
 
-    def hide_app(self):
+    def hide_app(self, *args):
         """minimize to tray
         """
         self.confirm("AskBeforeHide", "hide_text")
         self.gui.hide_app()
 
-    def save_data(self):
+    def save_data(self, *args):
         """update persistent storage
         """
         self.afsl()
@@ -86,7 +86,7 @@ class Apropos:
             self.newtab()
             self.current = 0
 
-    def newtab(self, titel=None, note=None):
+    def newtab(self, event=None, titel=None, note=None):
         """initialiseer een nieuwe tab
         """
         nieuw = self.gui.get_page_count() + 1
@@ -94,17 +94,17 @@ class Apropos:
             titel = str(nieuw)
         self.gui.new_page(nieuw, titel, note)
 
-    def goto_previous(self):
+    def goto_previous(self, *args):
         """navigeer naar de voorgaande tab indien aanwezig
         """
         self.gui.set_previous_page()
 
-    def goto_next(self):
+    def goto_next(self, *args):
         """navigeer naar de volgende tab indien aanwezig
         """
         self.gui.set_next_page()
 
-    def closetab(self, pagetodelete=None):
+    def closetab(self, event=None, pagetodelete=None):
         """sluit de aangegeven tab
 
         bij de laatste tab: alleen leegmaken en titel generiek maken
@@ -135,7 +135,7 @@ class Apropos:
             apodata[i + 1] = (title, text)
         dml.save_notes(self.apofile, self.opts, apodata)
 
-    def helppage(self):
+    def helppage(self, *args):
         """vertoon de hulp pagina met keyboard shortcuts
         """
         self.gui.meld(languages[self.opts["language"]]["info"])
@@ -151,7 +151,7 @@ class Apropos:
         # else:
         #     shared.log(languages[self.opts["language"]][textitem])
 
-    def asktitle(self):
+    def asktitle(self, *args):
         """toon dialoog om tab titel in te vullen/aan te passen en verwerk antwoord
         """
         text, ok = self.gui.get_text(prompt=languages[self.opts["language"]]["ask_title"],
@@ -159,7 +159,7 @@ class Apropos:
         if ok:
             self.gui.set_page_title(self.current, text)
 
-    def choose_language(self):
+    def choose_language(self, *args):
         """toon dialoog om taal te kiezen en verwerk antwoord
         """
         data = [(x, y["language"]) for x, y in languages.items()]

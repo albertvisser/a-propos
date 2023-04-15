@@ -64,7 +64,7 @@ class AproposGui(QTW.QMainWindow):
         "return number of pages"
         return self.nb.count()
 
-    def get_current_page(self):
+    def get_current_page(self, *args):
         "return selected page"
         return self.nb.currentIndex()
 
@@ -120,7 +120,7 @@ class AproposGui(QTW.QMainWindow):
         self.nb.removeTab(pagetodelete)
         test.destroy()
 
-    def closeEvent(self, event=None):  # FIXME: is event argument nodig?
+    def closeEvent(self, event):
         """reimplemented: event handler voor afsluiten van de applicatie
         """
         self.master.afsl()

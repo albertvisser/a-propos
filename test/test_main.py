@@ -80,6 +80,13 @@ class MockAproposGui:
         print(f'called AproposGui.delete_page with arg `{pagenum}`')
 
 
+def test_languages():
+    assert sorted(list(main.languages)) == ['dutch', 'eng']
+    for lang, data in main.languages.items():
+        assert list(data) == ['language', 'info', 'hide_text', 'show_text', 'ask_title',
+                              'ask_language', 'load_text', 'save_text', 'ask_hide',
+                              'notify_load', 'notify_save']
+
 def test_apropos(monkeypatch, capsys):
     monkeypatch.setattr(main, 'Apropos', MockApropos)
     main.apropos()
@@ -218,10 +225,10 @@ def test_newtab(monkeypatch, capsys):
     testobj.newtab()
     assert capsys.readouterr().out == ("called AproposGui.get_page_count\n"
                                        "called AproposGui.new_page with args (3, '3', None)\n")
-    testobj.newtab('x')
+    testobj.newtab('event', 'x')
     assert capsys.readouterr().out == ("called AproposGui.get_page_count\n"
                                        "called AproposGui.new_page with args (3, 'x', None)\n")
-    testobj.newtab('x', 'y')
+    testobj.newtab('event', 'x', 'y')
     assert capsys.readouterr().out == ("called AproposGui.get_page_count\n"
                                        "called AproposGui.new_page with args (3, 'x', 'y')\n")
 
@@ -251,7 +258,7 @@ def test_closetab(monkeypatch, capsys):
     testobj.closetab()
     assert capsys.readouterr().out == ("called AproposGui.get_page_count\n"
                                        "called AproposGui.delete_page with arg `1`\n")
-    testobj.closetab(2)
+    testobj.closetab('event', 2)
     assert capsys.readouterr().out == ("called AproposGui.get_page_count\n"
                                        "called AproposGui.delete_page with arg `2`\n")
     monkeypatch.setattr(testobj.gui, 'get_page_count', lambda *x: 1)
