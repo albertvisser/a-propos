@@ -22,11 +22,11 @@ class AproposGui(wx.Frame):
 
     def set_appicon(self, iconame):
         "give the window an icon"
-        self.SetIcon(wx.Icon(shared.iconame, wx.BITMAP_TYPE_ICO))
+        self.SetIcon(wx.Icon(iconame, wx.BITMAP_TYPE_ICO))
 
     def init_trayicon(self, iconame, tooltip):
         "create an icon to show in the systray"
-        self.tray_icon = TaskbarIcon(self)
+        self.tray_icon = TaskbarIcon(self, iconame)
 
     def setup_tabwidget(self, change_page, close_page):
         "build the container to show the tabs in"
@@ -64,9 +64,11 @@ class AproposGui(wx.Frame):
         "return number of pages"
         return self.nb.GetPageCount()
 
-    def get_current_page(self, event):
+    def get_current_page(self):  #  , event=None):
         "return selected page"
-        return event.GetSelection()
+        # if event:
+        #     return event.GetSelection()  # after changing tab
+        return self.nb.GetSelection()
 
     def set_previous_page(self):
         "switch to previous page in the notebook"
@@ -102,11 +104,11 @@ class AproposGui(wx.Frame):
         if note is not None:
             newpage.txt.SetValue(note)
         self.nb.AddPage(newpage, titel)
-        self.nb.SetSelection(nieuw)
+        self.nb.SetSelection(nieuw - 1)
 
     def clear_last_page(self):
-        self.afsl()
-        self.Destroy()  # TODO naar main?
+        self.nb.SetPageText(self.master.current, "1")
+        self.nb.GetPage(self.master.current).txt.SetValue("")
 
     def delete_page(self, page_number):
         self.nb.DeletePage(page_number)
@@ -129,8 +131,7 @@ class AproposGui(wx.Frame):
 
     def get_page_text(self, pageno):
         "pagina tekst ophalen"
-        page = self.nb.GetPage(pageno)
-        return page.txt.GetValue()
+        return self.nb.GetPage(pageno).txt.GetValue()
 
     def meld(self, text):
         with wx.MessageDialog(self, text, 'Apropos', wx.OK | wx.ICON_INFORMATION) as dlg:
@@ -202,16 +203,17 @@ class CheckDialog(wx.Dialog):
 
     wordt aangestuurd met de boodschap die in de dialoog moet worden getoond
     """
-    def __init__(self, parent, id, title, size=(-1, 120), pos=wx.DefaultPosition,
-                 style=wx.DEFAULT_DIALOG_STYLE, message=""):
+    def __init__(self, parent, title, message="", option="", caption=True):
+
         self.parent = parent
-        wx.Dialog.__init__(self, parent, id, title, pos, size, style)
+        wx.Dialog.__init__(self, parent, title=title, pos=wx.DefaultPosition, size=(-1, 120),
+                           style=wx.DEFAULT_DIALOG_STYLE)
         pnl = self  # wx.Panel(self, -1)
         sizer0 = wx.BoxSizer(wx.VERTICAL)
         sizer0.Add(wx.StaticText(pnl, -1, message), 1, wx.ALL, 5)
         sizer1 = wx.BoxSizer(wx.HORIZONTAL)
-        # languages hoort hier niet thuis
-        self.check = wx.CheckBox(pnl, -1, languages[self.parent.opts["language"]]["show_text"])
+        self.check = wx.CheckBox(pnl, -1, caption)
+        self.check.SetValue(self.parent.master.opts[option])
         sizer1.Add(self.check, 0, wx.EXPAND)
         sizer0.Add(sizer1, 0, wx.ALIGN_CENTER_HORIZONTAL)
         sizer1 = wx.BoxSizer(wx.HORIZONTAL)
@@ -227,19 +229,19 @@ class CheckDialog(wx.Dialog):
 
     def accept(self):
         "(un)set the setting"
-        self.parent.opts[setting] = not dlg.check.GetValue()
+        self.parent.master.opts[self.option] = not dlg.check.GetValue()
 
 
 class TaskbarIcon(wx.adv.TaskBarIcon):
     "icon in the taskbar"
     id_revive = wx.NewId()
 
-    def __init__(self, parent):
+    def __init__(self, parent, iconame):
         # super().__init__(wx.adv.TBI_DOCK)
         wx.adv.TaskBarIcon.__init__(self)
-        self.SetIcon(parent.apoicon, "Click to revive Apropos")
-        self.Bind(wx.adv.EVT_TASKBAR_LEFT_DCLICK, parent.revive)
-        self.Bind(wx.EVT_MENU, parent.revive, id=self.id_revive)
+        self.SetIcon(wx.Icon(iconame, wx.BITMAP_TYPE_ICO), tooltip="Click to revive Apropos")
+        self.Bind(wx.adv.EVT_TASKBAR_LEFT_DCLICK, parent.master.revive)
+        self.Bind(wx.EVT_MENU, parent.master.revive, id=self.id_revive)
 
     def CreatePopupMenu(self):
         """reimplemented"""
@@ -251,10 +253,11 @@ class TaskbarIcon(wx.adv.TaskBarIcon):
 class OptionsDialog(wx.Dialog):
     """Dialog om de instellingen voor te tonen meldingen te tonen en eventueel te kunnen wijzigen
     """
-    def __init__(self, parent, id):
+    def __init__(self, parent, title, sett2text=None):
         self.parent = parent
-        sett2text = shared.get_setttexts(self.parent.opts)
-        super().__init__(parent, id, title='A Propos Settings')
+        if sett2text is None:
+            sett2text = {}
+        super().__init__(parent, title='A Propos Settings')
         pnl = self  # wx.Panel(self, -1)
         sizer0 = wx.BoxSizer(wx.VERTICAL)
         sizer1 = wx.FlexGridSizer(cols=2)
