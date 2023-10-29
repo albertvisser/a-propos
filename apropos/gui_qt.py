@@ -3,17 +3,17 @@
 presentation layer and most of the application logic, Qt5 version
 """
 import sys
-import PyQt5.QtWidgets as QTW
+import PyQt5.QtWidgets as qtw
 import PyQt5.QtGui as gui
 ## import PyQt5.QtCore as core
 
 
-class AproposGui(QTW.QMainWindow):
+class AproposGui(qtw.QMainWindow):
     """main class voor de applicatie
     """
     def __init__(self, master, title='Apropos'):
         self.master = master
-        self.app = QTW.QApplication(sys.argv)
+        self.app = qtw.QApplication(sys.argv)
         super().__init__(parent=None)
         # self.setWindowTitle(title)
         offset = 30 if sys.platform.startswith('win') else 10
@@ -27,7 +27,7 @@ class AproposGui(QTW.QMainWindow):
 
     def init_trayicon(self, iconame, tooltip):
         "create an icon to show in the systray"
-        self.tray_icon = QTW.QSystemTrayIcon(gui.QIcon(iconame), self)
+        self.tray_icon = qtw.QSystemTrayIcon(gui.QIcon(iconame), self)
         self.tray_icon.setToolTip("Click to revive Apropos")
         ## self.tray_icon.clicked.connect(self.revive)
         ## tray_signal = "activated(QSystemTrayIcon::ActivationReason)"
@@ -37,7 +37,7 @@ class AproposGui(QTW.QMainWindow):
 
     def setup_tabwidget(self, change_page, close_page):
         "build the container to show the tabs in"
-        self.nb = QTW.QTabWidget(self)
+        self.nb = qtw.QTabWidget(self)
         self.setCentralWidget(self.nb)
         self.master.current = 0
         self.nb.currentChanged.connect(change_page)
@@ -49,7 +49,7 @@ class AproposGui(QTW.QMainWindow):
         "create the app navigation"
         for label, data in handler_dict.items():
             shortcuts, handler = data
-            action = QTW.QAction(label, self)
+            action = qtw.QAction(label, self)
             # action.setShortcuts([x for x in shortcuts])
             action.setShortcuts(list(shortcuts))
             action.triggered.connect(handler)
@@ -134,9 +134,9 @@ class AproposGui(QTW.QMainWindow):
     def reshow_app(self, event):
         """herleef het scherm vanuit de systray
         """
-        if event == QTW.QSystemTrayIcon.Unknown:
+        if event == qtw.QSystemTrayIcon.Unknown:
             self.tray_icon.showMessage('Apropos', "Click to revive Apropos")
-        elif event == QTW.QSystemTrayIcon.Context:
+        elif event == qtw.QSystemTrayIcon.Context:
             pass
         else:
             self.show()
@@ -154,7 +154,7 @@ class AproposGui(QTW.QMainWindow):
     def meld(self, meld):
         """Toon een melding in een venster
         """
-        QTW.QMessageBox.information(self, 'Apropos', meld, )
+        qtw.QMessageBox.information(self, 'Apropos', meld, )
 
     def show_dialog(self, cls, kwargs):
         """Vraag om bevestiging (wordt afgehandeld in de dialoog)
@@ -164,7 +164,7 @@ class AproposGui(QTW.QMainWindow):
     def get_text(self, prompt, initial=''):
         """toon dialoog om tab titel in te vullen/aan te passen en verwerk antwoord
         """
-        return QTW.QInputDialog.getText(self, 'Apropos', prompt, QTW.QLineEdit.Normal, initial)
+        return qtw.QInputDialog.getText(self, 'Apropos', prompt, qwt.QLineEdit.Normal, initial)
 
     def set_page_title(self, pageno, title):
         "set text for tab"
@@ -172,22 +172,22 @@ class AproposGui(QTW.QMainWindow):
 
     def get_item(self, prompt, itemlist, initial=0):
         "return choice from input dialog"
-        return QTW.QInputDialog.getItem(self, 'Apropos', prompt, itemlist, initial, False)
+        return qtw.QInputDialog.getItem(self, 'Apropos', prompt, itemlist, initial, False)
 
 
-class Page(QTW.QFrame):
+class Page(qtw.QFrame):
     "Panel subclass voor de notebook pagina's"
     def __init__(self, parent):
         super().__init__(parent)
-        self.txt = QTW.QTextEdit(self)
-        vbox = QTW.QVBoxLayout()
-        hbox = QTW.QHBoxLayout()
+        self.txt = qtw.QTextEdit(self)
+        vbox = qtw.QVBoxLayout()
+        hbox = qtw.QHBoxLayout()
         hbox.addWidget(self.txt)
         vbox.addLayout(hbox)
         self.setLayout(vbox)
 
 
-class CheckDialog(QTW.QDialog):
+class CheckDialog(qtw.QDialog):
     """Dialog die kan worden ingesteld om niet nogmaals te tonen
 
     wordt aangestuurd met de boodschap die in de dialoog moet worden getoond
@@ -198,22 +198,22 @@ class CheckDialog(QTW.QDialog):
         super().__init__(parent)
         self.setWindowTitle(title)
         self.setWindowIcon(self.parent.apoicon)
-        txt = QTW.QLabel(message)
-        self.check = QTW.QCheckBox(caption, self)
+        txt = qtw.QLabel(message)
+        self.check = qtw.QCheckBox(caption, self)
         self.check.setChecked(self.parent.master.opts[option])
-        ok_button = QTW.QPushButton("&Ok", self)
+        ok_button = qtw.QPushButton("&Ok", self)
         ok_button.clicked.connect(self.klaar)
-        vbox = QTW.QVBoxLayout()
+        vbox = qtw.QVBoxLayout()
 
-        hbox = QTW.QHBoxLayout()
+        hbox = qtw.QHBoxLayout()
         hbox.addWidget(txt)
         vbox.addLayout(hbox)
 
-        hbox = QTW.QHBoxLayout()
+        hbox = qtw.QHBoxLayout()
         hbox.addWidget(self.check)
         vbox.addLayout(hbox)
 
-        hbox = QTW.QHBoxLayout()
+        hbox = qtw.QHBoxLayout()
         hbox.addWidget(ok_button)
         hbox.insertStretch(0, 1)
         hbox.addStretch(1)
@@ -228,7 +228,7 @@ class CheckDialog(QTW.QDialog):
         super().done(0)
 
 
-class OptionsDialog(QTW.QDialog):
+class OptionsDialog(qtw.QDialog):
     """Dialog om de instellingen voor te tonen meldingen te tonen en eventueel te kunnen wijzigen
     """
     def __init__(self, parent, title, sett2text=None):
@@ -238,29 +238,29 @@ class OptionsDialog(QTW.QDialog):
         super().__init__(parent)
         self.setWindowTitle(title)
         self.setWindowIcon(self.parent.apoicon)
-        vbox = QTW.QVBoxLayout()
+        vbox = qtw.QVBoxLayout()
         self.controls = []
 
-        gbox = QTW.QGridLayout()
+        gbox = qtw.QGridLayout()
         col = 0
         for key, value in self.parent.master.opts.items():
             if key not in sett2text:
                 continue
             col += 1
-            lbl = QTW.QLabel(sett2text[key], self)
+            lbl = qtw.QLabel(sett2text[key], self)
             gbox.addWidget(lbl, col, 0)
-            chk = QTW.QCheckBox('', self)
+            chk = qtw.QCheckBox('', self)
             chk.setChecked(value)
             gbox.addWidget(chk, col, 1)
             self.controls.append((key, chk))
         vbox.addLayout(gbox)
 
-        hbox = QTW.QHBoxLayout()
+        hbox = qtw.QHBoxLayout()
         hbox.addStretch(1)
-        ok_button = QTW.QPushButton("&Apply", self)
+        ok_button = qtw.QPushButton("&Apply", self)
         ok_button.clicked.connect(self.accept)
         hbox.addWidget(ok_button)
-        cancel_button = QTW.QPushButton("&Close", self)
+        cancel_button = qtw.QPushButton("&Close", self)
         cancel_button.clicked.connect(self.reject)
         hbox.addWidget(cancel_button)
         hbox.addStretch(1)
