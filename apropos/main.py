@@ -26,26 +26,28 @@ class Apropos:
     """main class voor de applicatie
     """
     def __init__(self, fname='', title=''):
+        # breakpoint()
+        self.iconame = str(HERE / "apropos.ico")
+        self.apofile = dml.get_apofile(fname)  # shared.get_apofile(fname)
+        self.shortcut_data = {'reload': (('Ctrl+R',), self.load_data),
+                              'newtab': (('Ctrl+N',), self.newtab),
+                              'close': (('Ctrl+W',), self.closetab),
+                              'hide': (('Ctrl+H',), self.hide_app),
+                              'save': (('Ctrl+S',), self.save_data),
+                              'quit': (('Ctrl+Q', 'Escape'), self.quit),
+                              'language': (('Ctrl+L',), self.choose_language),
+                              'next': (('Alt+Right',), self.goto_next),
+                              'prev': (('Alt+Left',), self.goto_previous),
+                              'help': (('F1',), self.helppage),
+                              'title': (('F2',), self.asktitle),
+                              'settings': (('Alt+P',), self.options)}
         if not title:
             title = "A Propos"
         self.gui = gui.AproposGui(self, title=title)
-        self.apofile = dml.get_apofile(fname)  # shared.get_apofile(fname)
-        iconame = str(HERE / "apropos.ico")
-        self.gui.set_appicon(iconame)
-        self.gui.init_trayicon(iconame, tooltip="Click to revive Apropos")
+        self.gui.set_appicon(self.iconame)
+        self.gui.init_trayicon(self.iconame, tooltip="Click to revive Apropos")
         self.gui.setup_tabwidget(change_page=self.page_changed, close_page=self.closetab)
-        self.gui.setup_shortcuts({'reload': (('Ctrl+R',), self.load_data),
-                                  'newtab': (('Ctrl+N',), self.newtab),
-                                  'close': (('Ctrl+W',), self.closetab),
-                                  'hide': (('Ctrl+H',), self.hide_app),
-                                  'save': (('Ctrl+S',), self.save_data),
-                                  'quit': (('Ctrl+Q', 'Escape'), self.gui.close),
-                                  'language': (('Ctrl+L',), self.choose_language),
-                                  'next': (('Alt+Right',), self.goto_next),
-                                  'prev': (('Alt+Left',), self.goto_previous),
-                                  'help': (('F1',), self.helppage),
-                                  'title': (('F2',), self.asktitle),
-                                  'settings': (('Alt+P',), self.options)})
+        self.gui.setup_shortcuts(self.shortcut_data)
         self.initapp()
 
     def page_changed(self, event=None):
@@ -53,6 +55,9 @@ class Apropos:
         """
         self.current = self.gui.get_current_page()  # event)
         self.gui.set_focus_to_page()  # (event)
+
+    def quit(self):
+        self.gui.close()
 
     def load_data(self, *args):
         """get data and setup notebook
@@ -78,7 +83,7 @@ class Apropos:
         """
         self.opts, self.apodata = dml.load_notes(self.apofile)
         if self.apodata:
-            for i, x in self.apodata.items():
+            for x in self.apodata.values():
                 self.newtab(titel=x[0], note=x[1])
             self.current = self.opts["ActiveTab"]
             self.gui.set_current_page(self.current)

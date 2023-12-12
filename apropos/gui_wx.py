@@ -229,7 +229,7 @@ class CheckDialog(wx.Dialog):
 
     def accept(self):
         "(un)set the setting"
-        self.parent.master.opts[self.option] = not dlg.check.GetValue()
+        self.parent.master.opts[self.option] = not self.check.GetValue()
 
 
 class TaskbarIcon(wx.adv.TaskBarIcon):
