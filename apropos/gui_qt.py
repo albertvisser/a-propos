@@ -164,7 +164,7 @@ class AproposGui(qtw.QMainWindow):
     def get_text(self, prompt, initial=''):
         """toon dialoog om tab titel in te vullen/aan te passen en verwerk antwoord
         """
-        return qtw.QInputDialog.getText(self, 'Apropos', prompt, qwt.QLineEdit.Normal, initial)
+        return qtw.QInputDialog.getText(self, 'Apropos', prompt, qtw.QLineEdit.Normal, initial)
 
     def set_page_title(self, pageno, title):
         "set text for tab"
