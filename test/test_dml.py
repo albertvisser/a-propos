@@ -1,5 +1,3 @@
-import pytest
-
 from apropos import dml
 
 def test_get_apofile(monkeypatch, capsys):

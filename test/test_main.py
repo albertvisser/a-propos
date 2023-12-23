@@ -1,5 +1,3 @@
-import pytest
-
 from apropos import main
 
 class MockApropos:
