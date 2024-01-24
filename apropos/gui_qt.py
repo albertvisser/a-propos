@@ -3,9 +3,9 @@
 presentation layer and most of the application logic, Qt5 version
 """
 import sys
-import PyQt5.QtWidgets as qtw
-import PyQt5.QtGui as gui
-## import PyQt5.QtCore as core
+import PyQt6.QtWidgets as qtw
+import PyQt6.QtGui as gui
+## import PyQt6.QtCore as core
 
 
 class AproposGui(qtw.QMainWindow):
@@ -15,7 +15,7 @@ class AproposGui(qtw.QMainWindow):
         self.master = master
         self.app = qtw.QApplication(sys.argv)
         super().__init__(parent=None)
-        # self.setWindowTitle(title)
+        self.setWindowTitle(title)
         offset = 30 if sys.platform.startswith('win') else 10
         self.move(offset, offset)
         self.resize(650, 400)
@@ -49,7 +49,7 @@ class AproposGui(qtw.QMainWindow):
         "create the app navigation"
         for label, data in handler_dict.items():
             shortcuts, handler = data
-            action = qtw.QAction(label, self)
+            action = gui.QAction(label, self)
             # action.setShortcuts([x for x in shortcuts])
             action.setShortcuts(list(shortcuts))
             action.triggered.connect(handler)
@@ -58,7 +58,7 @@ class AproposGui(qtw.QMainWindow):
     def go(self):
         "show the screen and start the event loop"
         self.show()
-        sys.exit(self.app.exec_())
+        sys.exit(self.app.exec())
 
     def get_page_count(self):
         "return number of pages"
@@ -134,10 +134,9 @@ class AproposGui(qtw.QMainWindow):
     def reshow_app(self, event):
         """herleef het scherm vanuit de systray
         """
-        if event == qtw.QSystemTrayIcon.Unknown:
+        if event in (qtw.QSystemTrayIcon.ActivationReason.Unknown,
+                     qtw.QSystemTrayIcon.ActivationReason.Context):
             self.tray_icon.showMessage('Apropos', "Click to revive Apropos")
-        elif event == qtw.QSystemTrayIcon.Context:
-            pass
         else:
             self.show()
             self.tray_icon.hide()
@@ -164,7 +163,7 @@ class AproposGui(qtw.QMainWindow):
     def get_text(self, prompt, initial=''):
         """toon dialoog om tab titel in te vullen/aan te passen en verwerk antwoord
         """
-        return qtw.QInputDialog.getText(self, 'Apropos', prompt, qtw.QLineEdit.Normal, initial)
+        return qtw.QInputDialog.getText(self, 'Apropos', prompt, text=initial)
 
     def set_page_title(self, pageno, title):
         "set text for tab"
@@ -220,7 +219,7 @@ class CheckDialog(qtw.QDialog):
         vbox.addLayout(hbox)
 
         self.setLayout(vbox)
-        self.exec_()
+        self.exec()
 
     def klaar(self):
         "(un)set the setting and close the dialog"
@@ -267,7 +266,7 @@ class OptionsDialog(qtw.QDialog):
         vbox.addLayout(hbox)
 
         self.setLayout(vbox)
-        self.exec_()
+        self.exec()
 
     def accept(self):
         """overridden event handler
