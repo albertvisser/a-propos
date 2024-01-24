@@ -31,4 +31,4 @@ An icon will appear that you can click on to revive it""",
     "save_text": "Saved",
     'ask_hide': 'Notify the application will be hidden in the system tray',
     'notify_load': 'Notify the data has been reloaded',
-    'notify_save': 'Notify the data has been saved' }}
+    'notify_save': 'Notify the data has been (explicitely) saved' }}

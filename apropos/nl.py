@@ -32,4 +32,4 @@ Er komt een icoontje waarop je kunt klikken om hem weer wakker te maken""",
     "save_text": "Notities zijn opgeslagen",
     'ask_hide': 'Melden dat de applicatie verborgen wordt in de system tray',
     'notify_load': 'Melden dat de data opnieuw opgehaald is',
-    'notify_save': 'Melden dat de data opgeslagen is' }}
+    'notify_save': 'Melden dat de data (expliciet) opgeslagen is' }}
