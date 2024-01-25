@@ -1,113 +1,184 @@
-from apropos import main
+"""unittests for ./apropos/main.py
+"""
+from apropos import main as testee
+
 
 class MockApropos:
+    """testdouble for main.Apropos object
+    """
     def __init__(self, **kwargs):
         print('called Apropos with args', kwargs)
         self.gui = MockAproposGui(self, 'title')
         self.opts = {}
     def newtab(self, **kwargs):
+        """stub
+        """
         print('called Apropos.newtab with args', kwargs)
     def afsl(self):
+        """stub
+        """
         print('called Apropos.afsl')
 
 class MockAproposGui:
+    """testdouble for gui.AproposGui object
+    """
     def __init__(self, master, title):
         self.master = master
         print(f'called AproposGui with title `{title}`')
     def go(self):
+        """testdouble
+        """
         print('called AproposGui.go')
     def close(self):
+        """testdouble
+        """
         print('called AproposGui.close')
     def set_appicon(self, name):
+        """testdouble
+        """
         print(f'called AproposGui.set_appicon with arg `{name}`')
     def init_trayicon(self, *args, **kwargs):
+        """testdouble
+        """
         print('called AproposGui.init_trayicon with args', args, kwargs)
     def setup_tabwidget(self, *args, **kwargs):
+        """testdouble
+        """
         print('called AproposGui.setup_tabwidget with args', args, kwargs)
     def setup_shortcuts(self, menudict):
+        """testdouble
+        """
         # print(f'called AproposGui.setup_shortcuts with arg `{menudict}`')
         # geen argument laten zien spaart een hoop simulatie-opzetten uit
         print('called AproposGui.setup_shortcuts')
     def get_current_page(self):
+        """testdouble
+        """
         print('called AproposGui.get_current_page')
         return 1
     def set_focus_to_page(self):
+        """testdouble
+        """
         print('called AproposGui.set_focus_to_page')
     def clear_last_page(self):
+        """testdouble
+        """
         print('called AproposGui.clear_last_page')
     def clear_all(self):
+        """testdouble
+        """
         print('called AproposGui.clear_all')
     def hide_app(self):
+        """testdouble
+        """
         print('called AproposGui.hide_app')
     def set_current_page(self, pageno=None):
+        """testdouble
+        """
         if pageno is None:
             print('called AproposGui.set_current_page')
         else:
             print(f'called AproposGui.set_current_page with arg `{pageno}`')
     def set_previous_page(self):
+        """testdouble
+        """
         print('called AproposGui.set_previous_page')
     def set_next_page(self):
+        """testdouble
+        """
         print('called AproposGui.set_next_page')
     def get_page_count(self):
+        """testdouble
+        """
         print('called AproposGui.get_page_count')
         return 2
     def new_page(self, *args):
+        """testdouble
+        """
         print('called AproposGui.new_page with args', args)
     def reshow_app(self, name):
+        """testdouble
+        """
         print(f'called AproposGui.reshow_app with arg `{name}`')
     def meld(self, msg):
+        """testdouble
+        """
         print(f'called AproposGui.meld with arg `{msg}`')
     def show_dialog(self, *args):
+        """testdouble
+        """
         print('called AproposGui.show_dialog with args', args)
     def get_text(self, **kwargs):
+        """testdouble
+        """
         print('called AproposGui.get_text with args', kwargs)
         return 'newtext', True
     def get_item(self, **kwargs):
+        """testdouble
+        """
         print('called AproposGui.get_item with args', kwargs)
         return 'xxx', True
     def get_page_text(self, pagenum):
+        """testdouble
+        """
         print(f'called AproposGui.get_page_text with arg `{pagenum}`')
         return 'text'
     def get_page_title(self, pagenum):
+        """testdouble
+        """
         print(f'called AproposGui.get_page_title with arg `{pagenum}`')
         return 'page'
     def set_page_title(self, *args):
+        """testdouble
+        """
         print('called AproposGui.set_page_title with args', args)
     def delete_page(self, pagenum):
+        """testdouble
+        """
         print(f'called AproposGui.delete_page with arg `{pagenum}`')
 
 
 def test_languages():
-    assert sorted(list(main.languages)) == ['dutch', 'eng']
-    for data in main.languages.values():
+    """unittest for main.languages
+    """
+    assert sorted(list(testee.languages)) == ['dutch', 'eng']
+    for data in testee.languages.values():
         assert list(data) == ['language', 'info', 'hide_text', 'show_text', 'ask_title',
                               'ask_language', 'load_text', 'save_text', 'ask_hide',
                               'notify_load', 'notify_save']
 
 def test_apropos_function(monkeypatch, capsys):
-    monkeypatch.setattr(main, 'Apropos', MockApropos)
-    main.apropos()
+    """unittest for main.apropos_function
+    """
+    monkeypatch.setattr(testee, 'Apropos', MockApropos)
+    testee.apropos()
     assert capsys.readouterr().out == ("called Apropos with args {'fname': '', 'title': ''}\n"
                                        'called AproposGui with title `title`\n'
                                        'called AproposGui.go\n')
-    main.apropos(fname='x', title='y')
+    testee.apropos(fname='x', title='y')
     assert capsys.readouterr().out == ("called Apropos with args {'fname': 'x', 'title': 'y'}\n"
                                        'called AproposGui with title `title`\n'
                                        'called AproposGui.go\n')
 
 def test_apropos_init(monkeypatch, capsys):
+    """unittest for main.apropos_init
+    """
     def mock_load(fname):
-        return (f'result from dml.get_apofile(`{fname}`)')
+        """stub
+        """
+        return f'result from dml.get_apofile(`{fname}`)'
     def mock_initapp(self):
+        """stub
+        """
         print('called Apropos.initapp')
-    monkeypatch.setattr(main.gui, 'AproposGui', MockAproposGui)
-    monkeypatch.setattr(main.dml, 'get_apofile', mock_load)
-    monkeypatch.setattr(main, 'HERE', main.pathlib.Path('here'))
-    monkeypatch.setattr(main.Apropos, 'initapp', mock_initapp)
-    monkeypatch.setattr(main.Apropos, 'page_changed', 'change_page_method')
-    monkeypatch.setattr(main.Apropos, 'closetab', 'close_page_method')
-    testobj = main.Apropos()
-    assert isinstance(testobj.gui, main.gui.AproposGui)
+    monkeypatch.setattr(testee.gui, 'AproposGui', MockAproposGui)
+    monkeypatch.setattr(testee.dml, 'get_apofile', mock_load)
+    monkeypatch.setattr(testee, 'HERE', testee.pathlib.Path('here'))
+    monkeypatch.setattr(testee.Apropos, 'initapp', mock_initapp)
+    monkeypatch.setattr(testee.Apropos, 'page_changed', 'change_page_method')
+    monkeypatch.setattr(testee.Apropos, 'closetab', 'close_page_method')
+    testobj = testee.Apropos()
+    assert isinstance(testobj.gui, testee.gui.AproposGui)
     assert testobj.apofile == 'result from dml.get_apofile(``)'
     assert capsys.readouterr().out == (
             "called AproposGui with title `A Propos`\n"
@@ -118,8 +189,8 @@ def test_apropos_init(monkeypatch, capsys):
             " 'close_page': 'close_page_method'}\n"
             "called AproposGui.setup_shortcuts\n"
             "called Apropos.initapp\n")
-    testobj = main.Apropos('filename', 'title')
-    assert isinstance(testobj.gui, main.gui.AproposGui)
+    testobj = testee.Apropos('filename', 'title')
+    assert isinstance(testobj.gui, testee.gui.AproposGui)
     assert testobj.apofile == 'result from dml.get_apofile(`filename`)'
     assert capsys.readouterr().out == (
             "called AproposGui with title `title`\n"
@@ -132,8 +203,10 @@ def test_apropos_init(monkeypatch, capsys):
             "called Apropos.initapp\n")
 
 def test_apropos_page_changed(monkeypatch, capsys):
-    monkeypatch.setattr(main.Apropos, '__init__', MockApropos.__init__)
-    testobj = main.Apropos()
+    """unittest for main.apropos_page_changed
+    """
+    monkeypatch.setattr(testee.Apropos, '__init__', MockApropos.__init__)
+    testobj = testee.Apropos()
     assert capsys.readouterr().out == ('called Apropos with args {}\n'
                                        'called AproposGui with title `title`\n')
     testobj.page_changed()
@@ -142,22 +215,30 @@ def test_apropos_page_changed(monkeypatch, capsys):
                                        'called AproposGui.set_focus_to_page\n')
 
 def test_apropos_quit(monkeypatch, capsys):
-    monkeypatch.setattr(main.Apropos, '__init__', MockApropos.__init__)
-    testobj = main.Apropos()
+    """unittest for main.apropos_quit
+    """
+    monkeypatch.setattr(testee.Apropos, '__init__', MockApropos.__init__)
+    testobj = testee.Apropos()
     assert capsys.readouterr().out == ('called Apropos with args {}\n'
                                        'called AproposGui with title `title`\n')
     testobj.quit()
     assert capsys.readouterr().out == 'called AproposGui.close\n'
 
 def test_apropos_load_data(monkeypatch, capsys):
+    """unittest for main.apropos_load_data
+    """
     def mock_initapp(self):
+        """stub
+        """
         print('called Apropos.initapp')
     def mock_confirm(self, *args):
+        """stub
+        """
         print('called Apropos.confirm with args', args)
-    monkeypatch.setattr(main.Apropos, '__init__', MockApropos.__init__)
-    monkeypatch.setattr(main.Apropos, 'initapp', mock_initapp)
-    monkeypatch.setattr(main.Apropos, 'confirm', mock_confirm)
-    testobj = main.Apropos()
+    monkeypatch.setattr(testee.Apropos, '__init__', MockApropos.__init__)
+    monkeypatch.setattr(testee.Apropos, 'initapp', mock_initapp)
+    monkeypatch.setattr(testee.Apropos, 'confirm', mock_confirm)
+    testobj = testee.Apropos()
     assert capsys.readouterr().out == ('called Apropos with args {}\n'
                                        'called AproposGui with title `title`\n')
     testobj.load_data()
@@ -167,11 +248,15 @@ def test_apropos_load_data(monkeypatch, capsys):
                                        " 'load_text')\n")
 
 def test_apropos_hide_app(monkeypatch, capsys):
+    """unittest for main.apropos_hide_app
+    """
     def mock_confirm(self, *args):
+        """stub
+        """
         print('called Apropos.confirm with args', args)
-    monkeypatch.setattr(main.Apropos, '__init__', MockApropos.__init__)
-    monkeypatch.setattr(main.Apropos, 'confirm', mock_confirm)
-    testobj = main.Apropos()
+    monkeypatch.setattr(testee.Apropos, '__init__', MockApropos.__init__)
+    monkeypatch.setattr(testee.Apropos, 'confirm', mock_confirm)
+    testobj = testee.Apropos()
     assert capsys.readouterr().out == ('called Apropos with args {}\n'
                                        'called AproposGui with title `title`\n')
     testobj.hide_app()
@@ -180,14 +265,20 @@ def test_apropos_hide_app(monkeypatch, capsys):
                                        "called AproposGui.hide_app\n")
 
 def test_apropos_save_data(monkeypatch, capsys):
+    """unittest for main.apropos_save_data
+    """
     def mock_afsl(self):
+        """stub
+        """
         print('called Apropos.afsl')
     def mock_confirm(self, *args):
+        """stub
+        """
         print('called Apropos.confirm with args', args)
-    monkeypatch.setattr(main.Apropos, '__init__', MockApropos.__init__)
-    monkeypatch.setattr(main.Apropos, 'afsl', mock_afsl)
-    monkeypatch.setattr(main.Apropos, 'confirm', mock_confirm)
-    testobj = main.Apropos()
+    monkeypatch.setattr(testee.Apropos, '__init__', MockApropos.__init__)
+    monkeypatch.setattr(testee.Apropos, 'afsl', mock_afsl)
+    monkeypatch.setattr(testee.Apropos, 'confirm', mock_confirm)
+    testobj = testee.Apropos()
     assert capsys.readouterr().out == ('called Apropos with args {}\n'
                                        'called AproposGui with title `title`\n')
     testobj.save_data()
@@ -196,13 +287,17 @@ def test_apropos_save_data(monkeypatch, capsys):
                                        " 'save_text')\n")
 
 def test_apropos_initapp(monkeypatch, capsys):
+    """unittest for main.apropos_initapp
+    """
     def mock_load(name):
+        """stub
+        """
         print('called dml.load_notes with filename `{name}`')
         return {'AskBeforeHide': 'x', 'ActiveTab': 1}, {1: ('x', 'aaa'), 2: ('z', 'bbb')}
-    monkeypatch.setattr(main.dml, 'load_notes', mock_load)
-    monkeypatch.setattr(main.Apropos, '__init__', MockApropos.__init__)
-    monkeypatch.setattr(main.Apropos, 'newtab', MockApropos.newtab)
-    testobj = main.Apropos()
+    monkeypatch.setattr(testee.dml, 'load_notes', mock_load)
+    monkeypatch.setattr(testee.Apropos, '__init__', MockApropos.__init__)
+    monkeypatch.setattr(testee.Apropos, 'newtab', MockApropos.newtab)
+    testobj = testee.Apropos()
     assert capsys.readouterr().out == ('called Apropos with args {}\n'
                                        'called AproposGui with title `title`\n')
     testobj.apofile = 'apofile'
@@ -215,7 +310,7 @@ def test_apropos_initapp(monkeypatch, capsys):
             "called Apropos.newtab with args {'titel': 'x', 'note': 'aaa'}\n"
             "called Apropos.newtab with args {'titel': 'z', 'note': 'bbb'}\n"
             "called AproposGui.set_current_page with arg `1`\n")
-    monkeypatch.setattr(main.dml, 'load_notes', lambda x: ({'x': 'y'}, {}))
+    monkeypatch.setattr(testee.dml, 'load_notes', lambda x: ({'x': 'y'}, {}))
     testobj.initapp()
     assert testobj.opts == {'x': 'y'}
     assert testobj.apodata == {}
@@ -223,8 +318,10 @@ def test_apropos_initapp(monkeypatch, capsys):
     assert capsys.readouterr().out == "called Apropos.newtab with args {}\n"
 
 def test_apropos_newtab(monkeypatch, capsys):
-    monkeypatch.setattr(main.Apropos, '__init__', MockApropos.__init__)
-    testobj = main.Apropos()
+    """unittest for main.apropos_newtab
+    """
+    monkeypatch.setattr(testee.Apropos, '__init__', MockApropos.__init__)
+    testobj = testee.Apropos()
     assert capsys.readouterr().out == ('called Apropos with args {}\n'
                                        'called AproposGui with title `title`\n')
     testobj.newtab()
@@ -238,25 +335,31 @@ def test_apropos_newtab(monkeypatch, capsys):
                                        "called AproposGui.new_page with args (3, 'x', 'y')\n")
 
 def test_apropos_goto_previous(monkeypatch, capsys):
-    monkeypatch.setattr(main.Apropos, '__init__', MockApropos.__init__)
-    testobj = main.Apropos()
+    """unittest for main.apropos_goto_previous
+    """
+    monkeypatch.setattr(testee.Apropos, '__init__', MockApropos.__init__)
+    testobj = testee.Apropos()
     assert capsys.readouterr().out == ('called Apropos with args {}\n'
                                        'called AproposGui with title `title`\n')
     testobj.goto_previous()
     assert capsys.readouterr().out == 'called AproposGui.set_previous_page\n'
 
 def test_apropos_goto_next(monkeypatch, capsys):
-    monkeypatch.setattr(main.Apropos, '__init__', MockApropos.__init__)
-    testobj = main.Apropos()
+    """unittest for main.apropos_goto_next
+    """
+    monkeypatch.setattr(testee.Apropos, '__init__', MockApropos.__init__)
+    testobj = testee.Apropos()
     assert capsys.readouterr().out == ('called Apropos with args {}\n'
                                        'called AproposGui with title `title`\n')
     testobj.goto_next()
     assert capsys.readouterr().out == 'called AproposGui.set_next_page\n'
 
 def test_apropos_closetab(monkeypatch, capsys):
-    monkeypatch.setattr(main.Apropos, '__init__', MockApropos.__init__)
-    monkeypatch.setattr(main.Apropos, 'afsl', MockApropos.afsl)
-    testobj = main.Apropos()
+    """unittest for main.apropos_closetab
+    """
+    monkeypatch.setattr(testee.Apropos, '__init__', MockApropos.__init__)
+    monkeypatch.setattr(testee.Apropos, 'afsl', MockApropos.afsl)
+    testobj = testee.Apropos()
     assert capsys.readouterr().out == ('called Apropos with args {}\n'
                                        'called AproposGui with title `title`\n')
     testobj.current = 1
@@ -273,8 +376,10 @@ def test_apropos_closetab(monkeypatch, capsys):
                                        "called AproposGui.close\n")
 
 def test_apropos_revive(monkeypatch, capsys):
-    monkeypatch.setattr(main.Apropos, '__init__', MockApropos.__init__)
-    testobj = main.Apropos()
+    """unittest for main.apropos_revive
+    """
+    monkeypatch.setattr(testee.Apropos, '__init__', MockApropos.__init__)
+    testobj = testee.Apropos()
     assert capsys.readouterr().out == ('called Apropos with args {}\n'
                                        'called AproposGui with title `title`\n')
     testobj.revive()
@@ -283,13 +388,17 @@ def test_apropos_revive(monkeypatch, capsys):
     assert capsys.readouterr().out == 'called AproposGui.reshow_app with arg `event`\n'
 
 def test_apropos_afsl(monkeypatch, capsys):
+    """unittest for main.apropos_afsl
+    """
     def mock_save(*args):
+        """stub
+        """
         print('called dml.save_notes with args', args)
-    monkeypatch.setattr(main.Apropos, '__init__', MockApropos.__init__)
-    testobj = main.Apropos()
+    monkeypatch.setattr(testee.Apropos, '__init__', MockApropos.__init__)
+    testobj = testee.Apropos()
     assert capsys.readouterr().out == ('called Apropos with args {}\n'
                                        'called AproposGui with title `title`\n')
-    monkeypatch.setattr(main.dml, 'save_notes', mock_save)
+    monkeypatch.setattr(testee.dml, 'save_notes', mock_save)
     testobj.apofile = 'file'
     testobj.afsl()
     assert testobj.opts["ActiveTab"] == 1
@@ -303,23 +412,27 @@ def test_apropos_afsl(monkeypatch, capsys):
                                        " {1: ('page', 'text'), 2: ('page', 'text')})\n")
 
 def test_apropos_helppage(monkeypatch, capsys):
-    monkeypatch.setattr(main.Apropos, '__init__', MockApropos.__init__)
-    testobj = main.Apropos()
+    """unittest for main.apropos_helppage
+    """
+    monkeypatch.setattr(testee.Apropos, '__init__', MockApropos.__init__)
+    testobj = testee.Apropos()
     assert capsys.readouterr().out == ('called Apropos with args {}\n'
                                        'called AproposGui with title `title`\n')
-    monkeypatch.setattr(main, 'languages', {'en': {'info': 'info for `en`'}})
+    monkeypatch.setattr(testee, 'languages', {'en': {'info': 'info for `en`'}})
     testobj.opts = {'language': 'en'}
     testobj.helppage()
     assert capsys.readouterr().out == 'called AproposGui.meld with arg `info for `en``\n'
 
 def test_apropos_confirm(monkeypatch, capsys):
-    monkeypatch.setattr(main.Apropos, '__init__', MockApropos.__init__)
-    testobj = main.Apropos()
+    """unittest for main.apropos_confirm
+    """
+    monkeypatch.setattr(testee.Apropos, '__init__', MockApropos.__init__)
+    testobj = testee.Apropos()
     assert capsys.readouterr().out == ('called Apropos with args {}\n'
                                        'called AproposGui with title `title`\n')
     testobj.opts = {'language': 'en', 'setting': 'value'}
-    monkeypatch.setattr(main.gui, 'CheckDialog', 'checkdialog')
-    monkeypatch.setattr(main, 'languages', {'en': {'show_text': 'x', 'textitem': 'y'}})
+    monkeypatch.setattr(testee.gui, 'CheckDialog', 'checkdialog')
+    monkeypatch.setattr(testee, 'languages', {'en': {'show_text': 'x', 'textitem': 'y'}})
     testobj.opts['setting'] = True
     testobj.confirm('setting', 'textitem')
     assert capsys.readouterr().out == ("called AproposGui.show_dialog with args ('checkdialog',"
@@ -329,21 +442,23 @@ def test_apropos_confirm(monkeypatch, capsys):
     assert capsys.readouterr().out == ''
 
 def test_apropos_asktitle(monkeypatch, capsys):
-    monkeypatch.setattr(main.Apropos, '__init__', MockApropos.__init__)
-    testobj = main.Apropos()
+    """unittest for main.apropos_asktitle
+    """
+    monkeypatch.setattr(testee.Apropos, '__init__', MockApropos.__init__)
+    testobj = testee.Apropos()
     assert capsys.readouterr().out == ('called Apropos with args {}\n'
                                        'called AproposGui with title `title`\n')
     testobj.current = '1'
     testobj.opts = {'language': 'en'}
-    monkeypatch.setattr(main, 'languages', {'en': {'ask_title':' x'}})
+    monkeypatch.setattr(testee, 'languages', {'en': {'ask_title': ' x'}})
     testobj.asktitle()
     assert capsys.readouterr().out == (
             "called AproposGui.get_page_title with arg `1`\n"
             "called AproposGui.get_text with args {'prompt': ' x', 'initial': 'page'}\n"
             "called AproposGui.set_page_title with args ('1', 'newtext')\n")
     monkeypatch.setattr(MockAproposGui, 'get_text', lambda *x, **y: ('x', False))
-    monkeypatch.setattr(main.Apropos, '__init__', MockApropos.__init__)
-    testobj = main.Apropos()
+    monkeypatch.setattr(testee.Apropos, '__init__', MockApropos.__init__)
+    testobj = testee.Apropos()
     assert capsys.readouterr().out == ('called Apropos with args {}\n'
                                        'called AproposGui with title `title`\n')
     testobj.current = '1'
@@ -352,10 +467,12 @@ def test_apropos_asktitle(monkeypatch, capsys):
     assert capsys.readouterr().out == "called AproposGui.get_page_title with arg `1`\n"
 
 def test_apropos_choose_language(monkeypatch, capsys):
-    monkeypatch.setattr(main, 'languages', {'x': {'language': 'xxx', 'ask_language': 'xx'},
+    """unittest for main.apropos_choose_language
+    """
+    monkeypatch.setattr(testee, 'languages', {'x': {'language': 'xxx', 'ask_language': 'xx'},
                                             'y': {'language': 'yyy', 'ask_language': 'yy'}})
-    monkeypatch.setattr(main.Apropos, '__init__', MockApropos.__init__)
-    testobj = main.Apropos()
+    monkeypatch.setattr(testee.Apropos, '__init__', MockApropos.__init__)
+    testobj = testee.Apropos()
     assert capsys.readouterr().out == ('called Apropos with args {}\n'
                                        'called AproposGui with title `title`\n')
     testobj.opts['language'] = 'y'
@@ -363,10 +480,10 @@ def test_apropos_choose_language(monkeypatch, capsys):
     assert capsys.readouterr().out == ("called AproposGui.get_item with args {'prompt': 'yy',"
                                        " 'itemlist': ['xxx', 'yyy'], 'initial': 1}\n")
     assert testobj.opts['language'] == 'x'
-    monkeypatch.setattr(main, 'languages', {'x': {'language': 'xxx', 'ask_language': 'xx'},
+    monkeypatch.setattr(testee, 'languages', {'x': {'language': 'xxx', 'ask_language': 'xx'},
                                             'y': {'language': 'yyy', 'ask_language': 'yy'}})
-    monkeypatch.setattr(main.Apropos, '__init__', MockApropos.__init__)
-    testobj = main.Apropos()
+    monkeypatch.setattr(testee.Apropos, '__init__', MockApropos.__init__)
+    testobj = testee.Apropos()
     assert capsys.readouterr().out == ('called Apropos with args {}\n'
                                        'called AproposGui with title `title`\n')
     testobj.opts['language'] = 'y'
@@ -376,13 +493,15 @@ def test_apropos_choose_language(monkeypatch, capsys):
     assert testobj.opts['language'] == 'y'
 
 def test_apropos_options(monkeypatch, capsys):
-    monkeypatch.setattr(main.Apropos, '__init__', MockApropos.__init__)
-    testobj = main.Apropos()
+    """unittest for main.apropos_options
+    """
+    monkeypatch.setattr(testee.Apropos, '__init__', MockApropos.__init__)
+    testobj = testee.Apropos()
     assert capsys.readouterr().out == ('called Apropos with args {}\n'
                                        'called AproposGui with title `title`\n')
     testobj.opts = {'language': 'en'}
-    monkeypatch.setattr(main.gui, 'OptionsDialog', 'optionsdialog')
-    monkeypatch.setattr(main, 'languages', {'en': {'ask_hide':' x', 'notify_load': 'y',
+    monkeypatch.setattr(testee.gui, 'OptionsDialog', 'optionsdialog')
+    monkeypatch.setattr(testee, 'languages', {'en': {'ask_hide': ' x', 'notify_load': 'y',
                                                    'notify_save': 'z'}})
     testobj.options()
     assert capsys.readouterr().out == ("called AproposGui.show_dialog with args ('optionsdialog',"
