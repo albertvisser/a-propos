@@ -64,7 +64,7 @@ class AproposGui(qtw.QMainWindow):
         "return number of pages"
         return self.nb.count()
 
-    def get_current_page(self, *args):
+    def get_current_page(self):
         "return selected page"
         return self.nb.currentIndex()
 
@@ -99,7 +99,7 @@ class AproposGui(qtw.QMainWindow):
         for wdg in widgets:
             wdg.destroy()
 
-    def new_page(self, nieuw, titel, note):
+    def new_page(self, nieuw, titel, note=None):
         """initialiseer een nieuwe tab
         """
         newpage = Page(self)
