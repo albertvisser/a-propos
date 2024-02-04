@@ -16,13 +16,13 @@ called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLay
 called Frame.setLayout with arg of type <class 'mockgui.mockqtwidgets.MockVBoxLayout'>
 """
 checkdialog_output = """\
-called Dialog.__init__ with args () {{}}
+called Dialog.__init__ with args {testparent} () {{}}
 called Dialog.setWindowTitle with args ('title',)
 called Dialog.setWindowIcon with args ('Icon',)
 called Editor.__init__ with args ('x',)
 called CheckBox.__init__
 called CheckBox.setChecked with arg {checked}
-called PushButton.__init__ with args ('&Ok', {testobj})
+called PushButton.__init__ with args ('&Ok', {testobj}) {{}}
 called Signal.connect with args ({testobj.klaar},)
 called VBox.__init__
 called HBox.__init__
@@ -40,7 +40,7 @@ called Dialog.setLayout
 called Dialog.exec
 """
 optionsdialog_start = """\
-called Dialog.__init__ with args () {{}}
+called Dialog.__init__ with args {testparent} () {{}}
 called Dialog.setWindowTitle with args ('title',)
 called Dialog.setWindowIcon with args ('Icon',)
 called VBox.__init__
@@ -62,10 +62,10 @@ optionsdialog_end = """\
 called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockGridLayout'>
 called HBox.__init__
 called HBox.addStretch
-called PushButton.__init__ with args ('&Apply', {testobj})
+called PushButton.__init__ with args ('&Apply', {testobj}) {{}}
 called Signal.connect with args ({testobj.accept},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
-called PushButton.__init__ with args ('&Close', {testobj})
+called PushButton.__init__ with args ('&Close', {testobj}) {{}}
 called Signal.connect with args ({testobj.reject},)
 called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
 called HBox.addStretch
@@ -481,7 +481,7 @@ class TestAproposGui:
         monkeypatch.setattr(testee.qtw, 'QMessageBox', mockqtw.MockMessageBox)
         testobj = self.setup_testobj(monkeypatch, capsys)
         testobj.meld('melding')
-        assert capsys.readouterr().out == ('called MessageBox.information with args'
+        assert capsys.readouterr().out == (f'called MessageBox.information with args `{testobj}`'
                                            ' `Apropos` `melding`\n')
 
     def test_show_dialog(self, monkeypatch, capsys):
@@ -489,25 +489,25 @@ class TestAproposGui:
         """
         testobj = self.setup_testobj(monkeypatch, capsys)
         testobj.show_dialog(mockqtw.MockDialog, {'x': 'y'})
-        assert capsys.readouterr().out == ("called Dialog.__init__ with args"
+        assert capsys.readouterr().out == (f"called Dialog.__init__ with args {testobj}"
                                            " ('Apropos',) {'x': 'y'}\n")
 
     def test_get_text(self, monkeypatch, capsys):
         """unittest for AproposGui.get_text
         """
         def mock_get(parent, *args, **kwargs):
-            print('called InputDialog.getText with args', args, kwargs)
+            print('called InputDialog.getText with args', parent, args, kwargs)
             return 'value', True
         monkeypatch.setattr(testee.qtw, 'QInputDialog', mockqtw.MockInputDialog)
         testobj = self.setup_testobj(monkeypatch, capsys)
         assert testobj.get_text('prompt_text') == ('', False)
-        assert capsys.readouterr().out == ("called InputDialog.getText with args"
+        assert capsys.readouterr().out == (f"called InputDialog.getText with args {testobj}"
                                            " ('Apropos', 'prompt_text') {'text': ''}\n")
         monkeypatch.setattr(mockqtw.MockInputDialog, 'getText', mock_get)
         monkeypatch.setattr(testee.qtw, 'QInputDialog', mockqtw.MockInputDialog)
         testobj = self.setup_testobj(monkeypatch, capsys)
         assert testobj.get_text('prompt_text', 'initial text') == ("value", True)
-        assert capsys.readouterr().out == ("called InputDialog.getText with args"
+        assert capsys.readouterr().out == (f"called InputDialog.getText with args {testobj}"
                                            " ('Apropos', 'prompt_text') {'text': 'initial text'}\n")
 
     def test_set_page_title(self, monkeypatch, capsys):
@@ -522,19 +522,21 @@ class TestAproposGui:
         """unittest for AproposGui.get_item
         """
         def mock_get(parent, *args, **kwargs):
-            print('called InputDialog.getItem with args', args, kwargs)
+            print('called InputDialog.getItem with args', parent, args, kwargs)
             return 'value', True
         monkeypatch.setattr(testee.qtw, 'QInputDialog', mockqtw.MockInputDialog)
         testobj = self.setup_testobj(monkeypatch, capsys)
         assert testobj.get_item('prompt_text', ['item', 'list']) == ('', False)
-        assert capsys.readouterr().out == ("called InputDialog.getItem with args ('Apropos',"
-                                           " 'prompt_text', ['item', 'list'], 0, False) {}\n")
+        assert capsys.readouterr().out == (
+                f"called InputDialog.getItem with args {testobj}"
+                " ('Apropos', 'prompt_text', ['item', 'list'], 0, False) {}\n")
         monkeypatch.setattr(mockqtw.MockInputDialog, 'getItem', mock_get)
         monkeypatch.setattr(testee.qtw, 'QInputDialog', mockqtw.MockInputDialog)
         testobj = self.setup_testobj(monkeypatch, capsys)
         assert testobj.get_item('prompt_text', ['item', 'list'], initial=1) == ("value", True)
-        assert capsys.readouterr().out == ("called InputDialog.getItem with args ('Apropos',"
-                                           " 'prompt_text', ['item', 'list'], 1, False) {}\n")
+        assert capsys.readouterr().out == (
+                f"called InputDialog.getItem with args {testobj}"
+                " ('Apropos', 'prompt_text', ['item', 'list'], 1, False) {}\n")
 
 
 class TestPage:
@@ -575,13 +577,13 @@ class TestCheckDialog:
         testparent = types.SimpleNamespace(apoicon='Icon',
                                            master=types.SimpleNamespace(opts={'y': False}))
         testobj = testee.CheckDialog(testparent, 'title', 'x', 'y')
-        bindings = {'testobj': testobj, 'checked': False}
+        bindings = {'testparent': testparent, 'testobj': testobj, 'checked': False}
         assert capsys.readouterr().out == expected_output['checkdialog'].format(**bindings)
 
         testparent = types.SimpleNamespace(apoicon='Icon',
                                            master=types.SimpleNamespace(opts={'y': True}))
         testobj = testee.CheckDialog(testparent, 'title', message="x", option="y", caption=False)
-        bindings = {'testobj': testobj, 'checked': True}
+        bindings = {'testparent': testparent, 'testobj': testobj, 'checked': True}
         assert capsys.readouterr().out == expected_output['checkdialog'].format(**bindings)
 
     def test_klaar(self, monkeypatch, capsys):
@@ -628,7 +630,8 @@ class TestOptionsDialog:
                                            master=types.SimpleNamespace(opts={'y': False, 'z': True}))
         testobj = testee.OptionsDialog(testparent, 'title')
         assert not testobj.controls
-        assert capsys.readouterr().out == expected_output['optionsdialog'].format(testobj=testobj)
+        bindings = {'testparent': testparent, 'testobj': testobj}
+        assert capsys.readouterr().out == expected_output['optionsdialog'].format(**bindings)
 
         testobj = testee.OptionsDialog(testparent, 'title', sett2text={'y': 'yyyy', 'z': 'zzzz'})
         assert len(testobj.controls) == 2
@@ -636,8 +639,9 @@ class TestOptionsDialog:
         assert isinstance(testobj.controls[0][1], testee.qtw.QCheckBox)
         assert testobj.controls[1][0] == 'z'
         assert isinstance(testobj.controls[1][1], testee.qtw.QCheckBox)
+        bindings = {'testparent': testparent, 'testobj': testobj}
         assert capsys.readouterr().out == expected_output['optionsdialog_w_options'].format(
-                testobj=testobj)
+                **bindings)
 
     def test_accept(self, monkeypatch, capsys):
         """unittest for OptionsDialog.accept
