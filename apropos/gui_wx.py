@@ -1,6 +1,4 @@
-"""apropos_wx.py
-
-presentation layer and most of the application logic, wxPython (Phoenix) version
+"""apropos/gui_wx.py: presentation layer, wxPython version
 """
 import wx
 import wx.adv
@@ -17,7 +15,8 @@ class AproposGui(wx.Frame):
         self.master = master
         # self.parent = parent
         self.quitting = False
-        wx.Frame.__init__(self, parent, title=title, pos=(10, 10))  # , size=DFLT_SIZE)
+        # wx.Frame.__init__(self, parent, title=title, pos=(10, 10))  # , size=DFLT_SIZE)
+        super().__init__(parent, title=title, pos=(10, 10))  # , size=DFLT_SIZE)
         self.Bind(wx.EVT_CLOSE, self.close)
 
     def set_appicon(self, iconame):
@@ -234,7 +233,7 @@ class CheckDialog(wx.Dialog):
 
 class TaskbarIcon(wx.adv.TaskBarIcon):
     "icon in the taskbar"
-    id_revive = wx.NewId()
+    id_revive = wx.NewIdRef()
 
     def __init__(self, parent, iconame):
         # super().__init__(wx.adv.TBI_DOCK)
