@@ -1,6 +1,4 @@
-"""apropos_qt5.py
-
-presentation layer and most of the application logic, Qt5 version
+"""apropos/gui_qt.py: presentation layer, Qt version
 """
 import sys
 import PyQt6.QtWidgets as qtw

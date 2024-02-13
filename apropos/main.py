@@ -1,6 +1,4 @@
-"""apropos_qt5.py
-
-presentation layer and most of the application logic, Qt5 version
+"""apropos/main.py: simple multi-tab notebooklet, application logic
 """
 import pathlib
 from apropos import en
@@ -26,7 +24,6 @@ class Apropos:
     """main class voor de applicatie
     """
     def __init__(self, fname='', title=''):
-        # breakpoint()
         self.iconame = str(HERE / "apropos.ico")
         self.apofile = dml.get_apofile(fname)  # shared.get_apofile(fname)
         self.shortcut_data = {'reload': (('Ctrl+R',), self.load_data),
