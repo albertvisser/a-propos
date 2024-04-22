@@ -1,6 +1,7 @@
 """apropos/main.py: simple multi-tab notebooklet, application logic
 """
 import pathlib
+import configparser
 from apropos import en
 from apropos import nl
 from apropos import gui
@@ -45,6 +46,9 @@ class Apropos:
         self.gui.init_trayicon(self.iconame, tooltip="Click to revive Apropos")
         self.gui.setup_tabwidget(change_page=self.page_changed, close_page=self.closetab)
         self.gui.setup_shortcuts(self.shortcut_data)
+        self.config = configparser.ConfigParser()
+        self.confpath = pathlib.Path('~/.config/a-propos/locs').expanduser()
+        self.load_and_set_screenpos()
         self.initapp()
 
     def page_changed(self, event=None):
@@ -54,6 +58,7 @@ class Apropos:
         self.gui.set_focus_to_page()  # (event)
 
     def quit(self):
+        "GUI afsluiten"
         self.gui.close()
 
     def load_data(self, *args):
@@ -136,6 +141,7 @@ class Apropos:
             text = self.gui.get_page_text(i)
             apodata[i + 1] = (title, text)
         dml.save_notes(self.apofile, self.opts, apodata)
+        self.get_and_save_screenpos()
 
     def helppage(self, *args):
         """vertoon de hulp pagina met keyboard shortcuts
@@ -185,3 +191,33 @@ class Apropos:
             'AskBeforeHide': languages[self.opts["language"]]['ask_hide'],
             'NotifyOnLoad': languages[self.opts["language"]]['notify_load'],
             'NotifyOnSave': languages[self.opts["language"]]['notify_save']}})
+
+    def load_and_set_screenpos(self):
+        "vensterpositie ophalen en instellen indien aanwezig"
+        key = str(self.apofile)
+        if not self.confpath.exists():
+            self.config.add_section(key)
+            self.set_config_values_from_screen()
+            return
+        with self.confpath.open() as f:
+            self.config.read_file(f)
+        if self.config.has_section(key):
+            pos = self.config[key]['pos']
+            size = self.config[key]['size']
+            self.gui.set_screen_dimensions(pos, size)
+        else:
+            self.config.add_section(key)
+            self.set_config_values_from_screen()
+
+    def set_config_values_from_screen(self):
+        "vensterpositie in config overnemen"
+        key = str(self.apofile)
+        pos, size = self.gui.get_screen_dimensions()
+        self.config[key]['pos'] = pos
+        self.config[key]['size'] = size
+
+    def get_and_save_screenpos(self):
+        "vernsterpositie uitlezen en opslaan"
+        self.set_config_values_from_screen()
+        with self.confpath.open('w') as f:
+            self.config.write(f)

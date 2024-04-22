@@ -171,6 +171,20 @@ class AproposGui(qtw.QMainWindow):
         "return choice from input dialog"
         return qtw.QInputDialog.getItem(self, 'Apropos', prompt, itemlist, initial, False)
 
+    def set_screen_dimensions(self, pos, size):
+        "vensterpositie instellen zoals aangegeven"
+        x, y = (int(x) for x in pos.split('x'))
+        w, h = (int(x) for x in size.split('x'))
+        self.move(x, y)
+        self.resize(w, h)
+
+    def get_screen_dimensions(self):
+        "uitgelezen vensterpositie teruggeven"
+        # pos = self.pos()
+        # size = self.rect()
+        # return str(pos), str(size)
+        return f'{self.x()}x{self.y()}', f'{self.width()}x{self.height()}'
+
 
 class Page(qtw.QFrame):
     "Panel subclass voor de notebook pagina's"

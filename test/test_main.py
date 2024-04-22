@@ -19,6 +19,7 @@ class MockApropos:
         """
         print('called Apropos.afsl')
 
+
 class MockAproposGui:
     """testdouble for gui.AproposGui object
     """
@@ -147,6 +148,7 @@ def test_languages():
                               'ask_language', 'load_text', 'save_text', 'ask_hide',
                               'notify_load', 'notify_save']
 
+
 def test_apropos_function(monkeypatch, capsys):
     """unittest for main.apropos_function
     """
@@ -167,6 +169,10 @@ def test_apropos_init(monkeypatch, capsys):
         """stub
         """
         return f'result from dml.get_apofile(`{fname}`)'
+    def mock_load_and_set(fname):
+        """stub
+        """
+        print('called Apropos.load_and_set_screenpos')
     def mock_initapp(self):
         """stub
         """
@@ -175,11 +181,14 @@ def test_apropos_init(monkeypatch, capsys):
     monkeypatch.setattr(testee.dml, 'get_apofile', mock_load)
     monkeypatch.setattr(testee, 'HERE', testee.pathlib.Path('here'))
     monkeypatch.setattr(testee.Apropos, 'initapp', mock_initapp)
+    monkeypatch.setattr(testee.Apropos, 'load_and_set_screenpos', mock_load_and_set)
     monkeypatch.setattr(testee.Apropos, 'page_changed', 'change_page_method')
     monkeypatch.setattr(testee.Apropos, 'closetab', 'close_page_method')
     testobj = testee.Apropos()
     assert isinstance(testobj.gui, testee.gui.AproposGui)
     assert testobj.apofile == 'result from dml.get_apofile(``)'
+    assert isinstance(testobj.config, testee.configparser.ConfigParser)
+    assert testobj.confpath == testee.pathlib.Path('~/.config/a-propos/locs').expanduser()
     assert capsys.readouterr().out == (
             "called AproposGui with title `A Propos`\n"
             "called AproposGui.set_appicon with arg `here/apropos.ico`\n"
@@ -188,6 +197,7 @@ def test_apropos_init(monkeypatch, capsys):
             "called AproposGui.setup_tabwidget with args () {'change_page': 'change_page_method',"
             " 'close_page': 'close_page_method'}\n"
             "called AproposGui.setup_shortcuts\n"
+            "called Apropos.load_and_set_screenpos\n"
             "called Apropos.initapp\n")
     testobj = testee.Apropos('filename', 'title')
     assert isinstance(testobj.gui, testee.gui.AproposGui)
@@ -200,7 +210,17 @@ def test_apropos_init(monkeypatch, capsys):
             "called AproposGui.setup_tabwidget with args () {'change_page': 'change_page_method',"
             " 'close_page': 'close_page_method'}\n"
             "called AproposGui.setup_shortcuts\n"
+            "called Apropos.load_and_set_screenpos\n"
             "called Apropos.initapp\n")
+
+def setup_testobj(monkeypatch, capsys):
+    """build testobject instance and return itto caller
+    """
+    monkeypatch.setattr(testee.Apropos, '__init__', MockApropos.__init__)
+    testobj = testee.Apropos()
+    assert capsys.readouterr().out == ('called Apropos with args {}\n'
+                                       'called AproposGui with title `title`\n')
+    return testobj
 
 def test_apropos_page_changed(monkeypatch, capsys):
     """unittest for main.apropos_page_changed
@@ -394,6 +414,11 @@ def test_apropos_afsl(monkeypatch, capsys):
         """stub
         """
         print('called dml.save_notes with args', args)
+    def mock_get_and_save(fname):
+        """stub
+        """
+        print('called Apropos.get_and_save_screenpos')
+    monkeypatch.setattr(testee.Apropos, 'get_and_save_screenpos', mock_get_and_save)
     monkeypatch.setattr(testee.Apropos, '__init__', MockApropos.__init__)
     testobj = testee.Apropos()
     assert capsys.readouterr().out == ('called Apropos with args {}\n'
@@ -409,7 +434,8 @@ def test_apropos_afsl(monkeypatch, capsys):
                                        "called AproposGui.get_page_title with arg `1`\n"
                                        "called AproposGui.get_page_text with arg `1`\n"
                                        "called dml.save_notes with args ('file', {'ActiveTab': 1},"
-                                       " {1: ('page', 'text'), 2: ('page', 'text')})\n")
+                                       " {1: ('page', 'text'), 2: ('page', 'text')})\n"
+                                       "called Apropos.get_and_save_screenpos\n")
 
 def test_apropos_helppage(monkeypatch, capsys):
     """unittest for main.apropos_helppage
@@ -507,3 +533,65 @@ def test_apropos_options(monkeypatch, capsys):
     assert capsys.readouterr().out == ("called AproposGui.show_dialog with args ('optionsdialog',"
                                        " {'sett2text': {'AskBeforeHide': ' x', 'NotifyOnLoad': 'y',"
                                        " 'NotifyOnSave': 'z'}})\n")
+
+def test_set_config_values_from_screen(monkeypatch, capsys):
+    def mock_get():
+        print('called AproposGui.get_screen_dimensions')
+        return 'xxy', 'wxh'
+    testobj = setup_testobj(monkeypatch, capsys)
+    testobj.config = testee.configparser.ConfigParser()
+    testobj.gui.get_screen_dimensions = mock_get
+    testobj.apofile = 'qqq'
+    testobj.config.add_section(testobj.apofile)
+    testobj.config[testobj.apofile]['pos'] = ''
+    testobj.config[testobj.apofile]['size'] = ''
+    testobj.set_config_values_from_screen()
+    assert testobj.config[testobj.apofile]['pos'] == 'xxy'
+    assert testobj.config[testobj.apofile]['size'] == 'wxh'
+    assert capsys.readouterr().out == 'called AproposGui.get_screen_dimensions\n'
+
+
+def test_load_and_set_screenpos(monkeypatch, capsys, tmp_path):
+    """unittest for main.load_and_set_screenpos
+    """
+    def mock_set(*args):
+        print('called AproposGui.set_screen_dimensions with args', args)
+    def mock_set_from(*args):
+        print('called Apropos.set_config_values_from_screen')
+    confpath = tmp_path / 'testloadconf'
+    testobj = setup_testobj(monkeypatch, capsys)
+    testobj.config = testee.configparser.ConfigParser()
+    testobj.gui.set_screen_dimensions = mock_set
+    testobj.set_config_values_from_screen = mock_set_from
+    testobj.apofile = 'qqq'
+    testobj.confpath = confpath
+    testobj.load_and_set_screenpos()
+    assert testobj.config.has_section('qqq')
+    assert testobj.config.items('qqq') == []
+    assert capsys.readouterr().out == "called Apropos.set_config_values_from_screen\n"
+    testobj.config = testee.configparser.ConfigParser()
+    confpath.write_text('')
+    testobj.load_and_set_screenpos()
+    assert testobj.config.has_section('qqq')
+    assert testobj.config.items('qqq') == []
+    assert capsys.readouterr().out == "called Apropos.set_config_values_from_screen\n"
+    testobj.config = testee.configparser.ConfigParser()
+    confpath.write_text('[qqq]\npos=yyy\nsize=zzz\n')
+    testobj.load_and_set_screenpos()
+    assert testobj.config.has_section('qqq')
+    assert testobj.config.items('qqq') == [('pos', 'yyy'), ('size', 'zzz')]
+    assert capsys.readouterr().out == (
+            "called AproposGui.set_screen_dimensions with args ('yyy', 'zzz')\n")
+
+def test_get_and_save_screenpos(monkeypatch, capsys, tmp_path):
+    def mock_set_from(*args):
+        print('called Apropos.set_config_values_from_screen')
+    confpath = tmp_path / 'testsaveconf'
+    testobj = setup_testobj(monkeypatch, capsys)
+    testobj.config = testee.configparser.ConfigParser()
+    testobj.set_config_values_from_screen = mock_set_from
+    testobj.apofile = 'qqq'
+    testobj.confpath = confpath
+    testobj.get_and_save_screenpos()
+    assert confpath.exists()
+    assert capsys.readouterr().out == "called Apropos.set_config_values_from_screen\n"

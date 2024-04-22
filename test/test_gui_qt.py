@@ -155,27 +155,17 @@ class TestAproposGui:
         intercept messages during creation
         return the object so that methods can be monkeypatched in the caller
         """
-        def mock_app_init(self, *args, **kwargs):
-            print('called Application.__init__')
         def mock_init(self, *args, **kwargs):
-            print('called MainWindow.__init__')
-        # monkeypatch.setattr(testee.qtw.QApplication, '__init__', mock_app_init)
-        monkeypatch.setattr(testee.qtw, 'QApplication', mockqtw.MockApplication)
-        monkeypatch.setattr(testee.qtw.QMainWindow, '__init__', mock_init)
-        monkeypatch.setattr(testee.qtw.QMainWindow, 'setWindowTitle',
-                            mockqtw.MockMainWindow.setWindowTitle)
-        monkeypatch.setattr(testee.qtw.QMainWindow, 'move', mockqtw.MockMainWindow.move)
-        monkeypatch.setattr(testee.qtw.QMainWindow, 'resize', mockqtw.MockMainWindow.resize)
-        # monkeypatch.setattr(testee.qtw, 'QMainWindow', mockqtw.MockMainWindow)
-        testobj = testee.AproposGui(MockApropos())
-        assert capsys.readouterr().out == ('called Apropos.__init__\n'
-                                           'called Application.__init__\n'
-                                           'called MainWindow.__init__\n'
-                                           'called MainWindow.setWindowTitle to `Apropos`\n'
-                                           'called MainWindow.move with args (10, 10)\n'
-                                           'called MainWindow.resize with args (650, 400)\n')
+            print('called AproposGui.__init__')
+        monkeypatch.setattr(testee.AproposGui, '__init__', mock_init)
+        testobj = testee.AproposGui()
+        testobj.master = MockApropos()
+        testobj.app = mockqtw.MockApplication()
         testobj.nb = mockqtw.MockTabWidget()
-        assert capsys.readouterr().out == 'called TabWidget.__init__\n'
+        assert capsys.readouterr().out == ('called AproposGui.__init__\n'
+                                           'called Apropos.__init__\n'
+                                           'called Application.__init__\n'
+                                           'called TabWidget.__init__\n')
         return testobj
 
     def test_set_appicon(self, monkeypatch, capsys):
@@ -196,6 +186,7 @@ class TestAproposGui:
         monkeypatch.setattr(testee.gui, 'QIcon', mockqtw.MockIcon)
         monkeypatch.setattr(testee.qtw, 'QSystemTrayIcon', mockqtw.MockSysTrayIcon)
         testobj = self.setup_testobj(monkeypatch, capsys)
+        testobj.master.revive = lambda: 0
         testobj.init_trayicon('iconame', 'tooltip')
         assert capsys.readouterr().out == (
                 "called Icon.__init__ with arg `iconame`\n"
@@ -538,6 +529,51 @@ class TestAproposGui:
                 f"called InputDialog.getItem with args {testobj}"
                 " ('Apropos', 'prompt_text', ['item', 'list'], 1, False) {}\n")
 
+    def test_set_screen_dimensions(self, monkeypatch, capsys):
+        def mock_move(*args):
+            print("called AproposGui.move with args", args)
+        def mock_resize(*args):
+            print("called AproposGui.resize with args", args)
+        testobj = self.setup_testobj(monkeypatch, capsys)
+        testobj.move = mock_move
+        testobj.resize = mock_resize
+        testobj.set_screen_dimensions('11x12', '200x100')
+        assert capsys.readouterr().out == ("called AproposGui.move with args (11, 12)\n"
+                                           "called AproposGui.resize with args (200, 100)\n")
+
+    def test_get_screen_dimensions(self, monkeypatch, capsys):
+        # def mock_pos(*args):
+        #     print("called AproposGui.pos")
+        #     return 1, 2
+        def mock_x(*args):
+            print("called AproposGui.x")
+            return 1
+        def mock_y(*args):
+            print("called AproposGui.pos")
+            return 2
+        # def mock_rect(*args):
+        #     print("called AproposGui.rect")
+        #     return 2, 1
+        def mock_width(*args):
+            print("called AproposGui.width")
+            return 2
+        def mock_height(*args):
+            print("called AproposGui.height")
+            return 1
+        testobj = self.setup_testobj(monkeypatch, capsys)
+        # testobj.pos = mock_pos
+        testobj.x = mock_x
+        testobj.y = mock_y
+        # testobj.rect = mock_rect
+        testobj.width = mock_width
+        testobj.height = mock_height
+        # assert testobj.get_screen_dimensions() == ('(1, 2)', '(2, 1)')
+        assert testobj.get_screen_dimensions() == ('1x2', '2x1')
+        assert capsys.readouterr().out == ("called AproposGui.x\n"
+                                           "called AproposGui.pos\n"
+                                           "called AproposGui.width\n"
+                                           "called AproposGui.height\n")
+
 
 class TestPage:
     """unittest for gui_qt.Page
@@ -545,10 +581,6 @@ class TestPage:
     def test_init(self, monkeypatch, capsys, expected_output):
         """unittest for Page.__init__
         """
-        def mock_init(*args):
-            print('called Frame.__init__')
-        def mock_setlayout(self, arg):
-            print(f'called Page.setLayout with arg of type {type(arg)})')
         monkeypatch.setattr(testee.qtw.QFrame, '__init__', mockqtw.MockFrame.__init__)
         monkeypatch.setattr(testee.qtw.QFrame, 'setLayout', mockqtw.MockFrame.setLayout)
         monkeypatch.setattr(testee.qtw, 'QTextEdit', mockqtw.MockEditorWidget)
