@@ -4,7 +4,7 @@ A propos
 Apropos is a simple interface for keeping notes.
 I've intentionally tried to keep it pretty simple.
 
-The interface looks something like this::
+The interface looks something like this (GitHub doesn't render this correctly so please view this as code to see the intended picture)::
 
      ---------
      | 1 | 2 |
@@ -45,10 +45,12 @@ a filename.
 If no name is given, the notes file is loaded from the directory you started
 the application from- using a standard name - and is created if it isn't present.
 
-Functionality is not guaranteed for Python < 3.5
-
 It's possible to have what explanatory texts there are displayed in a language of
 choice, however currently only Dutch and English are available.
+
+Use ``toolkit.py`` in the program directory (``apropos``) to define which gui toolkit to use.
+Note that the gtk version is currently broken.
+
 
 Some history
 ------------
