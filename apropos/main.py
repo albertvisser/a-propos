@@ -194,7 +194,7 @@ class Apropos:
 
     def load_and_set_screenpos(self):
         "vensterpositie ophalen en instellen indien aanwezig"
-        key = str(self.apofile)
+        key = str(self.apofile.resolve())
         if not self.confpath.exists():
             self.config.add_section(key)
             self.set_config_values_from_screen()
@@ -211,7 +211,7 @@ class Apropos:
 
     def set_config_values_from_screen(self):
         "vensterpositie in config overnemen"
-        key = str(self.apofile)
+        key = str(self.apofile.resolve())
         pos, size = self.gui.get_screen_dimensions()
         self.config[key]['pos'] = pos
         self.config[key]['size'] = size
