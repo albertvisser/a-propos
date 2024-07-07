@@ -6,10 +6,12 @@ main = test_main.py
 dml = test_dml.py
 qtgui = test_gui_qt.py
 wxgui = test_gui_wx.py
+gtkgui = test_gtkgui.py
 
 [testees]
 main = apropos/main.py
 dml = apropos/dml.py
 qtgui = apropos/gui_qt.py
 wxgui = apropos/gui_wx.py
+gtkgui = apropos/gui_gtk.py
 
