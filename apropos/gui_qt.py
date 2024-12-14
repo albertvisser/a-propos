@@ -203,7 +203,7 @@ class CheckDialog(qtw.QDialog):
 
     wordt aangestuurd met de boodschap die in de dialoog moet worden getoond
     """
-    def __init__(self, parent, title, message="", option="", caption=True):
+    def __init__(self, parent, title, message="", option="", caption=""):
         self.parent = parent
         self.option = option
         super().__init__(parent)

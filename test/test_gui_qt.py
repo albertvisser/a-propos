@@ -20,7 +20,7 @@ called Dialog.__init__ with args {testparent} () {{}}
 called Dialog.setWindowTitle with args ('title',)
 called Dialog.setWindowIcon with args ('Icon',)
 called Editor.__init__ with args ('x',)
-called CheckBox.__init__
+called CheckBox.__init__ with text '{checktitle}'
 called CheckBox.setChecked with arg {checked}
 called PushButton.__init__ with args ('&Ok', {testobj}) {{}}
 called Signal.connect with args ({testobj.klaar},)
@@ -49,12 +49,12 @@ called Grid.__init__
 optionsdialog_middle = """\
 called Editor.__init__ with args ('yyyy', {testobj})
 called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockEditorWidget'> at (1, 0)
-called CheckBox.__init__
+called CheckBox.__init__ with text ''
 called CheckBox.setChecked with arg False
 called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockCheckBox'> at (1, 1)
 called Editor.__init__ with args ('zzzz', {testobj})
 called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockEditorWidget'> at (2, 0)
-called CheckBox.__init__
+called CheckBox.__init__ with text ''
 called CheckBox.setChecked with arg True
 called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockCheckBox'> at (2, 1)
 """
@@ -134,7 +134,7 @@ class TestAproposGui:
         assert isinstance(testobj, testee.qtw.QMainWindow)
         assert capsys.readouterr().out == ('called Application.__init__\n'
                                            'called MainWindow.__init__\n'
-                                           'called MainWindow.setWindowTitle to `Apropos`\n'
+                                           'called MainWindow.setWindowTitle with arg `Apropos`\n'
                                            'called MainWindow.move with args (10, 10)\n'
                                            'called MainWindow.resize with args (650, 400)\n')
         monkeypatch.setattr(testee.sys, 'platform', 'win')
@@ -144,7 +144,7 @@ class TestAproposGui:
         assert isinstance(testobj, testee.qtw.QMainWindow)
         assert capsys.readouterr().out == ('called Application.__init__\n'
                                            'called MainWindow.__init__\n'
-                                           'called MainWindow.setWindowTitle to `testgui`\n'
+                                           'called MainWindow.setWindowTitle with arg `testgui`\n'
                                            'called MainWindow.move with args (30, 30)\n'
                                            'called MainWindow.resize with args (650, 400)\n')
 
@@ -318,6 +318,9 @@ class TestAproposGui:
         def mock_current():
             print('called TabWidget.currentWidget')
             return MockPage()
+        def mock_current_2():
+            print('called TabWidget.currentWidget')
+            return None
         testobj = self.setup_testobj(monkeypatch, capsys)
         testobj.nb.currentWidget = mock_current
         testobj.set_focus_to_page()
@@ -325,6 +328,9 @@ class TestAproposGui:
                                            'called Page.__init__\n'
                                            'called Editor.__init__\n'
                                            'called Editor.setFocus\n')
+        testobj.nb.currentWidget = mock_current_2
+        testobj.set_focus_to_page()
+        assert capsys.readouterr().out == 'called TabWidget.currentWidget\n'
 
     def test_clear_all(self, monkeypatch, capsys):
         """unittest for AproposGui.clear_all
@@ -381,7 +387,7 @@ class TestAproposGui:
         testobj.nb.widget = mock_widget
         testobj.master.current = 1
         testobj.clear_last_page()
-        assert capsys.readouterr().out == ("called TabWidget.setTabtext with args (1, '1')\n"
+        assert capsys.readouterr().out == ("called TabWidget.setTabText with args (1, '1')\n"
                                            "called TabWidget.widget with arg 1\n"
                                            "called Page.__init__\n"
                                            "called Editor.__init__\n"
@@ -506,7 +512,7 @@ class TestAproposGui:
         """
         testobj = self.setup_testobj(monkeypatch, capsys)
         testobj.set_page_title(1, 'page title')
-        assert capsys.readouterr().out == ("called TabWidget.setTabtext with args"
+        assert capsys.readouterr().out == ("called TabWidget.setTabText with args"
                                            " (1, 'page title')\n")
 
     def test_get_item(self, monkeypatch, capsys):
@@ -609,13 +615,15 @@ class TestCheckDialog:
         testparent = types.SimpleNamespace(apoicon='Icon',
                                            master=types.SimpleNamespace(opts={'y': False}))
         testobj = testee.CheckDialog(testparent, 'title', 'x', 'y')
-        bindings = {'testparent': testparent, 'testobj': testobj, 'checked': False}
+        bindings = {'testparent': testparent, 'testobj': testobj, 'checktitle': '',
+                    'checked': False}
         assert capsys.readouterr().out == expected_output['checkdialog'].format(**bindings)
 
         testparent = types.SimpleNamespace(apoicon='Icon',
                                            master=types.SimpleNamespace(opts={'y': True}))
-        testobj = testee.CheckDialog(testparent, 'title', message="x", option="y", caption=False)
-        bindings = {'testparent': testparent, 'testobj': testobj, 'checked': True}
+        testobj = testee.CheckDialog(testparent, 'title', message="x", option="y", caption="z")
+        bindings = {'testparent': testparent, 'testobj': testobj, 'checktitle': 'z',
+                    'checked': True}
         assert capsys.readouterr().out == expected_output['checkdialog'].format(**bindings)
 
     def test_klaar(self, monkeypatch, capsys):

@@ -513,6 +513,12 @@ def test_apropos_choose_language(monkeypatch, capsys):
     assert capsys.readouterr().out == ('called Apropos with args {}\n'
                                        'called AproposGui with title `title`\n')
     testobj.opts['language'] = 'y'
+
+    monkeypatch.setattr(MockAproposGui, 'get_item', lambda *x, **y: ('', True))
+    testobj.choose_language()
+    assert capsys.readouterr().out == ""
+    assert testobj.opts['language'] == 'y'
+
     monkeypatch.setattr(MockAproposGui, 'get_item', lambda *x, **y: ('', False))
     testobj.choose_language()
     assert capsys.readouterr().out == ""
@@ -541,15 +547,15 @@ def test_set_config_values_from_screen(monkeypatch, capsys):
     testobj = setup_testobj(monkeypatch, capsys)
     testobj.config = testee.configparser.ConfigParser()
     testobj.gui.get_screen_dimensions = mock_get
-    testobj.apofile = 'qqq'
-    testobj.config.add_section(testobj.apofile)
-    testobj.config[testobj.apofile]['pos'] = ''
-    testobj.config[testobj.apofile]['size'] = ''
+    testobj.apofile = testee.pathlib.Path('qqq')
+    testobj_apofile = str(testobj.apofile.resolve())
+    testobj.config.add_section(testobj_apofile)
+    testobj.config[testobj_apofile]['pos'] = ''
+    testobj.config[testobj_apofile]['size'] = ''
     testobj.set_config_values_from_screen()
-    assert testobj.config[testobj.apofile]['pos'] == 'xxy'
-    assert testobj.config[testobj.apofile]['size'] == 'wxh'
+    assert testobj.config[testobj_apofile]['pos'] == 'xxy'
+    assert testobj.config[testobj_apofile]['size'] == 'wxh'
     assert capsys.readouterr().out == 'called AproposGui.get_screen_dimensions\n'
-
 
 def test_load_and_set_screenpos(monkeypatch, capsys, tmp_path):
     """unittest for main.load_and_set_screenpos
@@ -563,23 +569,25 @@ def test_load_and_set_screenpos(monkeypatch, capsys, tmp_path):
     testobj.config = testee.configparser.ConfigParser()
     testobj.gui.set_screen_dimensions = mock_set
     testobj.set_config_values_from_screen = mock_set_from
-    testobj.apofile = 'qqq'
+    # testobj.apofile = 'qqq'
+    testobj.apofile = testee.pathlib.Path('qqq')
+    testobj_apofile = str(testobj.apofile.resolve())
     testobj.confpath = confpath
     testobj.load_and_set_screenpos()
-    assert testobj.config.has_section('qqq')
-    assert testobj.config.items('qqq') == []
+    assert testobj.config.has_section(testobj_apofile)
+    assert testobj.config.items(testobj_apofile) == []
     assert capsys.readouterr().out == "called Apropos.set_config_values_from_screen\n"
     testobj.config = testee.configparser.ConfigParser()
     confpath.write_text('')
     testobj.load_and_set_screenpos()
-    assert testobj.config.has_section('qqq')
-    assert testobj.config.items('qqq') == []
+    assert testobj.config.has_section(testobj_apofile)
+    assert testobj.config.items(testobj_apofile) == []
     assert capsys.readouterr().out == "called Apropos.set_config_values_from_screen\n"
     testobj.config = testee.configparser.ConfigParser()
-    confpath.write_text('[qqq]\npos=yyy\nsize=zzz\n')
+    confpath.write_text(f'[{testobj_apofile}]\npos=yyy\nsize=zzz\n')
     testobj.load_and_set_screenpos()
-    assert testobj.config.has_section('qqq')
-    assert testobj.config.items('qqq') == [('pos', 'yyy'), ('size', 'zzz')]
+    assert testobj.config.has_section(testobj_apofile)
+    assert testobj.config.items(testobj_apofile) == [('pos', 'yyy'), ('size', 'zzz')]
     assert capsys.readouterr().out == (
             "called AproposGui.set_screen_dimensions with args ('yyy', 'zzz')\n")
 
