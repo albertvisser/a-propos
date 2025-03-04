@@ -172,7 +172,7 @@ class TestAproposGui:
         """unittest for AproposGui.set_appicon
         """
         def mock_set(arg):
-            print(f'called AproposGui.setWindowIcon with arg `{arg}`')
+            print(f'called AproposGui.setWindowIcon')
         monkeypatch.setattr(testee.gui, 'QIcon', mockqtw.MockIcon)
         testobj = self.setup_testobj(monkeypatch, capsys)
         monkeypatch.setattr(testobj, 'setWindowIcon', mockqtw.MockMainWindow.setWindowIcon)
