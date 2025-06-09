@@ -43,12 +43,17 @@ class TestAproposGui:
         """
         # monkeypatch.setattr(testee.wx, 'Frame', mockwx.MockFrame)
         monkeypatch.setattr(testee.wx.Frame, '__init__', mockwx.MockFrame.__init__)
+        monkeypatch.setattr(testee.wx.Frame, 'Bind', mockwx.MockFrame.Bind)
         # monkeypatch.setattr(testee.wx, 'App', mockwx.MockApp)
         monkeypatch.setattr(testee.wx.App, '__init__', mockwx.MockApp.__init__)
-        testparent = MockApropos()
+        testmaster = MockApropos()
         assert capsys.readouterr().out == 'called Apropos.__init__\n'
-        testobj = testee.AproposGui(testparent, parent=None)  # , fname='', title='Apropos')
-        assert capsys.readouterr().out == 'called AproposGui.__init__ with args ()'
+        testobj = testee.AproposGui(testmaster, parent=None)  # , fname='', title='Apropos')
+        assert capsys.readouterr().out == (
+                "called app.__init__ with args ()\n"
+                "called frame.__init__ with args (None,) {'title': 'Apropos', 'pos': (10, 10)}\n"
+                f"called Frame.Bind with args ({testee.wx.EVT_CLOSE}, {testobj.close})\n")
+        # 'called AproposGui.__init__ with args ()'
 
     def _test_set_appicon(self, monkeypatch, capsys):
         """unittest for AproposGui.set_appicon
