@@ -11,9 +11,9 @@ called Frame.__init__
 called Editor.__init__ with args ({testobj},)
 called VBox.__init__
 called HBox.__init__
-called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockEditorWidget'>
-called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>
-called Frame.setLayout with arg of type <class 'mockgui.mockqtwidgets.MockVBoxLayout'>
+called HBox.addWidget with arg MockEditorWidget
+called VBox.addLayout with arg MockHBoxLayout
+called Frame.setLayout with arg MockVBoxLayout
 """
 checkdialog_output = """\
 called Dialog.__init__ with args {testparent} () {{}}
@@ -26,16 +26,16 @@ called PushButton.__init__ with args ('&Ok', {testobj}) {{}}
 called Signal.connect with args ({testobj.klaar},)
 called VBox.__init__
 called HBox.__init__
-called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockEditorWidget'>
-called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>
+called HBox.addWidget with arg MockEditorWidget
+called VBox.addLayout with arg MockHBoxLayout
 called HBox.__init__
-called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockCheckBox'>
-called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>
+called HBox.addWidget with arg MockCheckBox
+called VBox.addLayout with arg MockHBoxLayout
 called HBox.__init__
-called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
+called HBox.addWidget with arg MockPushButton
 called HBox.insertStretch
 called HBox.addStretch
-called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>
+called VBox.addLayout with arg MockHBoxLayout
 called Dialog.setLayout
 called Dialog.exec
 """
@@ -48,28 +48,28 @@ called Grid.__init__
 """
 optionsdialog_middle = """\
 called Editor.__init__ with args ('yyyy', {testobj})
-called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockEditorWidget'> at (1, 0)
+called Grid.addWidget with arg MockEditorWidget at (1, 0)
 called CheckBox.__init__ with text ''
 called CheckBox.setChecked with arg False
-called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockCheckBox'> at (1, 1)
+called Grid.addWidget with arg MockCheckBox at (1, 1)
 called Editor.__init__ with args ('zzzz', {testobj})
-called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockEditorWidget'> at (2, 0)
+called Grid.addWidget with arg MockEditorWidget at (2, 0)
 called CheckBox.__init__ with text ''
 called CheckBox.setChecked with arg True
-called Grid.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockCheckBox'> at (2, 1)
+called Grid.addWidget with arg MockCheckBox at (2, 1)
 """
 optionsdialog_end = """\
-called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockGridLayout'>
+called VBox.addLayout with arg MockGridLayout
 called HBox.__init__
 called HBox.addStretch
 called PushButton.__init__ with args ('&Apply', {testobj}) {{}}
 called Signal.connect with args ({testobj.accept},)
-called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
+called HBox.addWidget with arg MockPushButton
 called PushButton.__init__ with args ('&Close', {testobj}) {{}}
 called Signal.connect with args ({testobj.reject},)
-called HBox.addWidget with arg of type <class 'mockgui.mockqtwidgets.MockPushButton'>
+called HBox.addWidget with arg MockPushButton
 called HBox.addStretch
-called VBox.addLayout with arg of type <class 'mockgui.mockqtwidgets.MockHBoxLayout'>
+called VBox.addLayout with arg MockHBoxLayout
 called Dialog.setLayout
 called Dialog.exec
 """
