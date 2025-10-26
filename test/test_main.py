@@ -1,5 +1,6 @@
 """unittests for ./apropos/main.py
 """
+import types
 from apropos import main as testee
 
 
@@ -109,6 +110,7 @@ class MockAproposGui:
         """testdouble
         """
         print('called AproposGui.show_dialog with args', args)
+        return False, {}
     def get_text(self, **kwargs):
         """testdouble
         """
@@ -169,7 +171,7 @@ def test_apropos_init(monkeypatch, capsys):
         """stub
         """
         return f'result from dml.get_apofile(`{fname}`)'
-    def mock_load_and_set(fname):
+    def mock_load_and_set(self):
         """stub
         """
         print('called Apropos.load_and_set_screenpos')
@@ -414,7 +416,7 @@ def test_apropos_afsl(monkeypatch, capsys):
         """stub
         """
         print('called dml.save_notes with args', args)
-    def mock_get_and_save(fname):
+    def mock_get_and_save(self):
         """stub
         """
         print('called Apropos.get_and_save_screenpos')
@@ -452,17 +454,31 @@ def test_apropos_helppage(monkeypatch, capsys):
 def test_apropos_confirm(monkeypatch, capsys):
     """unittest for main.apropos_confirm
     """
+    class MockCheck:
+        "stub"
+        def __init__(self, *args, **kwargs):
+            print('called SetCheck with args', args, kwargs)
+            self.gui = 'dialog'
+    def mock_show(*args):
+        print('called AproposGui.show_dialog with args', args)
+        return True, False
     monkeypatch.setattr(testee.Apropos, '__init__', MockApropos.__init__)
     testobj = testee.Apropos()
     assert capsys.readouterr().out == ('called Apropos with args {}\n'
                                        'called AproposGui with title `title`\n')
+    testobj.gui.show_dialog = mock_show
     testobj.opts = {'language': 'en', 'setting': 'value'}
-    monkeypatch.setattr(testee.gui, 'CheckDialog', 'checkdialog')
+    monkeypatch.setattr(testee, 'SetCheck', MockCheck)
     monkeypatch.setattr(testee, 'languages', {'en': {'show_text': 'x', 'textitem': 'y'}})
     testobj.opts['setting'] = True
     testobj.confirm('setting', 'textitem')
-    assert capsys.readouterr().out == ("called AproposGui.show_dialog with args ('checkdialog',"
-                                       " {'message': 'y', 'option': 'setting', 'caption': 'x'})\n")
+    assert testobj.opts['setting']
+    # assert capsys.readouterr().out == ("called AproposGui.show_dialog with args ('MockCheck',"
+    #                                    " {'message': 'y', 'optionvalue': True, 'caption': 'x'})\n")
+    assert capsys.readouterr().out == (
+            "called SetCheck with args"
+            f" ({testobj},) {{'message': 'y', 'optionvalue': False, 'caption': 'x'}}\n"
+            "called AproposGui.show_dialog with args ('dialog',)\n")
     testobj.opts['setting'] = False
     testobj.confirm('setting', 'textitem')
     assert capsys.readouterr().out == ''
@@ -527,20 +543,46 @@ def test_apropos_choose_language(monkeypatch, capsys):
 def test_apropos_options(monkeypatch, capsys):
     """unittest for main.apropos_options
     """
+    class MockOptions:
+        "stub"
+        def __init__(self, *args, **kwargs):
+            print('called SetOptions with args', args, kwargs)
+            self.gui = 'dialog'
+    def mock_show(*args):
+        print('called AproposGui.show_dialog with args', args)
+        return True, {'AskBeforeHide': ' a', 'NotifyOnLoad': 'b', 'NotifyOnSave': 'c'}
     monkeypatch.setattr(testee.Apropos, '__init__', MockApropos.__init__)
     testobj = testee.Apropos()
     assert capsys.readouterr().out == ('called Apropos with args {}\n'
                                        'called AproposGui with title `title`\n')
     testobj.opts = {'language': 'en'}
-    monkeypatch.setattr(testee.gui, 'OptionsDialog', 'optionsdialog')
+    monkeypatch.setattr(testee, 'SetOptions', MockOptions)
     monkeypatch.setattr(testee, 'languages', {'en': {'ask_hide': ' x', 'notify_load': 'y',
                                                    'notify_save': 'z'}})
     testobj.options()
-    assert capsys.readouterr().out == ("called AproposGui.show_dialog with args ('optionsdialog',"
-                                       " {'sett2text': {'AskBeforeHide': ' x', 'NotifyOnLoad': 'y',"
-                                       " 'NotifyOnSave': 'z'}})\n")
+    assert testobj.opts == {'language': 'en'}
+    # assert capsys.readouterr().out == ("called AproposGui.show_dialog with args ('MockOptions',"
+    #                                    " {'text2valuedict': {'AskBeforeHide': ' x',"
+    #                                    " 'NotifyOnLoad': 'y', 'NotifyOnSave': 'z'}})\n")
+    assert capsys.readouterr().out == (
+            f"called SetOptions with args ({testobj},"
+            " {'AskBeforeHide': ' x', 'NotifyOnLoad': 'y', 'NotifyOnSave': 'z'}) {}\n"
+            "called AproposGui.show_dialog with args ('dialog',)\n")
+    testobj.gui.show_dialog = mock_show
+    testobj.options()
+    assert testobj.opts == {'language': 'en', 'AskBeforeHide': ' a', 'NotifyOnLoad': 'b',
+                            'NotifyOnSave': 'c'}
+    # assert capsys.readouterr().out == ("called AproposGui.show_dialog with args ('MockOptions',"
+    #                                    " {'text2valuedict': {'AskBeforeHide': ' x',"
+    #                                    " 'NotifyOnLoad': 'y', 'NotifyOnSave': 'z'}})\n")
+    assert capsys.readouterr().out == (
+            f"called SetOptions with args ({testobj},"
+            " {'AskBeforeHide': ' x', 'NotifyOnLoad': 'y', 'NotifyOnSave': 'z'}) {}\n"
+            "called AproposGui.show_dialog with args ('dialog',)\n")
 
 def test_set_config_values_from_screen(monkeypatch, capsys):
+    """unittest for main.set_config_values_from_screen
+    """
     def mock_get():
         print('called AproposGui.get_screen_dimensions')
         return 'xxy', 'wxh'
@@ -592,6 +634,8 @@ def test_load_and_set_screenpos(monkeypatch, capsys, tmp_path):
             "called AproposGui.set_screen_dimensions with args ('yyy', 'zzz')\n")
 
 def test_get_and_save_screenpos(monkeypatch, capsys, tmp_path):
+    """unittest for main.get_and_save_screenpos
+    """
     def mock_set_from(*args):
         print('called Apropos.set_config_values_from_screen')
     confpath = tmp_path / 'testsaveconf'
@@ -603,3 +647,105 @@ def test_get_and_save_screenpos(monkeypatch, capsys, tmp_path):
     testobj.get_and_save_screenpos()
     assert confpath.exists()
     assert capsys.readouterr().out == "called Apropos.set_config_values_from_screen\n"
+
+
+class TestSetOptions:
+    """Unittests for main.SetOptions
+    """
+    def test_init(self, monkeypatch, capsys):
+        """Unittest for SetOptions.__init__
+        """
+        class MockDialog:
+            "stub"
+            def __init__(self, *args, **kwargs):
+                print('called OptionsDialog.__init__ with args', args, kwargs)
+            def add_checkbox_line_to_grid(self, *args):
+                print('called OptionsDialog.add_checkbox_line_to_grid with args', args)
+                return 'check'
+            def add_buttonbox(self, **kwargs):
+                print('called OptionsDialog.add_buttonbox with args', kwargs)
+        monkeypatch.setattr(testee.gui, 'OptionsDialog', MockDialog)
+        parent = types.SimpleNamespace(opts={'x': 'a', 'y': 'b'}, gui='mainwindow')
+        testobj = testee.SetOptions(parent, {'x': 'xxxx', 'y': 'yyyy'})
+        assert testobj.parent == parent
+        assert not testobj.dialog_data
+        assert testobj.controls == [('x', 'check'), ('y', 'check')]
+        assert isinstance(testobj.gui, testee.gui.OptionsDialog)
+        assert capsys.readouterr().out == (
+                f"called OptionsDialog.__init__ with args ({testobj}, '{parent.gui}') {{}}\n"
+                "called OptionsDialog.add_checkbox_line_to_grid with args (1, 'xxxx', 'a')\n"
+                "called OptionsDialog.add_checkbox_line_to_grid with args (2, 'yyyy', 'b')\n"
+                "called OptionsDialog.add_buttonbox with args"
+                " {'okvalue': '&Apply', 'cancelvalue': '&Close'}\n")
+
+    def test_confirm(self, monkeypatch, capsys):
+        """Unittest for SetOptions.confirm
+        """
+        def mock_init(self, *args):
+            print('called SetOptions.__init__ with args', args)
+        def mock_get(*args):
+            print('called OptionsDialog.get_checkbox_value with args', args)
+            return 'value'
+        parent = 'parent'
+        monkeypatch.setattr(testee.SetOptions, '__init__', mock_init)
+        testobj = testee.SetOptions(parent, 'title', {'x': 'xxxx', 'y': 'yyyy'})
+        testobj.controls = [('x', 'checkbox'), ('y', 'checkbox2')]
+        testobj.gui = types.SimpleNamespace(get_checkbox_value=mock_get)
+        assert testobj.confirm() == {'x': 'value', 'y': 'value'}
+        assert capsys.readouterr().out == (
+                "called SetOptions.__init__ with args"
+                " ('parent', 'title', {'x': 'xxxx', 'y': 'yyyy'})\n"
+                "called OptionsDialog.get_checkbox_value with args ('checkbox',)\n"
+                "called OptionsDialog.get_checkbox_value with args ('checkbox2',)\n")
+
+
+class TestSetCheck:
+    """Unittests for main.SetCheck
+    """
+    def test_init(self, monkeypatch, capsys):
+        """Unittest for SetCheck.__init__
+        """
+        class MockDialog:
+            "stub"
+            def __init__(self, *args, **kwargs):
+                print('called OptionsDialog.__init__ with args', args, kwargs)
+            def add_label(self, message):
+                print(f"called OptionsDialog.add_label with arg '{message}'")
+            def add_checkbox(self, *args):
+                print('called OptionsDialog.add_checkbox with args', args)
+                return 'check'
+            def add_ok_buttonbox(self):
+                print('called OptionsDialog.add_ok_buttonbox')
+        monkeypatch.setattr(testee.gui, 'CheckDialog', MockDialog)
+        parent = MockApropos()
+        assert capsys.readouterr().out == ("called Apropos with args {}\n"
+                                           "called AproposGui with title `title`\n")
+        testobj = testee.SetCheck(parent, 'x', 'y', 'z')
+        assert testobj.parent == parent
+        assert not testobj.dialog_data
+        assert isinstance(testobj.gui, testee.gui.CheckDialog)
+        assert testobj.check == 'check'
+        assert capsys.readouterr().out == (
+                f"called OptionsDialog.__init__ with args ({testobj}, {parent.gui}) {{}}\n"
+                "called OptionsDialog.add_label with arg 'x'\n"
+                "called OptionsDialog.add_checkbox with args ('z', 'y')\n"
+                "called OptionsDialog.add_ok_buttonbox\n")
+
+    def test_confirm(self, monkeypatch, capsys):
+        """Unittest for SetCheck.confirm
+        """
+        def mock_init(self, *args):
+            print('called CheckDialog.__init__ with args', args)
+        def mock_get(*args):
+            print('called CheckDialog.get_checkbox_value with args', args)
+            return 'value'
+        monkeypatch.setattr(testee.SetCheck, '__init__', mock_init)
+        parent = 'parent'
+        testobj = testee.SetCheck(parent, 'title', 'x', 'y', 'z')
+        assert capsys.readouterr().out == (
+                "called CheckDialog.__init__ with args ('parent', 'title', 'x', 'y', 'z')\n")
+        testobj.check = 'checkbox'
+        testobj.gui = types.SimpleNamespace(get_checkbox_value=mock_get)
+        assert testobj.confirm() == 'value'
+        assert capsys.readouterr().out == (
+                "called CheckDialog.get_checkbox_value with args ('checkbox',)\n")

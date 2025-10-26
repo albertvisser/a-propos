@@ -76,6 +76,8 @@ called Dialog.exec
 
 @pytest.fixture
 def expected_output():
+    """fixture for output predictions
+    """
     return {"page": page_output,
             "checkdialog": checkdialog_output,
             "optionsdialog": optionsdialog_start + optionsdialog_end,
@@ -171,8 +173,6 @@ class TestAproposGui:
     def test_set_appicon(self, monkeypatch, capsys):
         """unittest for AproposGui.set_appicon
         """
-        def mock_set(arg):
-            print(f'called AproposGui.setWindowIcon')
         monkeypatch.setattr(testee.gui, 'QIcon', mockqtw.MockIcon)
         testobj = self.setup_testobj(monkeypatch, capsys)
         monkeypatch.setattr(testobj, 'setWindowIcon', mockqtw.MockMainWindow.setWindowIcon)
@@ -484,10 +484,23 @@ class TestAproposGui:
     def test_show_dialog(self, monkeypatch, capsys):
         """unittest for AproposGui.show_dialog
         """
+        def mock_exec(self):
+            print('called Dialog.exec')
+            return testee.qtw.QDialog.DialogCode.Rejected
+        def mock_exec_2(self):
+            print('called Dialog.exec')
+            return testee.qtw.QDialog.DialogCode.Accepted
+        monkeypatch.setattr(mockqtw.MockDialog, 'exec', mock_exec)
+        dlg = mockqtw.MockDialog()
+        assert capsys.readouterr().out == "called Dialog.__init__ with args None () {}\n"
+        dlg.master = types.SimpleNamespace(dialog_data='data')
         testobj = self.setup_testobj(monkeypatch, capsys)
-        testobj.show_dialog(mockqtw.MockDialog, {'x': 'y'})
-        assert capsys.readouterr().out == (f"called Dialog.__init__ with args {testobj}"
-                                           " ('Apropos',) {'x': 'y'}\n")
+        assert testobj.show_dialog(dlg) == (False, 'data')
+        monkeypatch.setattr(mockqtw.MockDialog, 'exec', mock_exec_2)
+        assert testobj.show_dialog(dlg) == (True, 'data')
+        # testobj.show_dialog(mockqtw.MockDialog, {'x': 'y'})
+        # assert capsys.readouterr().out == (f"called Dialog.__init__ with args {testobj}"
+        #                                    " ('Apropos',) {'x': 'y'}\n")
 
     def test_get_text(self, monkeypatch, capsys):
         """unittest for AproposGui.get_text
@@ -536,6 +549,8 @@ class TestAproposGui:
                 " ('Apropos', 'prompt_text', ['item', 'list'], 1, False) {}\n")
 
     def test_set_screen_dimensions(self, monkeypatch, capsys):
+        """unittest for AproposGui.set_screen_dimensions
+        """
         def mock_move(*args):
             print("called AproposGui.move with args", args)
         def mock_resize(*args):
@@ -548,15 +563,17 @@ class TestAproposGui:
                                            "called AproposGui.resize with args (200, 100)\n")
 
     def test_get_screen_dimensions(self, monkeypatch, capsys):
-        # def mock_pos(*args):
-        #     print("called AproposGui.pos")
-        #     return 1, 2
+        """unittest for AproposGui.get_screen_dimensions
+        """
         def mock_x(*args):
             print("called AproposGui.x")
             return 1
         def mock_y(*args):
             print("called AproposGui.pos")
             return 2
+        # def mock_pos(*args):
+        #     print("called AproposGui.pos")
+        #     return 1, 2
         # def mock_rect(*args):
         #     print("called AproposGui.rect")
         #     return 2, 1
@@ -599,114 +616,321 @@ class TestPage:
 class TestCheckDialog:
     """unittest for gui_qt.CheckDialog
     """
-    def test_init(self, monkeypatch, capsys, expected_output):
-        """unittest for CheckDialog.__init__
+    # def test_init(self, monkeypatch, capsys, expected_output):
+    #     """unittest for CheckDialog.__init__
+    #     """
+    #     monkeypatch.setattr(testee.qtw.QDialog, '__init__', mockqtw.MockDialog.__init__)
+    #     monkeypatch.setattr(testee.qtw.QDialog, 'setWindowTitle', mockqtw.MockDialog.setWindowTitle)
+    #     monkeypatch.setattr(testee.qtw.QDialog, 'setWindowIcon', mockqtw.MockDialog.setWindowIcon)
+    #     monkeypatch.setattr(testee.qtw.QDialog, 'setLayout', mockqtw.MockDialog.setLayout)
+    #     monkeypatch.setattr(testee.qtw.QDialog, 'exec', mockqtw.MockDialog.exec)
+    #     monkeypatch.setattr(testee.qtw, 'QLabel', mockqtw.MockEditorWidget)
+    #     monkeypatch.setattr(testee.qtw, 'QCheckBox', mockqtw.MockCheckBox)
+    #     monkeypatch.setattr(testee.qtw, 'QPushButton', mockqtw.MockPushButton)
+    #     monkeypatch.setattr(testee.qtw, 'QVBoxLayout', mockqtw.MockVBoxLayout)
+    #     monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBoxLayout)
+    #     testparent = types.SimpleNamespace(apoicon='Icon',
+    #                                        master=types.SimpleNamespace(opts={'y': False}))
+    #     testobj = testee.CheckDialog(testparent, 'title', 'x', 'y')
+    #     bindings = {'testparent': testparent, 'testobj': testobj, 'checktitle': '',
+    #                 'checked': False}
+    #     assert capsys.readouterr().out == expected_output['checkdialog'].format(**bindings)
+
+    #     testparent = types.SimpleNamespace(apoicon='Icon',
+    #                                        master=types.SimpleNamespace(opts={'y': True}))
+    #     testobj = testee.CheckDialog(testparent, 'title', message="x", option="y", caption="z")
+    #     bindings = {'testparent': testparent, 'testobj': testobj, 'checktitle': 'z',
+    #                 'checked': True}
+    #     assert capsys.readouterr().out == expected_output['checkdialog'].format(**bindings)
+
+    # def test_klaar(self, monkeypatch, capsys):
+    #     """unittest for CheckDialog.klaar
+    #     """
+    #     def mock_init(self, *args, **kwargs):
+    #         print('called CheckDialog.__init__')
+    #         self.parent = args[0]
+    #         self.option = kwargs['option']
+    #         # super().__init__()
+    #     monkeypatch.setattr(testee.qtw.QDialog, 'done', mockqtw.MockDialog.done)
+    #     monkeypatch.setattr(testee.CheckDialog, '__init__', mock_init)
+    #     monkeypatch.setattr(testee.qtw.QDialog, '__init__', mockqtw.MockDialog.__init__)
+    #     testparent = types.SimpleNamespace(apoicon='Icon',
+    #                                        master=types.SimpleNamespace(opts={'y': False}))
+    #     # breakpoint()
+    #     testobj = testee.CheckDialog(testparent, option='y')
+    #     testobj.check = mockqtw.MockCheckBox()
+    #     testobj.klaar()
+    #     assert capsys.readouterr().out == ('called CheckDialog.__init__\n'
+    #                                        'called CheckBox.__init__\n'
+    #                                        'called CheckBox.isChecked\n'
+    #                                        'called Dialog.done with arg `0`\n')
+    def test_init(self, monkeypatch, capsys):
+        """unittest for CheckDialog.init
         """
+        mockparent = types.SimpleNamespace(apoicon='icon')
         monkeypatch.setattr(testee.qtw.QDialog, '__init__', mockqtw.MockDialog.__init__)
         monkeypatch.setattr(testee.qtw.QDialog, 'setWindowTitle', mockqtw.MockDialog.setWindowTitle)
         monkeypatch.setattr(testee.qtw.QDialog, 'setWindowIcon', mockqtw.MockDialog.setWindowIcon)
         monkeypatch.setattr(testee.qtw.QDialog, 'setLayout', mockqtw.MockDialog.setLayout)
-        monkeypatch.setattr(testee.qtw.QDialog, 'exec', mockqtw.MockDialog.exec)
-        monkeypatch.setattr(testee.qtw, 'QLabel', mockqtw.MockEditorWidget)
-        monkeypatch.setattr(testee.qtw, 'QCheckBox', mockqtw.MockCheckBox)
-        monkeypatch.setattr(testee.qtw, 'QPushButton', mockqtw.MockPushButton)
         monkeypatch.setattr(testee.qtw, 'QVBoxLayout', mockqtw.MockVBoxLayout)
-        monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBoxLayout)
-        testparent = types.SimpleNamespace(apoicon='Icon',
-                                           master=types.SimpleNamespace(opts={'y': False}))
-        testobj = testee.CheckDialog(testparent, 'title', 'x', 'y')
-        bindings = {'testparent': testparent, 'testobj': testobj, 'checktitle': '',
-                    'checked': False}
-        assert capsys.readouterr().out == expected_output['checkdialog'].format(**bindings)
+        testobj = testee.CheckDialog('master', mockparent)
+        assert testobj.parent == mockparent
+        assert capsys.readouterr().out == (
+            f'called Dialog.__init__ with args {mockparent} () {{}}\n'
+            "called Dialog.setWindowTitle with args ('Apropos',)\n"
+            "called Dialog.setWindowIcon with args ('icon',)\n"
+            'called VBox.__init__\n'
+            'called Dialog.setLayout with arg MockVBoxLayout\n')
 
-        testparent = types.SimpleNamespace(apoicon='Icon',
-                                           master=types.SimpleNamespace(opts={'y': True}))
-        testobj = testee.CheckDialog(testparent, 'title', message="x", option="y", caption="z")
-        bindings = {'testparent': testparent, 'testobj': testobj, 'checktitle': 'z',
-                    'checked': True}
-        assert capsys.readouterr().out == expected_output['checkdialog'].format(**bindings)
+    def setup_testobj(self, monkeypatch, capsys):
+        "initialize testdouble"
+        def mock_init(self, *args):
+            print('called Dialog.__init__')
+            self.parent = args[0]
+        monkeypatch.setattr(testee.CheckDialog, '__init__', mock_init)
+        testobj = testee.CheckDialog(types.SimpleNamespace(dialog_data={}), {})
+        assert capsys.readouterr().out == 'called Dialog.__init__\n'
+        return testobj
+
+    def test_add_label(self, monkeypatch, capsys):
+        """unittest for CheckDialog.add_label
+        """
+        testobj = self.setup_testobj(monkeypatch, capsys)
+        monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBoxLayout)
+        monkeypatch.setattr(testee.qtw, 'QLabel', mockqtw.MockLabel)
+        testobj.vbox = mockqtw.MockVBoxLayout()
+        assert capsys.readouterr().out == "called VBox.__init__\n"
+        testobj.add_label('xxx')
+        assert capsys.readouterr().out == (
+            'called HBox.__init__\n'
+            f"called Label.__init__ with args ('xxx', {testobj})\n"
+            "called HBox.addWidget with arg MockLabel\n"
+            "called VBox.addLayout with arg MockHBoxLayout\n")
+
+    def test_add_checkbox(self, monkeypatch, capsys):
+        """unittest for CheckDialog.add_checkbox
+        """
+        testobj = self.setup_testobj(monkeypatch, capsys)
+        monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBoxLayout)
+        monkeypatch.setattr(testee.qtw, 'QCheckBox', mockqtw.MockCheckBox)
+        testobj.vbox = mockqtw.MockVBoxLayout()
+        assert capsys.readouterr().out == "called VBox.__init__\n"
+        result = testobj.add_checkbox('xxx', True)
+        assert isinstance(result, testee.qtw.QCheckBox)
+        assert capsys.readouterr().out == (
+            'called HBox.__init__\n'
+            "called CheckBox.__init__ with text 'xxx'\n"
+            "called CheckBox.setChecked with arg True\n"
+            "called HBox.addWidget with arg MockCheckBox\n"
+            "called VBox.addLayout with arg MockHBoxLayout\n")
+
+    def test_add_ok_buttonbox(self, monkeypatch, capsys):
+        """unittest for CheckDialog.add_ok_buttonbox
+        """
+        testobj = self.setup_testobj(monkeypatch, capsys)
+        monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBoxLayout)
+        monkeypatch.setattr(testee.qtw, 'QPushButton', mockqtw.MockPushButton)
+        testobj.vbox = mockqtw.MockVBoxLayout()
+        assert capsys.readouterr().out == "called VBox.__init__\n"
+        testobj.add_ok_buttonbox()
+        assert capsys.readouterr().out == (
+            'called HBox.__init__\n'
+            'called HBox.addStretch\n'
+            f"called PushButton.__init__ with args ('&Ok', {testobj}) {{}}\n"
+            f"called Signal.connect with args ({testobj.klaar},)\n"
+            "called HBox.addWidget with arg MockPushButton\n"
+            'called HBox.addStretch\n'
+            "called VBox.addLayout with arg MockHBoxLayout\n")
+
+    def test_get_checkbox_value(self, monkeypatch, capsys):
+        """unittest for CheckDialog.get_checkbox_value
+        """
+        testobj = self.setup_testobj(monkeypatch, capsys)
+        check = mockqtw.MockCheckBox()
+        check.setChecked(True)
+        assert capsys.readouterr().out == ("called CheckBox.__init__\n"
+                                           "called CheckBox.setChecked with arg True\n")
+        assert testobj.get_checkbox_value(check)
+        assert capsys.readouterr().out == "called CheckBox.isChecked\n"
 
     def test_klaar(self, monkeypatch, capsys):
         """unittest for CheckDialog.klaar
         """
-        def mock_init(self, *args, **kwargs):
-            print('called CheckDialog.__init__')
-            self.parent = args[0]
-            self.option = kwargs['option']
-            # super().__init__()
-        monkeypatch.setattr(testee.qtw.QDialog, 'done', mockqtw.MockDialog.done)
-        monkeypatch.setattr(testee.CheckDialog, '__init__', mock_init)
-        monkeypatch.setattr(testee.qtw.QDialog, '__init__', mockqtw.MockDialog.__init__)
-        testparent = types.SimpleNamespace(apoicon='Icon',
-                                           master=types.SimpleNamespace(opts={'y': False}))
-        # breakpoint()
-        testobj = testee.CheckDialog(testparent, option='y')
-        testobj.check = mockqtw.MockCheckBox()
+        def mock_confirm():
+            print('called SetCheck.confirm')
+        def mock_accept(self, *args):
+            """stub
+            """
+            print('called Dialog.accept')
+        monkeypatch.setattr(testee.qtw.QDialog, 'accept', mock_accept)
+        testobj = self.setup_testobj(monkeypatch, capsys)
+        testobj.master = types.SimpleNamespace(confirm=mock_confirm)
         testobj.klaar()
-        assert capsys.readouterr().out == ('called CheckDialog.__init__\n'
-                                           'called CheckBox.__init__\n'
-                                           'called CheckBox.isChecked\n'
-                                           'called Dialog.done with arg `0`\n')
+        assert capsys.readouterr().out == ('called SetCheck.confirm\n'
+                                           'called Dialog.accept\n')
 
 
 class TestOptionsDialog:
     """unittest for gui_qt.OptionsDialog
     """
-    def test_init(self, monkeypatch, capsys, expected_output):
-        """unittest for OptionsDialog.__init__
+    # def test_init(self, monkeypatch, capsys, expected_output):
+    #     """unittest for OptionsDialog.__init__
+    #     """
+    #     monkeypatch.setattr(testee.qtw.QDialog, '__init__', mockqtw.MockDialog.__init__)
+    #     monkeypatch.setattr(testee.qtw.QDialog, 'setWindowTitle', mockqtw.MockDialog.setWindowTitle)
+    #     monkeypatch.setattr(testee.qtw.QDialog, 'setWindowIcon', mockqtw.MockDialog.setWindowIcon)
+    #     monkeypatch.setattr(testee.qtw.QDialog, 'setLayout', mockqtw.MockDialog.setLayout)
+    #     monkeypatch.setattr(testee.qtw.QDialog, 'exec', mockqtw.MockDialog.exec)
+    #     monkeypatch.setattr(testee.qtw, 'QLabel', mockqtw.MockEditorWidget)
+    #     monkeypatch.setattr(testee.qtw, 'QCheckBox', mockqtw.MockCheckBox)
+    #     monkeypatch.setattr(testee.qtw, 'QPushButton', mockqtw.MockPushButton)
+    #     monkeypatch.setattr(testee.qtw, 'QVBoxLayout', mockqtw.MockVBoxLayout)
+    #     monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBoxLayout)
+    #     monkeypatch.setattr(testee.qtw, 'QGridLayout', mockqtw.MockGridLayout)
+    #     testparent = types.SimpleNamespace(apoicon='Icon',
+    #                                        master=types.SimpleNamespace(opts={'y': False, 'z': True}))
+    #     testobj = testee.OptionsDialog(testparent, 'title')
+    #     assert not testobj.controls
+    #     bindings = {'testparent': testparent, 'testobj': testobj}
+    #     assert capsys.readouterr().out == expected_output['optionsdialog'].format(**bindings)
+    #
+    #     testobj = testee.OptionsDialog(testparent, 'title', sett2text={'y': 'yyyy', 'z': 'zzzz'})
+    #     assert len(testobj.controls) == 2
+    #     assert testobj.controls[0][0] == 'y'
+    #     assert isinstance(testobj.controls[0][1], testee.qtw.QCheckBox)
+    #     assert testobj.controls[1][0] == 'z'
+    #     assert isinstance(testobj.controls[1][1], testee.qtw.QCheckBox)
+    #     bindings = {'testparent': testparent, 'testobj': testobj}
+    #     assert capsys.readouterr().out == expected_output['optionsdialog_w_options'].format(
+    #             **bindings)
+    #
+    # def test_accept(self, monkeypatch, capsys):
+    #     """unittest for OptionsDialog.accept
+    #     """
+    #     def mock_init(self, *args, **kwargs):
+    #         print('called CheckDialog.__init__')
+    #         self.parent = args[0]
+    #     monkeypatch.setattr(testee.OptionsDialog, '__init__', mock_init)
+    #     monkeypatch.setattr(testee.qtw.QDialog, '__init__', mockqtw.MockDialog.__init__)
+    #     monkeypatch.setattr(testee.qtw.QDialog, 'accept', mockqtw.MockDialog.accept)
+    #     testparent = types.SimpleNamespace(apoicon='Icon',
+    #                                        master=types.SimpleNamespace(opts={'y': False, 'z': True}))
+    #     testobj = testee.OptionsDialog(testparent)
+    #     assert capsys.readouterr().out == 'called CheckDialog.__init__\n'
+    #     check1 = mockqtw.MockCheckBox()
+    #     check1.setChecked(True)
+    #     assert capsys.readouterr().out == ('called CheckBox.__init__\n'
+    #                                        'called CheckBox.setChecked with arg True\n')
+    #     check2 = mockqtw.MockCheckBox()
+    #     check2.setChecked(False)
+    #     assert capsys.readouterr().out == ('called CheckBox.__init__\n'
+    #                                        'called CheckBox.setChecked with arg False\n')
+    #     testobj.controls = [('y', check1), ('z', check2)]
+    #     testobj.accept()
+    #     assert testobj.parent.master.opts == {'y': True, 'z': False}
+    #     assert capsys.readouterr().out == ('called CheckBox.isChecked\n'
+    #                                        'called CheckBox.isChecked\n'
+    #                                        'called Dialog.accept\n')
+    def test_init(self, monkeypatch, capsys):
+        """unittest for OptionsDialog.init
         """
+        mockparent = types.SimpleNamespace(apoicon='icon')
         monkeypatch.setattr(testee.qtw.QDialog, '__init__', mockqtw.MockDialog.__init__)
         monkeypatch.setattr(testee.qtw.QDialog, 'setWindowTitle', mockqtw.MockDialog.setWindowTitle)
         monkeypatch.setattr(testee.qtw.QDialog, 'setWindowIcon', mockqtw.MockDialog.setWindowIcon)
         monkeypatch.setattr(testee.qtw.QDialog, 'setLayout', mockqtw.MockDialog.setLayout)
-        monkeypatch.setattr(testee.qtw.QDialog, 'exec', mockqtw.MockDialog.exec)
-        monkeypatch.setattr(testee.qtw, 'QLabel', mockqtw.MockEditorWidget)
-        monkeypatch.setattr(testee.qtw, 'QCheckBox', mockqtw.MockCheckBox)
-        monkeypatch.setattr(testee.qtw, 'QPushButton', mockqtw.MockPushButton)
         monkeypatch.setattr(testee.qtw, 'QVBoxLayout', mockqtw.MockVBoxLayout)
-        monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBoxLayout)
         monkeypatch.setattr(testee.qtw, 'QGridLayout', mockqtw.MockGridLayout)
-        testparent = types.SimpleNamespace(apoicon='Icon',
-                                           master=types.SimpleNamespace(opts={'y': False, 'z': True}))
-        testobj = testee.OptionsDialog(testparent, 'title')
-        assert not testobj.controls
-        bindings = {'testparent': testparent, 'testobj': testobj}
-        assert capsys.readouterr().out == expected_output['optionsdialog'].format(**bindings)
+        testobj = testee.OptionsDialog('master', mockparent)
+        assert testobj.master == 'master'
+        assert testobj.parent == mockparent
+        assert isinstance(testobj.vbox, testee.qtw.QVBoxLayout)
+        assert isinstance(testobj.gbox, testee.qtw.QGridLayout)
+        assert capsys.readouterr().out == (
+            f'called Dialog.__init__ with args {mockparent} () {{}}\n'
+            "called Dialog.setWindowTitle with args ('Apropos',)\n"
+            "called Dialog.setWindowIcon with args ('icon',)\n"
+            'called VBox.__init__\n'
+            'called Grid.__init__\n'
+            "called VBox.addLayout with arg MockGridLayout\n"
+            'called Dialog.setLayout with arg MockVBoxLayout\n')
 
-        testobj = testee.OptionsDialog(testparent, 'title', sett2text={'y': 'yyyy', 'z': 'zzzz'})
-        assert len(testobj.controls) == 2
-        assert testobj.controls[0][0] == 'y'
-        assert isinstance(testobj.controls[0][1], testee.qtw.QCheckBox)
-        assert testobj.controls[1][0] == 'z'
-        assert isinstance(testobj.controls[1][1], testee.qtw.QCheckBox)
-        bindings = {'testparent': testparent, 'testobj': testobj}
-        assert capsys.readouterr().out == expected_output['optionsdialog_w_options'].format(
-                **bindings)
+    def setup_testobj(self, monkeypatch, capsys):
+        "initialize testdouble"
+        def mock_init(self, *args):
+            print('called Dialog.__init__')
+            self.parent = args[0]
+        monkeypatch.setattr(testee.OptionsDialog, '__init__', mock_init)
+        testobj = testee.OptionsDialog(types.SimpleNamespace(dialog_data={}), {})
+        assert capsys.readouterr().out == 'called Dialog.__init__\n'
+        return testobj
+
+    def test_add_checkbox_line_to_grid(self, monkeypatch, capsys):
+        """unittest for OptionsDialog.add_checkbox_line_to_grid
+        """
+        monkeypatch.setattr(testee.qtw, 'QLabel', mockqtw.MockLabel)
+        monkeypatch.setattr(testee.qtw, 'QCheckBox', mockqtw.MockCheckBox)
+        testobj = self.setup_testobj(monkeypatch, capsys)
+        testobj.gbox = mockqtw.MockGridLayout()
+        assert capsys.readouterr().out == "called Grid.__init__\n"
+        result = testobj.add_checkbox_line_to_grid(1, 'label', True)
+        assert isinstance(result, testee.qtw.QCheckBox)
+        assert capsys.readouterr().out == (
+            f"called Label.__init__ with args ('label', {testobj})\n"
+            "called Grid.addWidget with arg MockLabel at (1, 0)\n"
+            "called CheckBox.__init__ with text ''\n"
+            'called CheckBox.setChecked with arg True\n'
+            "called Grid.addWidget with arg MockCheckBox at (1, 1)\n")
+
+    def test_add_buttonbox(self, monkeypatch, capsys):
+        """unittest for OptionsDialog.add_buttonbox
+        """
+        monkeypatch.setattr(testee.qtw, 'QHBoxLayout', mockqtw.MockHBoxLayout)
+        monkeypatch.setattr(testee.qtw, 'QPushButton', mockqtw.MockPushButton)
+        testobj = self.setup_testobj(monkeypatch, capsys)
+        testobj.vbox = mockqtw.MockVBoxLayout()
+        testobj.gbox = mockqtw.MockGridLayout()
+        testobj.accept = lambda: 'dummy callback'
+        testobj.reject = lambda: 'dummy callback'
+        assert capsys.readouterr().out == "called VBox.__init__\ncalled Grid.__init__\n"
+        testobj.add_buttonbox('yes', 'nooo')
+        assert capsys.readouterr().out == (
+            'called HBox.__init__\n'
+            'called HBox.addStretch\n'
+            f"called PushButton.__init__ with args ('yes', {testobj}) {{}}\n"
+            f'called Signal.connect with args ({testobj.accept},)\n'
+            "called HBox.addWidget with arg MockPushButton\n"
+            f"called PushButton.__init__ with args ('nooo', {testobj}) {{}}\n"
+            f'called Signal.connect with args ({testobj.reject},)\n'
+            "called HBox.addWidget with arg MockPushButton\n"
+            'called HBox.addStretch\n'
+            "called VBox.addLayout with arg MockHBoxLayout\n")
+
+    def test_get_checkbox_value(self, monkeypatch, capsys):
+        """unittest for OptionsDialog.get_checkbox_value
+        """
+        testobj = self.setup_testobj(monkeypatch, capsys)
+        check = mockqtw.MockCheckBox()
+        check.setChecked(True)
+        assert capsys.readouterr().out == ("called CheckBox.__init__\n"
+                                           "called CheckBox.setChecked with arg True\n")
+        assert capsys.readouterr().out == ""
+        assert testobj.get_checkbox_value(check)
+        assert capsys.readouterr().out == "called CheckBox.isChecked\n"
 
     def test_accept(self, monkeypatch, capsys):
         """unittest for OptionsDialog.accept
         """
-        def mock_init(self, *args, **kwargs):
-            print('called CheckDialog.__init__')
-            self.parent = args[0]
-        monkeypatch.setattr(testee.OptionsDialog, '__init__', mock_init)
-        monkeypatch.setattr(testee.qtw.QDialog, '__init__', mockqtw.MockDialog.__init__)
-        monkeypatch.setattr(testee.qtw.QDialog, 'accept', mockqtw.MockDialog.accept)
-        testparent = types.SimpleNamespace(apoicon='Icon',
-                                           master=types.SimpleNamespace(opts={'y': False, 'z': True}))
-        testobj = testee.OptionsDialog(testparent)
-        assert capsys.readouterr().out == 'called CheckDialog.__init__\n'
-        check1 = mockqtw.MockCheckBox()
-        check1.setChecked(True)
-        assert capsys.readouterr().out == ('called CheckBox.__init__\n'
-                                           'called CheckBox.setChecked with arg True\n')
-        check2 = mockqtw.MockCheckBox()
-        check2.setChecked(False)
-        assert capsys.readouterr().out == ('called CheckBox.__init__\n'
-                                           'called CheckBox.setChecked with arg False\n')
-        testobj.controls = [('y', check1), ('z', check2)]
+        def mock_accept(self, *args):
+            """stub
+            """
+            print('called Dialog.accept')
+        def mock_confirm():
+            print('called SetOptions.confirm')
+            return {'text': False}
+        monkeypatch.setattr(testee.qtw.QDialog, 'accept', mock_accept)
+        testobj = self.setup_testobj(monkeypatch, capsys)
+        testobj.master = types.SimpleNamespace(confirm=mock_confirm)
         testobj.accept()
-        assert testobj.parent.master.opts == {'y': True, 'z': False}
-        assert capsys.readouterr().out == ('called CheckBox.isChecked\n'
-                                           'called CheckBox.isChecked\n'
+        assert capsys.readouterr().out == ('called SetOptions.confirm\n'
                                            'called Dialog.accept\n')

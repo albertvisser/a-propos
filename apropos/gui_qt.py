@@ -26,7 +26,7 @@ class AproposGui(qtw.QMainWindow):
     def init_trayicon(self, iconame, tooltip):
         "create an icon to show in the systray"
         self.tray_icon = qtw.QSystemTrayIcon(gui.QIcon(iconame), self)
-        self.tray_icon.setToolTip("Click to revive Apropos")
+        self.tray_icon.setToolTip(tooltip)  # "Click to revive Apropos")
         ## self.tray_icon.clicked.connect(self.revive)
         ## tray_signal = "activated(QSystemTrayIcon::ActivationReason)"
         ## self.tray_icon.tray_signal.connect(self.revive)
@@ -153,10 +153,15 @@ class AproposGui(qtw.QMainWindow):
         """
         qtw.QMessageBox.information(self, 'Apropos', meld, )
 
-    def show_dialog(self, cls, kwargs):
+    # def show_dialog(self, cls, kwargs):
+    def show_dialog(self, dlg):
         """Vraag om bevestiging (wordt afgehandeld in de dialoog)
         """
-        cls(self, 'Apropos', **kwargs)
+        # parentdlg = cls(self, 'Apropos', **kwargs)
+        # result = parentdlg.gui.exec()
+        result = dlg.exec()
+        # return result == qtw.QDialog.StandardButton.OK, parentdlg.dialog_data
+        return result == qtw.QDialog.DialogCode.Accepted, dlg.master.dialog_data
 
     def get_text(self, prompt, initial=''):
         """toon dialoog om tab titel in te vullen/aan te passen en verwerk antwoord
@@ -199,90 +204,105 @@ class Page(qtw.QFrame):
 
 
 class CheckDialog(qtw.QDialog):
-    """Dialog die kan worden ingesteld om niet nogmaals te tonen
+    """Generieke dialoog om iets te melden en te vragen of deze melding in het vervolg
+    nog getoond moet worden
 
-    wordt aangestuurd met de boodschap die in de dialoog moet worden getoond
+    Eventueel ook te implementeren d.m.v. QErrorMessage
     """
-    def __init__(self, parent, title, message="", option="", caption=""):
+    def __init__(self, master, parent):
+        self.master = master
         self.parent = parent
-        self.option = option
         super().__init__(parent)
-        self.setWindowTitle(title)
-        self.setWindowIcon(self.parent.apoicon)
-        txt = qtw.QLabel(message)
-        self.check = qtw.QCheckBox(caption, self)
-        self.check.setChecked(self.parent.master.opts[option])
+        self.setWindowTitle('Apropos')
+        self.setWindowIcon(parent.apoicon)
+        self.vbox = qtw.QVBoxLayout()
+        self.setLayout(self.vbox)
+        # self.resize(574 + breedte, 480)
+
+    def add_label(self, labeltext):
+        """create a text on the screen
+        """
+        hbox = qtw.QHBoxLayout()
+        hbox.addWidget(qtw.QLabel(labeltext, self))
+        self.vbox.addLayout(hbox)
+
+    def add_checkbox(self, message, value):
+        """create a checkbox
+        """
+        hbox = qtw.QHBoxLayout()
+        check = qtw.QCheckBox(message, self)
+        check.setChecked(value)
+        hbox.addWidget(check)
+        self.vbox.addLayout(hbox)
+        return check
+
+    def add_ok_buttonbox(self):
+        """create a button strip with handlers
+        """
+        hbox = qtw.QHBoxLayout()
+        hbox.addStretch(1)
         ok_button = qtw.QPushButton("&Ok", self)
         ok_button.clicked.connect(self.klaar)
-        vbox = qtw.QVBoxLayout()
-
-        hbox = qtw.QHBoxLayout()
-        hbox.addWidget(txt)
-        vbox.addLayout(hbox)
-
-        hbox = qtw.QHBoxLayout()
-        hbox.addWidget(self.check)
-        vbox.addLayout(hbox)
-
-        hbox = qtw.QHBoxLayout()
         hbox.addWidget(ok_button)
-        hbox.insertStretch(0, 1)
         hbox.addStretch(1)
-        vbox.addLayout(hbox)
+        self.vbox.addLayout(hbox)
 
-        self.setLayout(vbox)
-        self.exec()
+    def get_checkbox_value(self, check):
+        """return the value of a checkbox
+        """
+        return check.isChecked()
 
     def klaar(self):
-        "(un)set the setting and close the dialog"
-        self.parent.master.opts[self.option] = not self.check.isChecked()
-        super().done(0)
+        "dialoog afsluiten"
+        self.master.dialog_data = self.master.confirm()
+        super().accept()
 
 
 class OptionsDialog(qtw.QDialog):
     """Dialog om de instellingen voor te tonen meldingen te tonen en eventueel te kunnen wijzigen
     """
-    def __init__(self, parent, title, sett2text=None):
+    def __init__(self, master, parent):
+        self.master = master
         self.parent = parent
-        if sett2text is None:
-            sett2text = {}
         super().__init__(parent)
-        self.setWindowTitle(title)
+        self.setWindowTitle('Apropos')
         self.setWindowIcon(self.parent.apoicon)
-        vbox = qtw.QVBoxLayout()
-        self.controls = []
+        self.vbox = qtw.QVBoxLayout()
+        self.gbox = qtw.QGridLayout()
+        self.vbox.addLayout(self.gbox)
+        self.setLayout(self.vbox)
 
-        gbox = qtw.QGridLayout()
-        col = 0
-        for key, value in self.parent.master.opts.items():
-            if key not in sett2text:
-                continue
-            col += 1
-            lbl = qtw.QLabel(sett2text[key], self)
-            gbox.addWidget(lbl, col, 0)
-            chk = qtw.QCheckBox('', self)
-            chk.setChecked(value)
-            gbox.addWidget(chk, col, 1)
-            self.controls.append((key, chk))
-        vbox.addLayout(gbox)
+    def add_checkbox_line_to_grid(self, row, labeltext, value):
+        """create a line to turn an option on/off
+        """
+        lbl = qtw.QLabel(labeltext, self)
+        self.gbox.addWidget(lbl, row, 0)
+        chk = qtw.QCheckBox('', self)
+        chk.setChecked(value)
+        self.gbox.addWidget(chk, row, 1)
+        return chk
 
+    def add_buttonbox(self, okvalue, cancelvalue):
+        """create a button strip with handlers
+        """
         hbox = qtw.QHBoxLayout()
         hbox.addStretch(1)
-        ok_button = qtw.QPushButton("&Apply", self)
+        ok_button = qtw.QPushButton(okvalue, self)
         ok_button.clicked.connect(self.accept)
         hbox.addWidget(ok_button)
-        cancel_button = qtw.QPushButton("&Close", self)
+        cancel_button = qtw.QPushButton(cancelvalue, self)
         cancel_button.clicked.connect(self.reject)
         hbox.addWidget(cancel_button)
         hbox.addStretch(1)
-        vbox.addLayout(hbox)
+        self.vbox.addLayout(hbox)
 
-        self.setLayout(vbox)
-        self.exec()
+    def get_checkbox_value(self, check):
+        """return the value of a checkbox
+        """
+        return check.isChecked()
 
     def accept(self):
-        """overridden event handler
+        """exchange data with caller (overridden event handler)
         """
-        for keyvalue, control in self.controls:
-            self.parent.master.opts[keyvalue] = control.isChecked()
+        self.master.dialog_data = self.master.confirm()
         super().accept()

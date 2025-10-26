@@ -57,7 +57,7 @@ class Apropos:
         self.current = self.gui.get_current_page()  # event)
         self.gui.set_focus_to_page()  # (event)
 
-    def quit(self):
+    def quit(self, *args):
         "GUI afsluiten"
         self.gui.close()
 
@@ -152,12 +152,16 @@ class Apropos:
         """Vraag om bevestiging (wordt afgehandeld in de dialoog)
         """
         if self.opts[setting]:
-            self.gui.show_dialog(gui.CheckDialog,
-                                 {'message': languages[self.opts["language"]][textitem],
-                                  'option': setting,
-                                  'caption': languages[self.opts["language"]]["show_text"]})
-        # else:
-        #     shared.log(languages[self.opts["language"]][textitem])
+            lang = self.opts['language']
+            # ok, value = self.gui.show_dialog(SetCheck, {'message': languages[lang][textitem],
+            #                                             'optionvalue': self.opts[setting],
+            #                                             'caption': languages[lang]["show_text"]})
+            dialogparent = SetCheck(self, message=languages[lang][textitem],
+                                    optionvalue=not self.opts[setting],
+                                    caption=languages[lang]["show_text"])
+            ok, value = self.gui.show_dialog(dialogparent.gui)
+            # if ok:  # is altijd True
+            self.opts[setting] = not value
 
     def asktitle(self, *args):
         """toon dialoog om tab titel in te vullen/aan te passen en verwerk antwoord
@@ -187,10 +191,19 @@ class Apropos:
 
     def options(self, event=None):
         """check settings to show various messages"""
-        self.gui.show_dialog(gui.OptionsDialog, {'sett2text': {
-            'AskBeforeHide': languages[self.opts["language"]]['ask_hide'],
-            'NotifyOnLoad': languages[self.opts["language"]]['notify_load'],
-            'NotifyOnSave': languages[self.opts["language"]]['notify_save']}})
+        lang = self.opts['language']
+        # self.gui.show_dialog(gui.OptionsDialog, {'sett2text': {
+        # ok, result = self.gui.show_dialog(SetOptions, {'text2valuedict': {
+        #     'AskBeforeHide': languages[lang]['ask_hide'],
+        #     'NotifyOnLoad': languages[lang]['notify_load'],
+        #     'NotifyOnSave': languages[lang]['notify_save']}})
+        dialogparent = SetOptions(self, {'AskBeforeHide': languages[lang]['ask_hide'],
+                                         'NotifyOnLoad': languages[lang]['notify_load'],
+                                         'NotifyOnSave': languages[lang]['notify_save']})
+        ok, result = self.gui.show_dialog(dialogparent.gui)
+        if ok:
+            for setting, value in result.items():
+                self.opts[setting] = value
 
     def load_and_set_screenpos(self):
         "vensterpositie ophalen en instellen indien aanwezig"
@@ -221,3 +234,41 @@ class Apropos:
         self.set_config_values_from_screen()
         with self.confpath.open('w') as f:
             self.config.write(f)
+
+
+class SetOptions:
+    """Toon en wijzig desgewenst instellingen
+    """
+    def __init__(self, parent, sett2text):  # text2valuedict):
+        self.parent = parent
+        self.dialog_data = {}
+        self.gui = gui.OptionsDialog(self, parent.gui)
+        self.controls = []
+        row = 0
+        # for labeltext, value in text2valuedict.items():
+        for sett, text in sett2text.items():
+            row += 1
+            check = self.gui.add_checkbox_line_to_grid(row, text, self.parent.opts[sett])
+            self.controls.append((sett, check))
+        self.gui.add_buttonbox(okvalue='&Apply', cancelvalue='&Close')
+
+    def confirm(self):
+        """exchange data with caller
+        """
+        return {text: self.gui.get_checkbox_value(control) for text, control in self.controls}
+
+
+class SetCheck:
+    """Geef een melding en vraag of deze gegeven moet blijven worden
+    """
+    def __init__(self, parent, message, optionvalue, caption):
+        self.parent = parent
+        self.dialog_data = None
+        self.gui = gui.CheckDialog(self, parent.gui)
+        self.gui.add_label(message)
+        self.check = self.gui.add_checkbox(caption, optionvalue)
+        self.gui.add_ok_buttonbox()
+
+    def confirm(self):
+        "get the input before closing the dialog"
+        return self.gui.get_checkbox_value(self.check)

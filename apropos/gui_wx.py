@@ -21,16 +21,20 @@ class AproposGui(wx.Frame):
 
     def set_appicon(self, iconame):
         "give the window an icon"
-        self.SetIcon(wx.Icon(iconame, wx.BITMAP_TYPE_ICO))
+        self.apoicon = wx.Icon(iconame, wx.BITMAP_TYPE_ICO)
+        self.SetIcon(self.apoicon)
 
     def init_trayicon(self, iconame, tooltip):
-        "create an icon to show in the systray"
-        self.tray_icon = TaskbarIcon(self, iconame)
+        """create an icon to show in the systray
+
+        tooltip argument is for compatibility with qt version
+        """
+        # tray icon wordt pas opgezet in de hide() methode
 
     def setup_tabwidget(self, change_page, close_page):
         "build the container to show the tabs in"
         pnl = self  # wx.Panel(self, -1)
-        self.nb = wx.Notebook(pnl, -1)
+        self.nb = wx.Notebook(pnl)
         self.nb.Bind(wx.EVT_NOTEBOOK_PAGE_CHANGED, change_page)  # self.page_changed)
         self.nb.Bind(wx.EVT_LEFT_DCLICK, close_page)   # self.on_left_doubleclick)
         self.nb.Bind(wx.EVT_MIDDLE_DOWN, close_page)   # self.on_left_doubleclick)
@@ -44,7 +48,7 @@ class AproposGui(wx.Frame):
         accel_list = []
         for label, data in handler_dict.items():
             shortcuts, handler = data
-            menuitem = wx.MenuItem(None, -1, label)
+            menuitem = wx.MenuItem(None, wx.ID_ANY, label)
             self.Bind(wx.EVT_MENU, handler, menuitem)
             for key in shortcuts:
                 accel = wx.AcceleratorEntry(cmd=menuitem.GetId())
@@ -63,7 +67,7 @@ class AproposGui(wx.Frame):
         "return number of pages"
         return self.nb.GetPageCount()
 
-    def get_current_page(self):  #  , event=None):
+    def get_current_page(self):  # , event=None):
         "return selected page"
         # if event:
         #     return event.GetSelection()  # after changing tab
@@ -92,6 +96,8 @@ class AproposGui(wx.Frame):
             event.Skip()
 
     def clear_all(self):
+        """get data and setup notebook
+        """
         self.quitting = True  # bypass page_changed handling
         self.nb.DeleteAllPages()
         self.quitting = not self.quitting
@@ -106,16 +112,19 @@ class AproposGui(wx.Frame):
         self.nb.SetSelection(nieuw - 1)
 
     def clear_last_page(self):
+        "clear out the last remaining tab"
         self.nb.SetPageText(self.master.current, "1")
         self.nb.GetPage(self.master.current).txt.SetValue("")
 
     def delete_page(self, page_number):
+        "delete the chosen tab"
         self.nb.DeletePage(page_number)
         self.set_focus_to_page()
 
     def hide_app(self):
         """minimize to tray
         """
+        self.tray_icon = TaskbarIcon(self, self.apoicon)
         self.Hide()
 
     def reshow_app(self, event=None):
@@ -133,14 +142,22 @@ class AproposGui(wx.Frame):
         return self.nb.GetPage(pageno).txt.GetValue()
 
     def meld(self, text):
+        """show a message in a box
+        """
         with wx.MessageDialog(self, text, 'Apropos', wx.OK | wx.ICON_INFORMATION) as dlg:
             dlg.ShowModal()
 
-    def show_dialog(self, cls, options):
+    # def show_dialog(self, cls, options):
+    def show_dialog(self, dlg):
         """handel custom dialoog af"""
-        with cls(self, **options) as dlg:
-            if dlg.showmodal() == wx.ID_OK:
-                dlg.accept()
+        # parentdlg = cls(self, **options)
+        # with parentdlg.gui as dlg:
+        with dlg:
+            result = dlg.ShowModal()
+            # parentdlg.dialog_data = parentdlg.confirm()
+            data = dlg.master.confirm()
+        # return result == wx.ID_OK, parentdlg.dialogdata
+        return result == wx.ID_OK, data
 
     def get_text(self, prompt, initial=''):
         """handel dialoog om tekst op te geven af
@@ -151,6 +168,7 @@ class AproposGui(wx.Frame):
         return text, ok
 
     def set_page_title(self, pageno, title):
+        "set (change) a page's title"
         self.nb.SetPageText(pageno, title)
 
     def get_item(self, prompt, itemlist, initial=None):
@@ -160,22 +178,21 @@ class AproposGui(wx.Frame):
             if initial is not None:
                 dlg.SetSelection(initial)
             ok = dlg.ShowModal() == wx.ID_OK
-            text = dlg.GetValue()
+            # text = dlg.GetValue()
+            text = dlg.GetStringSelection()
         return text, ok
 
-    # niet in qt versie is geïmplementeerd en ook niet in main.py
-    def on_left_doubleclick(self, event=None):
+    # niet in qt versie geïmplementeerd en ook niet in main.py
+    def on_left_doubleclick(self, event):
         """reageert op dubbelklikken op tab t.b.v. verwijderen pagina
         """
-        print('in mainframe.on_left_doubleclick')
         x = event.GetX()
         y = event.GetY()
-        item, _ = self.nb.HitTest((x, y))
-        print('    event item is', item)
+        item = self.nb.HitTest((x, y))[0]
         self.closetab(item)
         event.Skip()
 
-    # niet geherimplementeerd in Qt, wel nodig
+    # niet geherimplementeerd in Qt, hier wel nodig
     def close(self, event=None):
         """Quit the application
         """
@@ -184,12 +201,27 @@ class AproposGui(wx.Frame):
         self.nb.DeleteAllPages()
         self.Destroy()
 
+    def set_screen_dimensions(self, pos, size):
+        "vensterpositie instellen zoals aangegeven"
+        x, y = (int(x) for x in pos.split('x'))
+        w, h = (int(x) for x in size.split('x'))
+        self.SetPosition((x, y))
+        self.SetSize((w, h))
+
+    def get_screen_dimensions(self):
+        "uitgelezen vensterpositie teruggeven"
+        pos = self.GetPosition()
+        size = self.GetSize()
+        # return str(pos), str(size)
+        return f'{pos.x}x{pos.y}', f'{size.GetWidth()}x{size.GetHeight()}'
+
 
 class Page(wx.Panel):
     "Panel subclass voor de notebook pagina's"
     def __init__(self, parent):
-        wx.Panel.__init__(self, parent)
-        self.txt = wx.TextCtrl(self, -1, style=wx.TE_MULTILINE, size=DFLT_SIZE)
+        # wx.Panel.__init__(self, parent)
+        super().__init__(parent)
+        self.txt = wx.TextCtrl(self, style=wx.TE_MULTILINE, size=DFLT_SIZE)
         sizer0 = wx.BoxSizer(wx.VERTICAL)
         sizer0.Add(self.txt, 1, wx.EXPAND | wx.ALL, 10)
         self.SetSizer(sizer0)
@@ -198,47 +230,112 @@ class Page(wx.Panel):
 
 
 class CheckDialog(wx.Dialog):
-    """Dialog die kan worden ingesteld om iets niet nogmaals te tonen
+    """Generieke dialoog om iets te melden en te vragen of deze melding in het vervolg
+    nog getoond moet worden
 
-    wordt aangestuurd met de boodschap die in de dialoog moet worden getoond
+    Eventueel ook te implementeren m.b.v. wx.RichMessageDialog
     """
-    def __init__(self, parent, title, message="", option="", caption=True):
-
+    def __init__(self, master, parent):
+        self.master = master
         self.parent = parent
-        wx.Dialog.__init__(self, parent, title=title, pos=wx.DefaultPosition, size=(-1, 120),
-                           style=wx.DEFAULT_DIALOG_STYLE)
-        pnl = self  # wx.Panel(self, -1)
-        sizer0 = wx.BoxSizer(wx.VERTICAL)
-        sizer0.Add(wx.StaticText(pnl, -1, message), 1, wx.ALL, 5)
-        sizer1 = wx.BoxSizer(wx.HORIZONTAL)
-        self.check = wx.CheckBox(pnl, -1, caption)
-        self.check.SetValue(self.parent.master.opts[option])
-        sizer1.Add(self.check, 0, wx.EXPAND)
-        sizer0.Add(sizer1, 0, wx.ALIGN_CENTER_HORIZONTAL)
-        sizer1 = wx.BoxSizer(wx.HORIZONTAL)
-        btn = wx.Button(pnl, id=wx.ID_OK)
-        sizer1.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
-        ## sizer1 = self.CreateStdDialogButtonSizer(wx.OK | wx.CANCEL)
-        sizer0.Add(sizer1, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
-        pnl.SetSizer(sizer0)
-        pnl.SetAutoLayout(True)
-        sizer0.Fit(pnl)
-        sizer0.SetSizeHints(pnl)
-        pnl.Layout()
+        super().__init__(parent, title='Apropos', size=(-1, 120))
+        self.SetIcon(parent.apoicon)
+        # pnl = wx.Panel(self)
+        self.vsizer = wx.BoxSizer(wx.VERTICAL)
+        # pnl.SetSizer(self.vsizer)
+        # pnl.SetAutoLayout(True)
+        # self.vsizer.Fit(pnl)
+        # self.vsizer.SetSizeHints(pnl)
+        # pnl.Layout()
+        self.SetSizer(self.vsizer)
+        self.SetAutoLayout(True)
+        self.vsizer.Fit(self)
+        self.vsizer.SetSizeHints(self)
+        self.Layout()
 
-    def accept(self):
-        "(un)set the setting"
-        self.parent.master.opts[self.option] = not self.check.GetValue()
+    def add_label(self, labeltext):
+        """create a text on the screen
+        """
+        self.vsizer.Add(wx.StaticText(self, label=labeltext), 1, wx.ALL, 5)
+
+    def add_checkbox(self, caption, value):
+        """create a checkbox
+        """
+        hsizer = wx.BoxSizer(wx.HORIZONTAL)
+        check = wx.CheckBox(self, label=caption)
+        check.SetValue(value)
+        hsizer.Add(check, 0, wx.EXPAND)
+        self.vsizer.Add(hsizer, 0, wx.ALIGN_CENTER_HORIZONTAL)
+        return check
+
+    def add_ok_buttonbox(self):
+        """create a button strip with handlers
+        """
+        self.vsizer.Add(self.CreateButtonSizer(wx.OK), 0, wx.ALIGN_CENTER_HORIZONTAL)
+
+    def get_checkbox_value(self, check):
+        """return the value of a checkbox
+        """
+        return check.GetValue()
+
+
+class OptionsDialog(wx.Dialog):
+    """Dialog om de instellingen voor te tonen meldingen te tonen en eventueel te kunnen wijzigen
+    """
+    def __init__(self, master, parent):
+        self.master = master
+        self.parent = parent
+        super().__init__(parent, title='Apropos')
+        # pnl = self  # wx.Panel(self, -1)
+        self.vsizer = wx.BoxSizer(wx.VERTICAL)
+        self.gsizer = wx.FlexGridSizer(cols=2)
+        self.vsizer.Add(self.gsizer, 0,
+                        wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
+        self.SetSizer(self.vsizer)
+        self.SetAutoLayout(True)
+        self.vsizer.Fit(self)
+        self.vsizer.SetSizeHints(self)
+        self.Layout()
+
+    def add_checkbox_line_to_grid(self, row, labeltext, value):
+        """create a line to turn an option on/off
+        """
+        # FlexGridsizer heeft row / col niet nodig
+        self.gsizer.Add(wx.StaticText(self, label=labeltext), 1, wx.ALL, 5)
+        chk = wx.CheckBox(self)
+        chk.SetValue(value)
+        self.gsizer.Add(chk, 1, wx.ALL, 5)
+        return chk
+
+    def add_buttonbox(self, okvalue, cancelvalue):
+        """create a button strip with handlers
+        """
+        hsizer = wx.BoxSizer(wx.HORIZONTAL)
+        btn = wx.Button(self, id=wx.ID_OK, label=okvalue)
+        hsizer.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
+        # self.SetAffirmativeId(wx.ID_APPLY)
+        btn = wx.Button(self, id=wx.ID_CLOSE, label=cancelvalue)
+        hsizer.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
+        self.SetEscapeId(wx.ID_CLOSE)
+        # sizer1 = self.CreateStdDialogButtonSizer(wx.OK | wx.CANCEL)
+        self.vsizer.Add(hsizer, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
+
+    def get_checkbox_value(self, check):
+        """return the value of a checkbox
+        """
+        return check.GetValue()
 
 
 class TaskbarIcon(wx.adv.TaskBarIcon):
     "icon in the taskbar"
-    id_revive = wx.NewIdRef()
 
-    def __init__(self, parent, iconame):
+    def __init__(self, parent, icon):
         # super().__init__(wx.adv.TBI_DOCK)
-        wx.adv.TaskBarIcon.__init__(self)
-        self.SetIcon(wx.Icon(iconame, wx.BITMAP_TYPE_ICO), tooltip="Click to revive Apropos")
+        # wx.adv.TaskBarIcon.__init__(self)
+        super().__init__()
+        self.id_revive = wx.NewIdRef()
+        # self.SetIcon(wx.Icon(iconame, wx.BITMAP_TYPE_ICO), tooltip="Click to revive Apropos")
+        self.SetIcon(icon, tooltip="Click to revive Apropos")
         self.Bind(wx.adv.EVT_TASKBAR_LEFT_DCLICK, parent.master.revive)
         self.Bind(wx.EVT_MENU, parent.master.revive, id=self.id_revive)
 
@@ -247,45 +344,3 @@ class TaskbarIcon(wx.adv.TaskBarIcon):
         menu = wx.Menu()
         menu.Append(self.id_revive, 'Revive Apropos')
         return menu
-
-
-class OptionsDialog(wx.Dialog):
-    """Dialog om de instellingen voor te tonen meldingen te tonen en eventueel te kunnen wijzigen
-    """
-    def __init__(self, parent, title, sett2text=None):
-        self.parent = parent
-        if sett2text is None:
-            sett2text = {}
-        super().__init__(parent, title='A Propos Settings')
-        pnl = self  # wx.Panel(self, -1)
-        sizer0 = wx.BoxSizer(wx.VERTICAL)
-        sizer1 = wx.FlexGridSizer(cols=2)
-        self.controls = []
-        for key, value in self.parent.opts.items():
-            if key not in sett2text:
-                continue
-            sizer1.Add(wx.StaticText(pnl, -1, sett2text[key]), 1, wx.ALL, 5)
-            chk = wx.CheckBox(self, -1, '')
-            chk.SetValue(value)
-            sizer1.Add(chk, 1, wx.ALL, 5)
-            self.controls.append((key, chk))
-        sizer0.Add(sizer1, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
-        sizer1 = wx.BoxSizer(wx.HORIZONTAL)
-        btn = wx.Button(pnl, id=wx.ID_APPLY)
-        sizer1.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
-        self.SetAffirmativeId(wx.ID_APPLY)
-        btn = wx.Button(pnl, id=wx.ID_CLOSE)
-        sizer1.Add(btn, 0, wx.EXPAND | wx.ALL, 2)
-        self.SetEscapeId(wx.ID_CLOSE)
-        # sizer1 = self.CreateStdDialogButtonSizer(wx.OK | wx.CANCEL)
-        sizer0.Add(sizer1, 0, wx.ALL | wx.ALIGN_CENTER_HORIZONTAL | wx.ALIGN_CENTER_VERTICAL, 5)
-        pnl.SetSizer(sizer0)
-        pnl.SetAutoLayout(True)
-        sizer0.Fit(pnl)
-        sizer0.SetSizeHints(pnl)
-        pnl.Layout()
-
-    def accept(self):
-        "(un)set the aettings"
-        for keyvalue, control in self.controls:
-            self.parent.opts[keyvalue] = control.isChecked()
