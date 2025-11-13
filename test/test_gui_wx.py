@@ -425,11 +425,13 @@ class TestAproposGui:
         assert testobj.get_item('prompt', ['item', 'list']) == ('selected value', True)
         assert capsys.readouterr().out == (
                 "called ChoiceDialog.__init__ with args ('prompt', 'Apropos')\n"
+                "called ChoiceDialog.ShowModal\n"
                 "called ChoiceDialog.GetStringSelection\n")
         monkeypatch.setattr(mockwx.MockChoiceDialog, 'ShowModal', mock_show)
         assert testobj.get_item('prompt', ['xx', 'yy'], 'xx') == ('selected value', False)
         assert capsys.readouterr().out == (
                 "called ChoiceDialog.__init__ with args ('prompt', 'Apropos')\n"
+                "called ChoiceDialog.ShowModal\n"
                 "called ChoiceDialog.SetSelection with arg 'xx'\n"
                 "called ChoiceDialog.GetStringSelection\n")
 
