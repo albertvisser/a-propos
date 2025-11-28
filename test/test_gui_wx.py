@@ -121,29 +121,29 @@ class TestAproposGui:
         handler_dict = {'one': (['xx', 'yy'], callback), 'Two': ('', None)}
         testobj.setup_shortcuts(handler_dict)
         assert capsys.readouterr().out == (
-                "called MenuItem.__init__ with args (None, -1, 'one')\n"
-                f"called Frame.Bind with args ({testee.wx.EVT_MENU}, {callback}, new menuitem)\n"
+                "called MenuItem.__init__ with args (None, -1, 'one') {}\n"
+                f"called Frame.Bind with args ({testee.wx.EVT_MENU}, {callback})\n"
                 "called menuitem.GetId\n"
                 "called AcceleratorEntry.__init__ with args () {'cmd': 'NewID'}\n"
                 "called AcceleratorEntry.FromString with args ('xx',)\n"
                 "called menuitem.GetId\n"
                 "called AcceleratorEntry.__init__ with args () {'cmd': 'NewID'}\n"
                 "called AcceleratorEntry.FromString with args ('yy',)\n"
-                "called MenuItem.__init__ with args (None, -1, 'Two')\n"
-                f"called Frame.Bind with args ({testee.wx.EVT_MENU}, None, new menuitem)\n"
+                "called MenuItem.__init__ with args (None, -1, 'Two') {}\n"
+                f"called Frame.Bind with args ({testee.wx.EVT_MENU}, None)\n"
                 "called AcceleratorTable.__init__ with 2 AcceleratorEntries\n"
                 "called Frame.SetAcceleratorTable\n")
         monkeypatch.setattr(mockwx.MockAcceleratorEntry, 'FromString', lambda *x: False)
         testobj.setup_shortcuts(handler_dict)
         assert capsys.readouterr().out == (
-                "called MenuItem.__init__ with args (None, -1, 'one')\n"
-                f"called Frame.Bind with args ({testee.wx.EVT_MENU}, {callback}, new menuitem)\n"
+                "called MenuItem.__init__ with args (None, -1, 'one') {}\n"
+                f"called Frame.Bind with args ({testee.wx.EVT_MENU}, {callback})\n"
                 "called menuitem.GetId\n"
                 "called AcceleratorEntry.__init__ with args () {'cmd': 'NewID'}\n"
                 "called menuitem.GetId\n"
                 "called AcceleratorEntry.__init__ with args () {'cmd': 'NewID'}\n"
-                "called MenuItem.__init__ with args (None, -1, 'Two')\n"
-                f"called Frame.Bind with args ({testee.wx.EVT_MENU}, None, new menuitem)\n"
+                "called MenuItem.__init__ with args (None, -1, 'Two') {}\n"
+                f"called Frame.Bind with args ({testee.wx.EVT_MENU}, None)\n"
                 "called AcceleratorTable.__init__ with 0 AcceleratorEntries\n"
                 "called Frame.SetAcceleratorTable\n")
 
@@ -431,7 +431,7 @@ class TestAproposGui:
         assert testobj.get_item('prompt', ['xx', 'yy'], 'xx') == ('selected value', False)
         assert capsys.readouterr().out == (
                 "called ChoiceDialog.__init__ with args ('prompt', 'Apropos')\n"
-                "called ChoiceDialog.ShowModal\n"
+                # "called ChoiceDialog.ShowModal\n"
                 "called ChoiceDialog.SetSelection with arg 'xx'\n"
                 "called ChoiceDialog.GetStringSelection\n")
 

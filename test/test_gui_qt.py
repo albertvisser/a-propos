@@ -191,7 +191,7 @@ class TestAproposGui:
         assert capsys.readouterr().out == (
                 "called Icon.__init__ with arg `iconame`\n"
                 "called TrayIcon.__init__\n"
-                "called TrayIcon.setToolTip with args ('Click to revive Apropos',)\n"
+                "called TrayIcon.setToolTip with args ('tooltip',)\n"
                 f"called Signal.connect with args ({testobj.master.revive},)\n"
                 "called TrayIcon.hide\n")
 
@@ -719,7 +719,7 @@ class TestCheckDialog:
         assert isinstance(result, testee.qtw.QCheckBox)
         assert capsys.readouterr().out == (
             'called HBox.__init__\n'
-            "called CheckBox.__init__ with text 'xxx'\n"
+            f"called CheckBox.__init__ with args ('xxx', {testobj})\n"
             "called CheckBox.setChecked with arg True\n"
             "called HBox.addWidget with arg MockCheckBox\n"
             "called VBox.addLayout with arg MockHBoxLayout\n")
@@ -878,7 +878,7 @@ class TestOptionsDialog:
         assert capsys.readouterr().out == (
             f"called Label.__init__ with args ('label', {testobj})\n"
             "called Grid.addWidget with arg MockLabel at (1, 0)\n"
-            "called CheckBox.__init__ with text ''\n"
+            f"called CheckBox.__init__ with args ('', {testobj})\n"
             'called CheckBox.setChecked with arg True\n'
             "called Grid.addWidget with arg MockCheckBox at (1, 1)\n")
 
