@@ -94,7 +94,7 @@ class TestAproposGui:
                 "called NoteBook.Bind with args"
                 f" ({testee.wx.EVT_MIDDLE_DOWN}, 'close_page_callback')\n"
                 f"called BoxSizer.__init__ with args ({testee.wx.VERTICAL},)\n"
-                f"called vert sizer.Add with args <item> (1, {testee.wx.EXPAND})\n"
+                f"called vert sizer.Add with args MockNoteBook (1, {testee.wx.EXPAND})\n"
                 "called Frame.SetSizer with args (vert sizer,)\n"
                 f"called vert sizer.SetSizeHints with args ({testobj},)\n")
 
@@ -528,7 +528,7 @@ class TestPage:
                 f" {{'style': {testee.wx.TE_MULTILINE}, 'size': {testee.DFLT_SIZE}}}\n"
                 "called BoxSizer.__init__ with args (8,)\n"
                 "called vert sizer.Add with args"
-                f" <item> (1, {testee.wx.EXPAND | testee.wx.ALL}, 10)\n"
+                f" MockTextCtrl (1, {testee.wx.EXPAND | testee.wx.ALL}, 10)\n"
                 "called Panel.SetSizer with args (vert sizer,)\n"
                 f"called vert sizer.SetSizeHints with args ({testobj},)\n"
                 "called Panel.Layout with args ()\n")
@@ -537,76 +537,6 @@ class TestPage:
 class TestCheckDialog:
     """unittest for gui_wx.CheckDialog
     """
-    # def setup_testobj(self, monkeypatch, capsys):
-    #     """stub for gui_wx.CheckDialog object
-
-    #     create the object skipping the normal initialization
-    #     intercept messages during creation
-    #     return the object so that methods can be monkeypatched in the caller
-    #     """
-    #     def mock_init(self, *args):
-    #         """stub
-    #         """
-    #         print('called CheckDialog.__init__ with args', args)
-    #     monkeypatch.setattr(testee.CheckDialog, '__init__', mock_init)
-    #     testobj = testee.CheckDialog()
-    #     assert capsys.readouterr().out == 'called CheckDialog.__init__ with args ()\n'
-    #     return testobj
-
-    # def test_init(self, monkeypatch, capsys):
-    #     """unittest for CheckDialog.__init__
-    #     """
-    #     monkeypatch.setattr(testee.wx.Dialog, '__init__', mockwx.MockDialog.__init__)
-    #     monkeypatch.setattr(testee.wx.Dialog, 'SetSizer', mockwx.MockDialog.SetSizer)
-    #     monkeypatch.setattr(testee.wx.Dialog, 'SetAutoLayout', mockwx.MockDialog.SetAutoLayout)
-    #     monkeypatch.setattr(testee.wx.Dialog, 'Layout', mockwx.MockDialog.Layout)
-    #     monkeypatch.setattr(testee.wx, 'BoxSizer', mockwx.MockBoxSizer)
-    #     monkeypatch.setattr(testee.wx, 'StaticText', mockwx.MockStaticText)
-    #     monkeypatch.setattr(testee.wx, 'CheckBox', mockwx.MockCheckBox)
-    #     monkeypatch.setattr(testee.wx, 'Button', mockwx.MockButton)
-    #     parent = types.SimpleNamespace(master=types.SimpleNamespace(opts={'xxx': 'yyy'}))
-    #     with pytest.raises(KeyError):
-    #         testobj = testee.CheckDialog(parent, 'a title',)
-    #     capsys.readouterr()    # discard captured print output
-    #     testobj = testee.CheckDialog(parent, 'a title', 'a message', 'xxx', 'a caption')
-    #     assert testobj.parent == parent
-    #     assert isinstance(testobj.check, testee.wx.CheckBox)
-    #     assert capsys.readouterr().out == (
-    #         "called Dialog.__init__ with args () {'title': 'a title', 'size': (-1, 120)}\n"
-    #         f"called BoxSizer.__init__ with args ({testee.wx.VERTICAL},)\n"
-    #         f"called StaticText.__init__ with args ({testobj},) {{'label': 'a message'}}\n"
-    #         f"called vert sizer.Add with args <item> (1, {testee.wx.ALL}, 5)\n"
-    #         f"called BoxSizer.__init__ with args ({testee.wx.HORIZONTAL},)\n"
-    #         f"called CheckBox.__init__ with args ({testobj},) {{'label': 'a caption'}}\n"
-    #         "called checkbox.SetValue with args ('yyy',)\n"
-    #         f"called hori sizer.Add with args <item> (0, {testee.wx.EXPAND})\n"
-    #         f"called vert sizer.Add with args <item> (0, {testee.wx.ALIGN_CENTER_HORIZONTAL})\n"
-    #         f"called BoxSizer.__init__ with args ({testee.wx.HORIZONTAL},)\n"
-    #         f"called Button.__init__ with args ({testobj},) {{'id': {testee.wx.ID_OK}}}\n"
-    #         f"called hori sizer.Add with args <item> (0, {testee.wx.EXPAND | testee.wx.ALL}, 2)\n"
-    #         "called vert sizer.Add with args <item> (0,"
-    #         f" {testee.wx.ALL | testee.wx.ALIGN_CENTER_HORIZONTAL| testee.wx.ALIGN_CENTER_VERTICAL},"
-    #         " 5)\n"
-    #         "called dialog.SetSizer with args (vert sizer,)\n"
-    #         "called dialog.SetAutoLayout with args (True,)\n"
-    #         f"called vert sizer.Fit with args ({testobj},)\n"
-    #         f"called vert sizer.SetSizeHints with args ({testobj},)\n"
-    #         "called dialog.Layout with args ()\n")
-
-    # def test_accept(self, monkeypatch, capsys):
-    #     """unittest for CheckDialog.accept
-    #     """
-    #     def mock_get():
-    #         print('called CheckBox.GetValue')
-    #         return 'zzz'
-    #     testobj = self.setup_testobj(monkeypatch, capsys)
-    #     testobj.check = mockwx.MockCheckBox()
-    #     assert capsys.readouterr().out == "called CheckBox.__init__ with args () {}\n"
-    #     testobj.check.GetValue = mock_get
-    #     testobj.parent = types.SimpleNamespace(master=types.SimpleNamespace(opts={'xxx': 'yyy'}))
-    #     testobj.option = 'xxx'
-    #     testobj.accept()
-    #     assert capsys.readouterr().out == "called CheckBox.GetValue\n"
     def test_init(self, monkeypatch, capsys):
         """unittest for CheckDialog.init
         """
@@ -655,7 +585,7 @@ class TestCheckDialog:
         assert capsys.readouterr().out == (
                 "called BoxSizer.__init__ with args (8,)\n"
                 f"called StaticText.__init__ with args ({testobj},) {{'label': 'message'}}\n"
-                'called vert sizer.Add with args <item> (1, 240, 5)\n')
+                'called vert sizer.Add with args MockStaticText (1, 240, 5)\n')
 
     def test_add_checkbox(self, monkeypatch, capsys):
         """unittest for OptionsDialog.add_checkbox
@@ -670,8 +600,8 @@ class TestCheckDialog:
                 f'called BoxSizer.__init__ with args ({testee.wx.HORIZONTAL},)\n'
                 f"called CheckBox.__init__ with args ({testobj},) {{'label': 'text'}}\n"
                 "called checkbox.SetValue with args ('value',)\n"
-                'called hori sizer.Add with args <item> (0, 8192)\n'
-                'called vert sizer.Add with args <item> (0, 256)\n')
+                'called hori sizer.Add with args MockCheckBox (0, 8192)\n'
+                'called vert sizer.Add with args MockBoxSizer (0, 256)\n')
 
     def test_add_ok_buttonbox(self, monkeypatch, capsys):
         """unittest for OptionsDialog.add_ok_buttonbox
@@ -684,7 +614,8 @@ class TestCheckDialog:
         assert capsys.readouterr().out == (
                 "called BoxSizer.__init__ with args (8,)\n"
                 'called dialog.CreateButtonSizer with args (4,)\n'
-                'called vert sizer.Add with args <item> (0, 256)\n')
+                'called BoxSizer.__init__ with args ()\n'
+                'called vert sizer.Add with args MockBoxSizer (0, 256)\n')
 
     def test_get_checkbox_value(self, monkeypatch, capsys):
         """unittest for OptionsDialog.get_checkbox_value
@@ -758,146 +689,6 @@ class TestTaskbarIcon:
 class TestOptionsDialog:
     """unittest for gui_wx.OptionsDialog
     """
-    # def setup_testobj(self, monkeypatch, capsys):
-    #     """stub for gui_wx.OptionsDialog object
-
-    #     create the object skipping the normal initialization
-    #     intercept messages during creation
-    #     return the object so that methods can be monkeypatched in the caller
-    #     """
-    #     def mock_init(self, *args):
-    #         """stub
-    #         """
-    #         print('called OptionsDialog.__init__ with args', args)
-    #     monkeypatch.setattr(testee.OptionsDialog, '__init__', mock_init)
-    #     testobj = testee.OptionsDialog()
-    #     assert capsys.readouterr().out == 'called OptionsDialog.__init__ with args ()\n'
-    #     return testobj
-
-    # def test_init(self, monkeypatch, capsys):
-    #     """unittest for OptionsDialog.__init__
-    #     """
-    #     monkeypatch.setattr(testee.wx, 'BoxSizer', mockwx.MockBoxSizer)
-    #     monkeypatch.setattr(testee.wx, 'FlexGridSizer', mockwx.MockFlexGridSizer)
-    #     monkeypatch.setattr(testee.wx, 'CheckBox', mockwx.MockCheckBox)
-    #     monkeypatch.setattr(testee.wx, 'StaticText', mockwx.MockStaticText)
-    #     monkeypatch.setattr(testee.wx, 'Button', mockwx.MockButton)
-    #     monkeypatch.setattr(testee.wx.Dialog, '__init__', mockwx.MockDialog.__init__)
-    #     monkeypatch.setattr(testee.wx.Dialog, 'SetAffirmativeId', mockwx.MockDialog.SetAffirmativeId)
-    #     monkeypatch.setattr(testee.wx.Dialog, 'SetEscapeId', mockwx.MockDialog.SetEscapeId)
-    #     monkeypatch.setattr(testee.wx.Dialog, 'SetSizer', mockwx.MockDialog.SetSizer)
-    #     monkeypatch.setattr(testee.wx.Dialog, 'SetAutoLayout', mockwx.MockDialog.SetAutoLayout)
-    #     monkeypatch.setattr(testee.wx.Dialog, 'Layout', mockwx.MockDialog.Layout)
-    #     parent = types.SimpleNamespace(opts={})
-    #     testobj = testee.OptionsDialog(parent, 'title')
-    #     assert testobj.controls == []
-    #     assert capsys.readouterr().out == (
-    #         "called Dialog.__init__ with args () {'title': 'A Propos Settings'}\n"
-    #         f"called BoxSizer.__init__ with args ({testee.wx.VERTICAL},)\n"
-    #         "called FlexGridSizer.__init__ with args () {'cols': 2}\n"
-    #         "called vert sizer.Add with args <item> (0,"
-    #         f" {testee.wx.ALL | testee.wx.ALIGN_CENTER_HORIZONTAL | testee.wx.ALIGN_CENTER_VERTICAL}"
-    #         ", 5)\n"
-    #         f"called BoxSizer.__init__ with args ({testee.wx.HORIZONTAL},)\n"
-    #         f"called Button.__init__ with args ({testobj},) {{'id': {testee.wx.ID_APPLY}}}\n"
-    #         f"called hori sizer.Add with args <item> (0, {testee.wx.EXPAND | testee.wx.ALL}, 2)\n"
-    #         f"called dialog.SetAffirmativeId with args ({testee.wx.ID_APPLY},)\n"
-    #         f"called Button.__init__ with args ({testobj},) {{'id': {testee.wx.ID_CLOSE}}}\n"
-    #         f"called hori sizer.Add with args <item> (0, {testee.wx.EXPAND | testee.wx.ALL}, 2)\n"
-    #         f"called dialog.SetEscapeId with args ({testee.wx.ID_CLOSE},)\n"
-    #         "called vert sizer.Add with args <item> (0,"
-    #         f" {testee.wx.ALL | testee.wx.ALIGN_CENTER_HORIZONTAL | testee.wx.ALIGN_CENTER_VERTICAL}"
-    #         ", 5)\n"
-    #         "called dialog.SetSizer with args (vert sizer,)\n"
-    #         "called dialog.SetAutoLayout with args (True,)\n"
-    #         f"called vert sizer.Fit with args ({testobj},)\n"
-    #         f"called vert sizer.SetSizeHints with args ({testobj},)\n"
-    #         "called dialog.Layout with args ()\n")
-
-    #     parent.opts = {'x': 'y', 'a': 'b'}
-    #     testobj = testee.OptionsDialog(parent, 'title')
-    #     assert testobj.controls == []
-    #     assert capsys.readouterr().out == (
-    #         "called Dialog.__init__ with args () {'title': 'A Propos Settings'}\n"
-    #         f"called BoxSizer.__init__ with args ({testee.wx.VERTICAL},)\n"
-    #         "called FlexGridSizer.__init__ with args () {'cols': 2}\n"
-    #         "called vert sizer.Add with args <item> (0,"
-    #         f" {testee.wx.ALL | testee.wx.ALIGN_CENTER_HORIZONTAL | testee.wx.ALIGN_CENTER_VERTICAL}"
-    #         ", 5)\n"
-    #         f"called BoxSizer.__init__ with args ({testee.wx.HORIZONTAL},)\n"
-    #         f"called Button.__init__ with args ({testobj},) {{'id': {testee.wx.ID_APPLY}}}\n"
-    #         f"called hori sizer.Add with args <item> (0, {testee.wx.EXPAND | testee.wx.ALL}, 2)\n"
-    #         f"called dialog.SetAffirmativeId with args ({testee.wx.ID_APPLY},)\n"
-    #         f"called Button.__init__ with args ({testobj},) {{'id': {testee.wx.ID_CLOSE}}}\n"
-    #         f"called hori sizer.Add with args <item> (0, {testee.wx.EXPAND | testee.wx.ALL}, 2)\n"
-    #         f"called dialog.SetEscapeId with args ({testee.wx.ID_CLOSE},)\n"
-    #         "called vert sizer.Add with args <item> (0,"
-    #         f" {testee.wx.ALL | testee.wx.ALIGN_CENTER_HORIZONTAL | testee.wx.ALIGN_CENTER_VERTICAL}"
-    #         ", 5)\n"
-    #         "called dialog.SetSizer with args (vert sizer,)\n"
-    #         "called dialog.SetAutoLayout with args (True,)\n"
-    #         f"called vert sizer.Fit with args ({testobj},)\n"
-    #         f"called vert sizer.SetSizeHints with args ({testobj},)\n"
-    #         "called dialog.Layout with args ()\n")
-
-    #     testobj = testee.OptionsDialog(parent, 'title', sett2text={'x': 'xxx', 'a': 'aaa'})
-    #     assert testobj.controls[0][0] == 'x'
-    #     assert isinstance(testobj.controls[0][1], testee.wx.CheckBox)
-    #     assert testobj.controls[1][0] == 'a'
-    #     assert isinstance(testobj.controls[1][1], testee.wx.CheckBox)
-    #     assert capsys.readouterr().out == (
-    #         "called Dialog.__init__ with args () {'title': 'A Propos Settings'}\n"
-    #         f"called BoxSizer.__init__ with args ({testee.wx.VERTICAL},)\n"
-    #         "called FlexGridSizer.__init__ with args () {'cols': 2}\n"
-    #         f"called StaticText.__init__ with args ({testobj},) {{'label': 'xxx'}}\n"
-    #         f"called FlexGridSizer.Add with args <item> (1, {testee.wx.ALL}, 5)\n"
-    #         f"called CheckBox.__init__ with args ({testobj},) {{}}\n"
-    #         "called checkbox.SetValue with args ('y',)\n"
-    #         f"called FlexGridSizer.Add with args <item> (1, {testee.wx.ALL}, 5)\n"
-    #         f"called StaticText.__init__ with args ({testobj},) {{'label': 'aaa'}}\n"
-    #         f"called FlexGridSizer.Add with args <item> (1, {testee.wx.ALL}, 5)\n"
-    #         f"called CheckBox.__init__ with args ({testobj},) {{}}\n"
-    #         "called checkbox.SetValue with args ('b',)\n"
-    #         f"called FlexGridSizer.Add with args <item> (1, {testee.wx.ALL}, 5)\n"
-    #         "called vert sizer.Add with args <item> (0,"
-    #         f" {testee.wx.ALL | testee.wx.ALIGN_CENTER_HORIZONTAL | testee.wx.ALIGN_CENTER_VERTICAL}"
-    #         ", 5)\n"
-    #         f"called BoxSizer.__init__ with args ({testee.wx.HORIZONTAL},)\n"
-    #         f"called Button.__init__ with args ({testobj},) {{'id': {testee.wx.ID_APPLY}}}\n"
-    #         f"called hori sizer.Add with args <item> (0, {testee.wx.EXPAND | testee.wx.ALL}, 2)\n"
-    #         f"called dialog.SetAffirmativeId with args ({testee.wx.ID_APPLY},)\n"
-    #         f"called Button.__init__ with args ({testobj},) {{'id': {testee.wx.ID_CLOSE}}}\n"
-    #         f"called hori sizer.Add with args <item> (0, {testee.wx.EXPAND | testee.wx.ALL}, 2)\n"
-    #         f"called dialog.SetEscapeId with args ({testee.wx.ID_CLOSE},)\n"
-    #         "called vert sizer.Add with args <item> (0,"
-    #         f" {testee.wx.ALL | testee.wx.ALIGN_CENTER_HORIZONTAL | testee.wx.ALIGN_CENTER_VERTICAL}"
-    #         ", 5)\n"
-    #         "called dialog.SetSizer with args (vert sizer,)\n"
-    #         "called dialog.SetAutoLayout with args (True,)\n"
-    #         f"called vert sizer.Fit with args ({testobj},)\n"
-    #         f"called vert sizer.SetSizeHints with args ({testobj},)\n"
-    #         "called dialog.Layout with args ()\n")
-
-    # def test_accept(self, monkeypatch, capsys):
-    #     """unittest for OptionsDialog.accept
-    #     """
-    #     c1 = mockwx.MockCheckBox()
-    #     c1.SetValue(True)
-    #     c2 = mockwx.MockCheckBox()
-    #     c2.SetValue(False)
-    #     assert capsys.readouterr().out == ("called CheckBox.__init__ with args () {}\n"
-    #                                        "called checkbox.SetValue with args (True,)\n"
-    #                                        "called CheckBox.__init__ with args () {}\n"
-    #                                        "called checkbox.SetValue with args (False,)\n")
-    #     testobj = self.setup_testobj(monkeypatch, capsys)
-    #     testobj.parent = types.SimpleNamespace(opts={})
-    #     testobj.controls = []
-    #     testobj.accept()
-    #     assert testobj.parent.opts == {}
-    #     testobj.parent = types.SimpleNamespace(opts={'x': False, 'y': True})
-    #     testobj.controls = [('x', c1), ('y', c2)]
-    #     testobj.accept()
-    #     assert testobj.parent.opts == {'x': True, 'y': False}
     def test_init(self, monkeypatch, capsys):
         """unittest for OptionsDialog.init
         """
@@ -916,7 +707,7 @@ class TestOptionsDialog:
                 "called Dialog.__init__ with args () {'title': 'Apropos'}\n"
                 f'called BoxSizer.__init__ with args ({testee.wx.VERTICAL},)\n'
                 "called GridSizer.__init__ with args () {'cols': 2}\n"
-                "called vert sizer.Add with args <item> (0, 2544, 5)\n"
+                "called vert sizer.Add with args MockGridSizer (0, 2544, 5)\n"
                 "called dialog.SetSizer with args (vert sizer,)\n"
                 "called dialog.SetAutoLayout with args (True,)\n"
                 f"called vert sizer.Fit with args ({testobj},)\n"
@@ -946,10 +737,10 @@ class TestOptionsDialog:
         testobj.add_checkbox_line_to_grid(1, 'xxx', 'yyy')
         assert capsys.readouterr().out == (
                 f"called StaticText.__init__ with args ({testobj},) {{'label': 'xxx'}}\n"
-                "called GridSizer.Add with args <item> (1, 240, 5)\n"
+                "called GridSizer.Add with args MockStaticText (1, 240, 5)\n"
                 f"called CheckBox.__init__ with args ({testobj},) {{}}\n"
                 "called checkbox.SetValue with args ('yyy',)\n"
-                "called GridSizer.Add with args <item> (1, 240, 5)\n")
+                "called GridSizer.Add with args MockCheckBox (1, 240, 5)\n")
 
     def test_add_buttonbox(self, monkeypatch, capsys):
         """unittest for OptionsDialog.add_buttonbox
@@ -966,11 +757,11 @@ class TestOptionsDialog:
         assert capsys.readouterr().out == (
                 "called BoxSizer.__init__ with args (4,)\n"
                 f"called Button.__init__ with args ({testobj},) {{'id': 5100, 'label': 'xxx'}}\n"
-                "called hori sizer.Add with args <item> (0, 8432, 2)\n"
+                "called hori sizer.Add with args MockButton (0, 8432, 2)\n"
                 f"called Button.__init__ with args ({testobj},) {{'id': 5001, 'label': 'yyy'}}\n"
-                "called hori sizer.Add with args <item> (0, 8432, 2)\n"
+                "called hori sizer.Add with args MockButton (0, 8432, 2)\n"
                 "called OptionsDialog.SetEscapeId with arg 5001\n"
-                "called vert sizer.Add with args <item> (0, 2544, 5)\n")
+                "called vert sizer.Add with args MockBoxSizer (0, 2544, 5)\n")
 
     def test_get_checkbox_value(self, monkeypatch, capsys):
         """unittest for OptionsDialog.get_checkbox_value
