@@ -1,22 +1,12 @@
-"""apropos_gtk3.py
+"""apropos_gtk3.py: presentation layer, gtk3 version
 
-presentation layer and most of the application logic, gtk3 version
+unfortunately gtk appears not to let me do this the way I want it to:
+this creates an empty window with working accelerators that crashes when I try to close it
 """
 import sys
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gio
-
-
-def main(fname='', title=''):
-    """starts the application by calling the MainFrame class
-    """
-    app = MainFrame(fname=fname, title=title)
-    ## win = MainFrame(app, file=file, title=title)
-    ## win.connect("delete-event", Gtk.main_quit)
-    ## win.show_all()
-    app.run()  # sys.argv)
-    ## Gtk.main()
 
 
 def convert2gtk(accel):
@@ -33,8 +23,8 @@ def convert2gtk(accel):
 class AproposGui(Gtk.Application):
     """main class voor de applicatie
     """
-    # overridden superclass methods
     def __init__(self, master, title=''):
+        # breakpoint()
         super().__init__()
         self.master = master
         self.title = title
@@ -50,116 +40,148 @@ class AproposGui(Gtk.Application):
         """
         self.quit()
 
-    # relays (mostly to ApplicationWindow: call similarly named method on self.win)
     def set_appicon(self, iconame):
-        "relay to application window"
-        self.win.set_appicon(iconame)
+        """API-compliance: gtk requires this to be done in the application window's __init__"""
 
     def init_trayicon(self, iconame, tooltip):
-        "relay to application window"
-        self.win.init_trayicon(iconame, tooltip)
+        """API-compliance: gtk requires this to be done in the application window's __init__"""
 
-    def setup_tabwidget(self, changepage_callback, closepage_callback):
-        "relay to application window"
-        self.win.setup_tabwidget(changepage_callback, closepage_callback)
+    def setup_tabwidget(self, change_page, close_page):
+        """API-compliance: gtk requires this to be done in the application window's __init__"""
 
     def setup_shortcuts(self, shortcut_dict):
-        "relay to application window"
-        self.win.setup_shortcuts(shortcut_dict)
+        """API-compliance: gtk requires this to be done in the application window's __init__"""
 
     def go(self):
-        "launch the app (visually)"
-        # self.apofile = self.master.apofile
-        # self.win.initapp()
-        self.win.nb.show()
+        """API-compliance: # gtk starts the event loop before creating the application window"""
+        print(f"in AproposGui.go, {hasattr(self, 'win')=}")
         self.run()
+        print(f"in AproposGui.go, {hasattr(self, 'win')=}")
 
     def get_page_count(self):
         "relay to application window"
-        return self.win.get_page_count(self)
+        if hasattr(self, 'win'):
+            return self.win.get_page_count()
+        print(f'in AproposGui.get_page_count, window not created yet')
+        return 0
 
     def get_current_page(self):
         "relay to application window"
-        return self.win.get_current_page(self)
+        if hasattr(self, 'win'):
+            return self.win.get_current_page()
 
     def set_previous_page(self):
         "relay to application window"
-        self.win.set_previous_page(self)
+        if hasattr(self, 'win'):
+            self.win.set_previous_page()
 
     def set_next_page(self):
         "relay to application window"
-        self.win.set_next_page(self)
+        if hasattr(self, 'win'):
+            self.win.set_next_page()
 
     def set_current_page(self, pageno):
         "relay to application window"
-        self.win.set_current_page(self, pageno)
+        if hasattr(self, 'win'):
+            self.win.set_current_page(pageno)
 
     def set_focus_to_page(self):
         "relay to application window"
-        self.win.set_focus_to_page(self)
+        if hasattr(self, 'win'):
+            self.win.set_focus_to_page()
 
     def clear_all(self):
         "relay to application window"
-        self.win.clear_all(self)
+        if hasattr(self, 'win'):
+            self.win.clear_all()
 
     def new_page(self, nieuw, titel, text):
         "relay to application window"
-        self.win.new_page(self, nieuw, titel, text)
+        if hasattr(self, 'win'):
+            self.win.new_page(nieuw, titel, text)
+            print(f'in AproposGui.new_page, creating page {nieuw}')
+        else:
+            print(f'in AproposGui.new_page, window not created yet')
 
     def clear_last_page(self):
         "relay to application window"
-        self.win.clear_last_page(self)
+        if hasattr(self, 'win'):
+            self.win.clear_last_page()
 
     def delete_page(self, pagetodelete):
         "relay to application window"
-        self.win.delete_page(self, pagetodelete)
+        if hasattr(self, 'win'):
+            self.win.delete_page(pagetodelete)
 
     def hide_app(self):
         "relay to application window"
-        self.win.hide_app(self)
+        if hasattr(self, 'win'):
+            self.win.hide_app()
 
     def reshow_app(self, event):
         "relay to application window"
-        self.win.reshow_app(self, event)
+        if hasattr(self, 'win'):
+            self.win.reshow_app(event)
 
     def get_page_title(self, pageno):
         "relay to application window"
-        return self.win.get_page_title(self, pageno)
+        if hasattr(self, 'win'):
+            return self.win.get_page_title(pageno)
 
     def get_page_text(self, pageno):
         "relay to application window"
-        return self.win.get_page_text(self, pageno)
+        return self.win.get_page_text(pageno)
 
     def meld(self, meld):
         """Toon een melding in een venster
         """
-        dialog = Gtk.MessageDialog(self, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, meld)
-        ## dialog.format_secondary_text(
-            ## "And this is the secondary text that explains things.")
-        dialog.run()
-        dialog.destroy()
+        if hasattr(self, 'win'):
+            dialog = Gtk.MessageDialog(self.win, 0, Gtk.MessageType.INFO, Gtk.ButtonsType.OK, meld)
+            ## dialog.format_secondary_text(
+                ## "And this is the secondary text that explains things.")
+            dialog.run()
+            dialog.destroy()
 
     def show_dialog(self, cls, kwargs):  # (om CheckDialog en OptionsDialog heen)
-        dlg = cls(self, **kwargs)
-        # dlg = CheckDialog(self, 'Apropos', message=languages[self.opts["language"]][textitem],
-        #                   option=setting)
-        # dlg = OptionsDialog(self)
-        response = dlg.run()
-        if response == Gtk.ResponseType.OK:
-            dlg.accept()
-        dlg.destroy()
+        if hasattr(self, 'win'):
+            dlg = cls(self.win, **kwargs)
+            # dlg = CheckDialog(self, 'Apropos', message=languages[self.opts["language"]][textitem],
+            #                   option=setting)
+            # dlg = OptionsDialog(self)
+            response = dlg.run()
+            if response == Gtk.ResponseType.OK:
+                dlg.accept()
+            dlg.destroy()
 
     def get_text(self, prompt, initial=''):
         "relay to application window"
-        self.win.get_text(self, prompt, initial='')
+        if hasattr(self, 'win'):
+            self.win.get_text(prompt, initial='')
 
     def set_page_title(self, pageno, title):
         "relay to application window"
-        self.win.set_page_title(self, pageno, title)
+        if hasattr(self, 'win'):
+            self.win.set_page_title(pageno, title)
 
     def get_item(self, prompt, itemlist, initial=0):
         "relay to application window"
-        self.win.get_item(self, prompt, itemlist, initial=0)
+        if hasattr(self, 'win'):
+            self.win.get_item(prompt, itemlist, initial=0)
+
+    def set_screen_dimensions(self, pos, size):
+        "vensterpositie instellen zoals aangegeven"
+        if hasattr(self, 'win'):
+            x, y = (int(x) for x in pos.split('x'))
+            w, h = (int(x) for x in size.split('x'))
+            self.app.win.move(x, y)
+            self.app.win.resize(w, h)
+
+    def get_screen_dimensions(self):
+        "uitgelezen vensterpositie teruggeven"
+        if hasattr(self, 'win'):
+            x, y = self.app.win.get_position()
+            w, h = self.app.win.get_height()
+            return f'{x}x{y}', f'{w}x{h}'
 
 
 class MainWin(Gtk.ApplicationWindow):
@@ -173,10 +195,17 @@ class MainWin(Gtk.ApplicationWindow):
         offset = 30 if sys.platform.startswith('win') else 10
         self.move(offset, offset)
         self.resize(650, 400)
+        # originally planned to be done from the Apropos class in main.py, but gtk won't let me
+        self.set_appicon(self.app.master.iconame)
+        self.init_trayicon(self.app.master.iconame, tooltip='Click to revive Apropos')
+        self.setup_tabwidget(change_page=self.app.master.page_changed,
+                             close_page=self.app.master.closetab)
+        self.setup_shortcuts(self.app.master.shortcut_data)
+        self.app.master.initapp()
 
     def set_appicon(self, iconame):
         self.apoicon = iconame
-        self.win.set_icon_from_file(self.apoicon)
+        self.set_icon_from_file(self.apoicon)
 
     def init_trayicon(self, iconame, tooltip):
         'minimize to tray nog even niet geïmplementeerd'
@@ -186,7 +215,7 @@ class MainWin(Gtk.ApplicationWindow):
         ## self.tray_icon.connect('activate', self.revive)
         ## self.tray_icon.set_visible(False)
 
-    def setup_tabwidget(self, changepage_callback, closepage_callback):
+    def setup_tabwidget(self, change_page, close_page):
         # changepage_callback verwijst naar een methode op de klasse uit main.py met als inhoud:
         #     self.current = self.gui.get_current_page()  # event)
         #     self.gui.set_focus_to_page()  # (event)
@@ -196,6 +225,7 @@ class MainWin(Gtk.ApplicationWindow):
         self.add(self.nb)
         self.current = 0
         self.nb.connect('switch-page', self.page_changed)
+        self.nb.show()
         # pagina sluiten op dubbel - of middelklik
         ## self.nb.setTabsClosable(True) # workaround: sluitgadgets
 
@@ -211,12 +241,13 @@ class MainWin(Gtk.ApplicationWindow):
 
     def setup_shortcuts(self, shortcut_dict):
         for label, data in shortcut_dict.items():
-            for accel, handler in data:
-                if label == 'hide':
-                    continue            # TODO: make hiding in tray possible
-                action = Gio.SimpleAction.new(label, None)
-                action.connect("activate", handler)
-                self.add_action(action)
+            if label == 'hide':
+                continue            # TODO: make hiding in tray possible
+            accels, handler = data
+            action = Gio.SimpleAction.new(label, None)
+            action.connect("activate", handler)
+            self.add_action(action)
+            for accel in accels:
                 self.app.add_accelerator(convert2gtk(accel), 'win.' + label, None)
 
     def get_page_count(self):
@@ -243,13 +274,14 @@ class MainWin(Gtk.ApplicationWindow):
         for i in reversed(range(aant)):
             self.nb.remove_page(i - 1)
 
-    def new_page(self, nieuw, titel, text):
+    def new_page(self, nieuw, titel, note):
         newpage = Page(self)
         if note is not None:
             newpage.textbuffer.set_text(note)
         else:
             newpage.textbuffer.set_text("")
         self.nb.append_page(newpage, Gtk.Label(titel))
+        aant = self.get_page_count() + 1
         self.set_current_page(aant)
 
     def clear_last_page(self):
@@ -277,20 +309,20 @@ class MainWin(Gtk.ApplicationWindow):
         # self.tray_icon.set_visible(False)  # niet gedefinieerd
 
     def get_page_title(self, pageno):
-        page = self.nb.get_nth_page(i)
+        page = self.nb.get_nth_page(pageno)
         return self.nb.get_tab_label_text(page)
 
     def get_page_text(self, pageno):
-        page = self.nb.get_nth_page(i)
+        page = self.nb.get_nth_page(pageno)
         return page.textbuffer.get_text(page.textbuffer.get_start_iter(),
                                         page.textbuffer.get_end_iter(),
                                         True)
 
-
     def get_text(self, prompt, initial=''):  #  (subdialog voor page title)
         text = self.nb.get_tab_label_text(self.currentpage)
         dlg = InputDialog(self, 'Apropos')
-        dlg.get_text(caption=languages[self.opts["language"]]["ask_title"], text=text)
+        # dlg.get_text(caption=languages[self.opts["language"]]["ask_title"], text=text)
+        dlg.get_text(caption=prompt, text=text)
         response = dlg.run()
         text = dlg.input.get_text()
         ok = response == Gtk.ResponseType.OK
@@ -303,9 +335,9 @@ class MainWin(Gtk.ApplicationWindow):
 
     def get_item(self, prompt, itemlist, initial=0):  #  (subdialog voor language)
         dlg = InputDialog(self, 'Apropos')
-        dlg.get_item(caption=languages[self.opts["language"]]["ask_language"],
-                     items=[x[1] for x in data],
-                     default=cur_lng)
+        dlg.get_item(caption=prompt,  # languages[self.opts["language"]]["ask_language"],
+                     items=[x[1] for x in itemlist],
+                     default=initial)
         response = dlg.run()
         ok = response == Gtk.ResponseType.OK
         text = dlg.input.get_active_text()
@@ -345,28 +377,28 @@ class CheckDialog(Gtk.Dialog):
 
     wordt aangestuurd met de boodschap die in de dialoog moet worden getoond
     """
-    def __init__(self, parent, title, message="", option=""):
+    def __init__(self, parent, title, message="", option="", caption=""):
         self._parent = parent
         self.option = option
         super().__init__(title, parent, 0, (Gtk.STOCK_OK, Gtk.ResponseType.OK))
         box = self.get_content_area()
         box.add(Gtk.Label(message))
-        show_text = languages[self._parent.opts["language"]]["show_text"]
-        self.check = Gtk.CheckButton.new_with_label(show_text)
+        # show_text = languages[self._parent.opts["language"]]["show_text"]
+        self.check = Gtk.CheckButton.new_with_label(caption)  # show_text)
         box.add(self.check)
         self.show_all()
 
     def accept(self):
         "on pressing Ok: communicate changed setting back to parent"
         if self.check.get_active():
-            self.parent.opts[setting] = False
+            self.parent.opts[self.option] = False
+
 
 class OptionsDialog(Gtk.Dialog):
     """Dialog om de instellingen voor te tonen meldingen te tonen en eventueel te kunnen wijzigen
     """
-    def __init__(self, parent):
+    def __init__(self, parent, sett2text):
         self.parent = parent
-        sett2text = shared.get_setttexts(self.parent.opts)
         super().__init__('A Propos Settings', parent, 0,
                          (Gtk.STOCK_OK, Gtk.ResponseType.OK,
                           Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL))
