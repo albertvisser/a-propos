@@ -419,20 +419,22 @@ class TestAproposGui:
         """unittest for AproposGui.get_item
         """
         def mock_show(self):
-            return 'canceled'
+            # return 'canceled'
+            print('called ChoiceDialog.ShowModal')
+            return testee.wx.ID_OK
         monkeypatch.setattr(testee.wx, 'SingleChoiceDialog', mockwx.MockChoiceDialog)
         testobj = self.setup_testobj(monkeypatch, capsys)
-        assert testobj.get_item('prompt', ['item', 'list']) == ('selected value', True)
+        assert testobj.get_item('prompt', ['item', 'list']) == ('selected value', False)
         assert capsys.readouterr().out == (
                 "called ChoiceDialog.__init__ with args ('prompt', 'Apropos')\n"
                 "called ChoiceDialog.ShowModal\n"
                 "called ChoiceDialog.GetStringSelection\n")
         monkeypatch.setattr(mockwx.MockChoiceDialog, 'ShowModal', mock_show)
-        assert testobj.get_item('prompt', ['xx', 'yy'], 'xx') == ('selected value', False)
+        assert testobj.get_item('prompt', ['xx', 'yy'], 'xx') == ('selected value', True)
         assert capsys.readouterr().out == (
                 "called ChoiceDialog.__init__ with args ('prompt', 'Apropos')\n"
-                # "called ChoiceDialog.ShowModal\n"
                 "called ChoiceDialog.SetSelection with arg 'xx'\n"
+                "called ChoiceDialog.ShowModal\n"
                 "called ChoiceDialog.GetStringSelection\n")
 
     def test_on_left_doubleclick(self, monkeypatch, capsys):
