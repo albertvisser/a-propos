@@ -86,7 +86,7 @@ class TestAproposGui:
         testobj = self.setup_testobj(monkeypatch, capsys)
         testobj.setup_tabwidget('change_page_callback', 'close_page_callback')
         assert capsys.readouterr().out == (
-                f"called NoteBook.__init__ with args ({testobj},)\n"
+                f"called NoteBook.__init__ with args ({testobj},) {{}}\n"
                 "called NoteBook.Bind with args"
                 f" ({testee.wx.EVT_NOTEBOOK_PAGE_CHANGED}, 'change_page_callback')\n"
                 "called NoteBook.Bind with args"
@@ -163,7 +163,7 @@ class TestAproposGui:
         """
         testobj = self.setup_testobj(monkeypatch, capsys)
         testobj.nb = mockwx.MockNoteBook()
-        assert capsys.readouterr().out == "called NoteBook.__init__ with args ()\n"
+        assert capsys.readouterr().out == "called NoteBook.__init__ with args () {}\n"
         assert testobj.get_page_count() == "pagecount"
         assert capsys.readouterr().out == "called NoteBook.GetPageCount with args ()\n"
 
@@ -172,7 +172,7 @@ class TestAproposGui:
         """
         testobj = self.setup_testobj(monkeypatch, capsys)
         testobj.nb = mockwx.MockNoteBook()
-        assert capsys.readouterr().out == "called NoteBook.__init__ with args ()\n"
+        assert capsys.readouterr().out == "called NoteBook.__init__ with args () {}\n"
         assert testobj.get_current_page() == "selection"
         assert capsys.readouterr().out == "called NoteBook.GetSelection with args ()\n"
 
@@ -181,7 +181,7 @@ class TestAproposGui:
         """
         testobj = self.setup_testobj(monkeypatch, capsys)
         testobj.nb = mockwx.MockNoteBook()
-        assert capsys.readouterr().out == "called NoteBook.__init__ with args ()\n"
+        assert capsys.readouterr().out == "called NoteBook.__init__ with args () {}\n"
         testobj.set_previous_page()
         assert capsys.readouterr().out == "called NoteBook.AdvanceSelection with args (False,)\n"
 
@@ -190,7 +190,7 @@ class TestAproposGui:
         """
         testobj = self.setup_testobj(monkeypatch, capsys)
         testobj.nb = mockwx.MockNoteBook()
-        assert capsys.readouterr().out == "called NoteBook.__init__ with args ()\n"
+        assert capsys.readouterr().out == "called NoteBook.__init__ with args () {}\n"
         testobj.set_next_page()
         assert capsys.readouterr().out == "called NoteBook.AdvanceSelection with args ()\n"
 
@@ -199,7 +199,7 @@ class TestAproposGui:
         """
         testobj = self.setup_testobj(monkeypatch, capsys)
         testobj.nb = mockwx.MockNoteBook()
-        assert capsys.readouterr().out == "called NoteBook.__init__ with args ()\n"
+        assert capsys.readouterr().out == "called NoteBook.__init__ with args () {}\n"
         testobj.set_current_page('page_number')
         assert capsys.readouterr().out == "called NoteBook.SetSelection with args ('page_number',)\n"
 
@@ -215,7 +215,7 @@ class TestAproposGui:
         monkeypatch.setattr(mockwx.MockNoteBook, 'GetPage', mock_get)
         testobj = self.setup_testobj(monkeypatch, capsys)
         testobj.nb = mockwx.MockNoteBook()
-        assert capsys.readouterr().out == "called NoteBook.__init__ with args ()\n"
+        assert capsys.readouterr().out == "called NoteBook.__init__ with args () {}\n"
         testobj.master = types.SimpleNamespace(current='current page')
         testobj.set_focus_to_page(event=None)
         assert capsys.readouterr().out == ("called NoteBook.GetPage with args ('current page',)\n"
@@ -234,7 +234,7 @@ class TestAproposGui:
         """
         testobj = self.setup_testobj(monkeypatch, capsys)
         testobj.nb = mockwx.MockNoteBook()
-        assert capsys.readouterr().out == "called NoteBook.__init__ with args ()\n"
+        assert capsys.readouterr().out == "called NoteBook.__init__ with args () {}\n"
         testobj.clear_all()
         assert not testobj.quitting
         assert capsys.readouterr().out == "called NoteBook.DeleteAllPages with args ()\n"
@@ -252,7 +252,7 @@ class TestAproposGui:
         monkeypatch.setattr(testee, 'Page', MockPage)
         testobj = self.setup_testobj(monkeypatch, capsys)
         testobj.nb = mockwx.MockNoteBook()
-        assert capsys.readouterr().out == "called NoteBook.__init__ with args ()\n"
+        assert capsys.readouterr().out == "called NoteBook.__init__ with args () {}\n"
         testobj.new_page(2, 'titel', 'note')
         assert capsys.readouterr().out == (
                 f"called Page.__init__ with args ({testobj.nb},)\n"
@@ -277,7 +277,7 @@ class TestAproposGui:
         testobj = self.setup_testobj(monkeypatch, capsys)
         testobj.nb = mockwx.MockNoteBook()
         testobj.master = types.SimpleNamespace(current='current page')
-        assert capsys.readouterr().out == "called NoteBook.__init__ with args ()\n"
+        assert capsys.readouterr().out == "called NoteBook.__init__ with args () {}\n"
         testobj.clear_last_page()
         assert capsys.readouterr().out == (
                 "called NoteBook.SetPageText with args ('current page', '1')\n"
@@ -295,7 +295,7 @@ class TestAproposGui:
         testobj = self.setup_testobj(monkeypatch, capsys)
         testobj.nb = mockwx.MockNoteBook()
         testobj.master = types.SimpleNamespace(current='current page')
-        assert capsys.readouterr().out == "called NoteBook.__init__ with args ()\n"
+        assert capsys.readouterr().out == "called NoteBook.__init__ with args () {}\n"
         testobj.delete_page('page_number')
         assert capsys.readouterr().out == (
                 "called NoteBook.DeletePage with args ('page_number',)\n"
@@ -333,7 +333,7 @@ class TestAproposGui:
         """
         testobj = self.setup_testobj(monkeypatch, capsys)
         testobj.nb = mockwx.MockNoteBook()
-        assert capsys.readouterr().out == "called NoteBook.__init__ with args ()\n"
+        assert capsys.readouterr().out == "called NoteBook.__init__ with args () {}\n"
         assert testobj.get_page_title('pageno') == "title"
         assert capsys.readouterr().out == "called NoteBook.GetPageText with args ('pageno',)\n"
 
@@ -346,7 +346,7 @@ class TestAproposGui:
         monkeypatch.setattr(mockwx.MockNoteBook, 'GetPage', mock_get)
         testobj = self.setup_testobj(monkeypatch, capsys)
         testobj.nb = mockwx.MockNoteBook()
-        assert capsys.readouterr().out == "called NoteBook.__init__ with args ()\n"
+        assert capsys.readouterr().out == "called NoteBook.__init__ with args () {}\n"
         assert testobj.get_page_text('pageno') == "fake editor value"
         assert capsys.readouterr().out == ("called NoteBook.GetPage with args ('pageno',)\n"
                                            "called Editor.__init__ with args ()\n"
@@ -410,7 +410,7 @@ class TestAproposGui:
         """
         testobj = self.setup_testobj(monkeypatch, capsys)
         testobj.nb = mockwx.MockNoteBook()
-        assert capsys.readouterr().out == "called NoteBook.__init__ with args ()\n"
+        assert capsys.readouterr().out == "called NoteBook.__init__ with args () {}\n"
         testobj.set_page_title('pageno', 'title')
         assert capsys.readouterr().out == (
                 "called NoteBook.SetPageText with args ('pageno', 'title')\n")
@@ -446,7 +446,7 @@ class TestAproposGui:
         testobj.nb = mockwx.MockNoteBook()
         testobj.closetab = mock_closetab
         event = mockwx.MockEvent()
-        assert capsys.readouterr().out == ("called NoteBook.__init__ with args ()\n"
+        assert capsys.readouterr().out == ("called NoteBook.__init__ with args () {}\n"
                                            "called event.__init__ with args ()\n")
         testobj.on_left_doubleclick(event)
         assert capsys.readouterr().out == ("called event.GetX\n"
@@ -461,7 +461,7 @@ class TestAproposGui:
         monkeypatch.setattr(testee.wx.Frame, 'Destroy', mockwx.MockFrame.Destroy)
         testobj = self.setup_testobj(monkeypatch, capsys)
         testobj.nb = mockwx.MockNoteBook()
-        assert capsys.readouterr().out == "called NoteBook.__init__ with args ()\n"
+        assert capsys.readouterr().out == "called NoteBook.__init__ with args () {}\n"
         testobj.close()
         assert testobj.quitting
         assert capsys.readouterr().out == ("called NoteBook.DeleteAllPages with args ()\n"
