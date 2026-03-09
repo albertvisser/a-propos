@@ -39,6 +39,9 @@ class Apropos:
                               'help': (('F1',), self.helppage),
                               'title': (('F2',), self.asktitle),
                               'settings': (('Alt+P',), self.options)}
+        # Esc uitschakelen voor scratch-pad variant
+        if fname and fname.startswith('/tmp'):
+            self.shortcut_data['quit'] = (('Ctrl+Q',), self.quit)
         if not title:
             title = "A Propos"
         self.gui = gui.AproposGui(self, title=title)
