@@ -219,7 +219,7 @@ class TestAproposGui:
         testobj.master = types.SimpleNamespace(current='current page')
         testobj.set_focus_to_page(event=None)
         assert capsys.readouterr().out == ("called NoteBook.GetPage with args ('current page',)\n"
-                                           "called Editor.__init__ with args ()\n"
+                                           "called Editor.__init__ with args () {}\n"
                                            "called editor.SetFocus\n")
         testobj.master = types.SimpleNamespace(current='')
         monkeypatch.setattr(mockwx.MockNoteBook, 'GetPage', mock_get_2)
@@ -256,14 +256,14 @@ class TestAproposGui:
         testobj.new_page(2, 'titel', 'note')
         assert capsys.readouterr().out == (
                 f"called Page.__init__ with args ({testobj.nb},)\n"
-                "called Editor.__init__ with args ()\n"
+                "called Editor.__init__ with args () {}\n"
                 "called editor.SetValue with arg `note`\n"
                 "called NoteBook.AddPage with args ('new page', 'titel')\n"
                 "called NoteBook.SetSelection with args (1,)\n")
         testobj.new_page(2, 'titel', None)
         assert capsys.readouterr().out == (
                 f"called Page.__init__ with args ({testobj.nb},)\n"
-                "called Editor.__init__ with args ()\n"
+                "called Editor.__init__ with args () {}\n"
                 "called NoteBook.AddPage with args ('new page', 'titel')\n"
                 "called NoteBook.SetSelection with args (1,)\n")
 
@@ -282,7 +282,7 @@ class TestAproposGui:
         assert capsys.readouterr().out == (
                 "called NoteBook.SetPageText with args ('current page', '1')\n"
                 "called NoteBook.GetPage with args ('current page',)\n"
-                "called Editor.__init__ with args ()\n"
+                "called Editor.__init__ with args () {}\n"
                 "called editor.SetValue with arg ``\n")
 
     def test_delete_page(self, monkeypatch, capsys):
@@ -300,7 +300,7 @@ class TestAproposGui:
         assert capsys.readouterr().out == (
                 "called NoteBook.DeletePage with args ('page_number',)\n"
                 "called NoteBook.GetPage with args ('current page',)\n"
-                "called Editor.__init__ with args ()\n"
+                "called Editor.__init__ with args () {}\n"
                 "called editor.SetFocus\n")
 
     def test_hide_app(self, monkeypatch, capsys):
@@ -349,7 +349,7 @@ class TestAproposGui:
         assert capsys.readouterr().out == "called NoteBook.__init__ with args () {}\n"
         assert testobj.get_page_text('pageno') == "fake editor value"
         assert capsys.readouterr().out == ("called NoteBook.GetPage with args ('pageno',)\n"
-                                           "called Editor.__init__ with args ()\n"
+                                           "called Editor.__init__ with args () {}\n"
                                            "called editor.GetValue\n")
 
     def test_meld(self, monkeypatch, capsys):
